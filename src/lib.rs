@@ -1,10 +1,13 @@
 extern crate libc;
 extern crate nix;
 
+pub mod consts;
+
 use libc::{c_int, c_uint, c_char, int32_t};
 use std::os::unix::io::AsRawFd;
 use std::fs::File;
 use std::ffi::CStr;
+use consts::*;
 
 #[repr(C)]
 struct Libevdev;
@@ -435,6 +438,6 @@ fn device_get_value() {
 
     let v1 = d.get_event_value(0xff, 0xff); // garbage
     assert_eq!(v1, None);
-    let v2 = d.get_event_value(0x00, 0x00); // SYN_REPORT
+    let v2 = d.get_event_value(EV::EV_SYN as u32, SYN::SYN_REPORT as u32); // SYN_REPORT
     assert_eq!(v2, Some(0));
 }
