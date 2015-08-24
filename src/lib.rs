@@ -1,8 +1,9 @@
 extern crate libc;
 
-use libc::{c_int};
+use libc::{c_int, c_char};
 use std::os::unix::io::AsRawFd;
 use std::fs::File;
+use std::ffi::CStr;
 
 #[repr(C)]
 struct Libevdev;
@@ -15,6 +16,7 @@ extern {
     fn libevdev_change_fd(ctx: *mut Libevdev, fd: c_int) -> c_int;
     fn libevdev_get_fd(ctx: *mut Libevdev) -> c_int;
     fn libevdev_grab(ctx: *mut Libevdev, grab: c_int) -> c_int;
+    fn libevdev_get_name(ctx: *const Libevdev) -> *const c_char;
 }
 
 #[derive(Copy)]
@@ -91,7 +93,17 @@ impl Device {
         }
     }
 
-    pub fn set_fd(&mut self, f: File) -> Result<(), i32> {
+    fn update(&mut self) {
+        let slice = unsafe {
+            CStr::from_ptr(libevdev_get_name(self.libevdev))
+        };
+        let buf : &[u8] = slice.to_bytes();
+        let str_slice: &str = std::str::from_utf8(buf).unwrap();
+
+        self.name = str_slice.to_owned();
+    }
+
+    pub fn set_fd(&mut self, f: File) -> Result<(), nix::Error> {
         let result = unsafe {
             libevdev_set_fd(self.libevdev, f.as_raw_fd())
         };
@@ -99,6 +111,7 @@ impl Device {
         self.fd = Some(f);
 
         if result == 0 {
+            self.update();
             Ok(())
         } else {
             Err(result)
@@ -188,4 +201,16 @@ fn context_grab() {
     d.set_fd(f).unwrap();
     d.grab(GrabMode::GRAB).unwrap();
     d.grab(GrabMode::UNGRAB).unwrap();
+}
+
+#[test]
+fn device_get_name() {
+    let mut d = Device::new();
+    let f = File::open("/dev/input/event0").unwrap();
+
+    d.set_fd(f).unwrap();
+    match d.name().as_ref() {
+        "" => panic!("Invalid name"),
+        _ => ..,
+    };
 }
