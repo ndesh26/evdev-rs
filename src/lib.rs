@@ -31,6 +31,13 @@ extern {
     fn libevdev_get_uniq(ctx: *const Libevdev) -> *const c_char;
     fn libevdev_get_phys(ctx: *const Libevdev) -> *const c_char;
     fn libevdev_get_abs_info(ctx: *const Libevdev, code: c_uint) -> *const input_absinfo;
+    fn libevdev_has_property(ctx: *const Libevdev, prop: c_uint) -> c_int;
+    fn libevdev_has_event_type(ctx: *const Libevdev, type_: c_uint) -> c_int;
+    fn libevdev_has_event_code(ctx: *const Libevdev, type_: c_uint, code: c_uint) -> c_int;
+    fn libevdev_fetch_event_value(ctx: *const Libevdev,
+                                  type_: c_uint,
+                                  code: c_uint,
+                                  value: *mut c_int) -> c_int;
 }
 
 #[derive(Copy)]
@@ -223,8 +230,40 @@ impl Device {
             Some(absinfo)
         }
     }
-}
 
+    pub fn has_property(&self, prop: u32) -> bool {
+        unsafe {
+            libevdev_has_property(self.libevdev, prop) != 0
+        }
+    }
+
+    pub fn has_event_type(&self, type_: u32) -> bool {
+        unsafe {
+            libevdev_has_event_type(self.libevdev, type_) != 0
+        }
+    }
+
+    pub fn has_event_code(&self, type_: u32, code: u32) -> bool {
+        unsafe {
+            libevdev_has_event_code(self.libevdev, type_, code) != 0
+        }
+    }
+
+    pub fn get_event_value(&self, type_: u32, code: u32) -> Option<i32> {
+        unsafe {
+            let mut value :i32 = 0;
+            let valid = libevdev_fetch_event_value(self.libevdev,
+                                                   type_,
+                                                   code,
+                                                   &mut value);
+            if valid != 0 {
+                Some(value)
+            } else {
+                None
+            }
+        }
+    }
+}
 
 impl Drop for Device {
     fn drop(&mut self) {
@@ -322,4 +361,59 @@ fn device_get_absinfo() {
             Some(a) => ..,
         };
     }
+}
+
+#[test]
+fn device_has_property() {
+    let mut d = Device::new();
+    let f = File::open("/dev/input/event0").unwrap();
+
+    d.set_fd(f).unwrap();
+    for prop in 0..0xff {
+        if d.has_property(prop) && prop > 4 {
+            panic!("Prop {} is set, shouldn't be", prop);
+        }
+    }
+}
+
+#[test]
+fn device_has_type_code() {
+    let mut d = Device::new();
+    let f = File::open("/dev/input/event0").unwrap();
+
+    d.set_fd(f).unwrap();
+    for t in 0x18..0xff {
+        if d.has_event_type(t) {
+            panic!("Type {} is set, shouldn't be", t);
+        }
+        for c in 0x00..0xff {
+            if d.has_event_code(t, c) {
+                panic!("Type {} Code {} is set, shouldn't be", t, c);
+            }
+        }
+    }
+}
+
+#[test]
+fn device_has_syn() {
+    let mut d = Device::new();
+    let f = File::open("/dev/input/event0").unwrap();
+
+    d.set_fd(f).unwrap();
+
+    assert!(d.has_event_type(0)); // EV_SYN
+    assert!(d.has_event_code(0, 0)); // SYN_REPORT
+}
+
+#[test]
+fn device_get_value() {
+    let mut d = Device::new();
+    let f = File::open("/dev/input/event0").unwrap();
+
+    d.set_fd(f).unwrap();
+
+    let v1 = d.get_event_value(0xff, 0xff); // garbage
+    assert_eq!(v1, None);
+    let v2 = d.get_event_value(0x00, 0x00); // SYN_REPORT
+    assert_eq!(v2, Some(0));
 }
