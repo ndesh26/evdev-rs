@@ -1,4 +1,5 @@
 extern crate libc;
+extern crate nix;
 
 use libc::{c_int, c_char};
 use std::os::unix::io::AsRawFd;
@@ -103,7 +104,7 @@ impl Device {
         self.name = str_slice.to_owned();
     }
 
-    pub fn set_fd(&mut self, f: File) -> Result<(), nix::Error> {
+    pub fn set_fd(&mut self, f: File) -> Result<(), nix::errno::Errno> {
         let result = unsafe {
             libevdev_set_fd(self.libevdev, f.as_raw_fd())
         };
@@ -114,11 +115,12 @@ impl Device {
             self.update();
             Ok(())
         } else {
-            Err(result)
+            let e = nix::errno::from_i32(-result);
+            Err(e)
         }
     }
 
-    pub fn change_fd(&mut self, f: File) -> Result<(), i32>  {
+    pub fn change_fd(&mut self, f: File) -> Result<(), nix::errno::Errno>  {
         let result = unsafe {
             libevdev_change_fd(self.libevdev, f.as_raw_fd())
         };
@@ -127,7 +129,8 @@ impl Device {
         if result == 0 {
             Ok(())
         } else {
-            Err(result)
+            let e = nix::errno::from_i32(-result);
+            Err(e)
         }
     }
 
@@ -176,7 +179,7 @@ fn context_set_fd() {
 
     match d.set_fd(f) {
         Ok(()) => ..,
-        Err(result) => panic!("Error {}", result),
+        Err(result) => panic!("Error {}", result.desc()),
     };
 }
 
@@ -189,7 +192,7 @@ fn context_change_fd() {
     d.set_fd(f1).unwrap();
     match d.change_fd(f2) {
         Ok(()) => ..,
-        Err(result) => panic!("Error {}", result),
+        Err(result) => panic!("Error {}", result.desc()),
     };
 }
 

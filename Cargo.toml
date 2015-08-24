@@ -5,3 +5,4 @@ authors = ["Peter Hutterer <peter.hutterer@who-t.net>"]
 
 [dependencies]
 libc="*"
+nix="*"
