@@ -1,13 +1,23 @@
 extern crate libc;
 extern crate nix;
 
-use libc::{c_int, c_char};
+use libc::{c_int, c_uint, c_char, int32_t};
 use std::os::unix::io::AsRawFd;
 use std::fs::File;
 use std::ffi::CStr;
 
 #[repr(C)]
 struct Libevdev;
+
+#[repr(C)]
+struct input_absinfo {
+    value: int32_t,
+    minimum: int32_t,
+    maximum: int32_t,
+    fuzz: int32_t,
+    flat: int32_t,
+    resolution: int32_t,
+}
 
 #[link(name = "evdev")]
 extern {
@@ -20,6 +30,7 @@ extern {
     fn libevdev_get_name(ctx: *const Libevdev) -> *const c_char;
     fn libevdev_get_uniq(ctx: *const Libevdev) -> *const c_char;
     fn libevdev_get_phys(ctx: *const Libevdev) -> *const c_char;
+    fn libevdev_get_abs_info(ctx: *const Libevdev, code: c_uint) -> *const input_absinfo;
 }
 
 #[derive(Copy)]
@@ -38,6 +49,15 @@ pub struct DeviceId {
     pub vendor: u16,
     pub product: u16,
     pub version: u16,
+}
+
+pub struct AbsInfo {
+    pub value: i32,
+    pub minimum: i32,
+    pub maximum: i32,
+    pub fuzz: i32,
+    pub flat: i32,
+    pub resolution: i32,
 }
 
 pub struct Device {
@@ -181,6 +201,28 @@ impl Device {
             Err(result)
         }
     }
+
+    pub fn get_abs_info(&self, code: u32) -> Option<AbsInfo> {
+        let a = unsafe {
+            libevdev_get_abs_info(self.libevdev, code)
+        };
+
+        if a.is_null() {
+            return None
+        }
+
+        unsafe {
+            let absinfo = AbsInfo {
+                value: (*a).value,
+                minimum: (*a).minimum,
+                maximum: (*a).maximum,
+                fuzz: (*a).fuzz,
+                flat: (*a).flat,
+                resolution: (*a).resolution,
+            };
+            Some(absinfo)
+        }
+    }
 }
 
 
@@ -264,4 +306,20 @@ fn device_get_phys() {
     match d.phys() {
         _ => ..,
     };
+}
+
+#[test]
+fn device_get_absinfo() {
+    let mut d = Device::new();
+    let f = File::open("/dev/input/event0").unwrap();
+
+    d.set_fd(f).unwrap();
+    for code in 0..0xff {
+        let absinfo: Option<AbsInfo> = d.get_abs_info(code);
+
+        match absinfo {
+            None => ..,
+            Some(a) => ..,
+        };
+    }
 }
