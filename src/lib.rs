@@ -18,6 +18,8 @@ extern {
     fn libevdev_get_fd(ctx: *mut Libevdev) -> c_int;
     fn libevdev_grab(ctx: *mut Libevdev, grab: c_int) -> c_int;
     fn libevdev_get_name(ctx: *const Libevdev) -> *const c_char;
+    fn libevdev_get_uniq(ctx: *const Libevdev) -> *const c_char;
+    fn libevdev_get_phys(ctx: *const Libevdev) -> *const c_char;
 }
 
 #[derive(Copy)]
@@ -94,14 +96,37 @@ impl Device {
         }
     }
 
-    fn update(&mut self) {
-        let slice = unsafe {
-            CStr::from_ptr(libevdev_get_name(self.libevdev))
+    fn ptr_to_str(&self, ptr: *const c_char) -> Option<String> {
+        let slice : Option<&CStr> = unsafe {
+            if ptr.is_null() {
+                return None
+            }
+            Some(CStr::from_ptr(ptr))
         };
-        let buf : &[u8] = slice.to_bytes();
-        let str_slice: &str = std::str::from_utf8(buf).unwrap();
 
-        self.name = str_slice.to_owned();
+        match slice {
+            None => None,
+            Some(s) => {
+                let buf : &[u8] = s.to_bytes();
+                let str_slice: &str = std::str::from_utf8(buf).unwrap();
+                Some(str_slice.to_owned())
+            }
+        }
+    }
+
+    fn update(&mut self) {
+        // libevdev guarantees name is not NULL
+        self.name = self.ptr_to_str(unsafe {
+            libevdev_get_name(self.libevdev)
+        }).unwrap();
+
+        self.uniq = self.ptr_to_str(unsafe {
+            libevdev_get_uniq(self.libevdev)
+        });
+
+        self.phys = self.ptr_to_str(unsafe {
+            libevdev_get_phys(self.libevdev)
+        });
     }
 
     pub fn set_fd(&mut self, f: File) -> Result<(), nix::errno::Errno> {
