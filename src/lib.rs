@@ -38,6 +38,9 @@ extern {
                                   type_: c_uint,
                                   code: c_uint,
                                   value: *mut c_int) -> c_int;
+    fn libevdev_event_type_get_name(type_: c_uint) -> *const c_char;
+    fn libevdev_event_code_get_name(type_: c_uint, code: c_uint) -> *const c_char;
+    fn libevdev_property_get_name(prop: c_uint) -> *const c_char;
 }
 
 #[derive(Copy)]
@@ -75,6 +78,42 @@ pub struct Device {
 
     libevdev: *mut Libevdev,
     fd: Option<File>,
+}
+
+fn ptr_to_str(ptr: *const c_char) -> Option<String> {
+    let slice : Option<&CStr> = unsafe {
+        if ptr.is_null() {
+            return None
+        }
+        Some(CStr::from_ptr(ptr))
+    };
+
+    match slice {
+        None => None,
+        Some(s) => {
+            let buf : &[u8] = s.to_bytes();
+            let str_slice: &str = std::str::from_utf8(buf).unwrap();
+            Some(str_slice.to_owned())
+        }
+    }
+}
+
+pub fn property_get_name(prop: u32) -> Option<String> {
+    ptr_to_str(unsafe {
+        libevdev_property_get_name(prop)
+    })
+}
+
+pub fn event_type_get_name(type_: u32) -> Option<String> {
+    ptr_to_str(unsafe {
+        libevdev_event_type_get_name(type_)
+    })
+}
+
+pub fn event_code_get_name(type_: u32, code: u32) -> Option<String> {
+    ptr_to_str(unsafe {
+        libevdev_event_code_get_name(type_, code)
+    })
 }
 
 impl Device {
@@ -124,35 +163,17 @@ impl Device {
         }
     }
 
-    fn ptr_to_str(&self, ptr: *const c_char) -> Option<String> {
-        let slice : Option<&CStr> = unsafe {
-            if ptr.is_null() {
-                return None
-            }
-            Some(CStr::from_ptr(ptr))
-        };
-
-        match slice {
-            None => None,
-            Some(s) => {
-                let buf : &[u8] = s.to_bytes();
-                let str_slice: &str = std::str::from_utf8(buf).unwrap();
-                Some(str_slice.to_owned())
-            }
-        }
-    }
-
     fn update(&mut self) {
         // libevdev guarantees name is not NULL
-        self.name = self.ptr_to_str(unsafe {
+        self.name = ptr_to_str(unsafe {
             libevdev_get_name(self.libevdev)
         }).unwrap();
 
-        self.uniq = self.ptr_to_str(unsafe {
+        self.uniq = ptr_to_str(unsafe {
             libevdev_get_uniq(self.libevdev)
         });
 
-        self.phys = self.ptr_to_str(unsafe {
+        self.phys = ptr_to_str(unsafe {
             libevdev_get_phys(self.libevdev)
         });
     }
