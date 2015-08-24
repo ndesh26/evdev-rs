@@ -58,6 +58,7 @@ impl Device {
 
         if libevdev.is_null() {
             // FIXME: what to do here?
+            panic!("OOM");
         }
 
         Device {
