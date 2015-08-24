@@ -243,3 +243,25 @@ fn device_get_name() {
         _ => ..,
     };
 }
+
+#[test]
+fn device_get_uniq() {
+    let mut d = Device::new();
+    let f = File::open("/dev/input/event0").unwrap();
+
+    d.set_fd(f).unwrap();
+    match d.uniq() {
+        _ => ..,
+    };
+}
+
+#[test]
+fn device_get_phys() {
+    let mut d = Device::new();
+    let f = File::open("/dev/input/event0").unwrap();
+
+    d.set_fd(f).unwrap();
+    match d.phys() {
+        _ => ..,
+    };
+}
