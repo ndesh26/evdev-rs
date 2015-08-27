@@ -145,19 +145,19 @@ impl Device {
         }
     }
 
-    pub fn name(self) -> String {
+    pub fn name(&self) -> String {
         self.name.clone()
     }
 
-    pub fn uniq(self) -> Option<String> {
+    pub fn uniq(&self) -> Option<String> {
         self.uniq.clone()
     }
 
-    pub fn phys(self) -> Option<String> {
+    pub fn phys(&self) -> Option<String> {
         self.phys.clone()
     }
 
-    pub fn id(self) -> DeviceId {
+    pub fn id(&self) -> DeviceId {
         DeviceId { 
             bustype: self.id.bustype,
             vendor: self.id.vendor,
@@ -211,7 +211,7 @@ impl Device {
         }
     }
 
-    pub fn get_fd(self) -> Option<File> {
+    pub fn get_fd(&self) -> Option<File> {
         // FIXME: Drop trait prevents self.fd from being returned, and
         // there's no clone() for File
         // Not sure how this will fit with rust's ownership handling anyway
