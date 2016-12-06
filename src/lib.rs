@@ -22,7 +22,6 @@ struct input_absinfo {
     resolution: int32_t,
 }
 
-#[link(name = "evdev")]
 extern {
     fn libevdev_new() -> *mut Libevdev;
     fn libevdev_free(ctx: *mut Libevdev);
