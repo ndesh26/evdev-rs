@@ -1,0 +1,14 @@
+[package]
+name = "evdev-sys"
+version = "0.1.0"
+authors = ["Nayan Deshmukh <nayan26deshmukh@gmail.com"]
+build = "build.rs"
+links = "evdev"
+description = """
+Raw bindings to libevdev
+
+High level Rust bindings are avilable in the `evdev` crate
+"""
+
+[dependencies]
+libc = "0.2"

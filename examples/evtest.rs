@@ -1,6 +1,6 @@
-extern crate libevdev;
+extern crate evdev;
 
-use libevdev::*;
+use evdev::*;
 use std::fs::File;
 
 fn usage() {

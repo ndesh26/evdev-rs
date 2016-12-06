@@ -1,49 +1,14 @@
-extern crate libc;
+extern crate evdev_sys as raw;
 extern crate nix;
+extern crate libc;
 
 pub mod consts;
 
-use libc::{c_int, c_uint, c_char, int32_t};
+use libc::{c_char};
 use std::os::unix::io::AsRawFd;
 use std::fs::File;
 use std::ffi::CStr;
 use consts::*;
-
-#[repr(C)]
-struct Libevdev;
-
-#[repr(C)]
-struct input_absinfo {
-    value: int32_t,
-    minimum: int32_t,
-    maximum: int32_t,
-    fuzz: int32_t,
-    flat: int32_t,
-    resolution: int32_t,
-}
-
-extern {
-    fn libevdev_new() -> *mut Libevdev;
-    fn libevdev_free(ctx: *mut Libevdev);
-    fn libevdev_set_fd(ctx: *mut Libevdev, fd: c_int) -> c_int;
-    fn libevdev_change_fd(ctx: *mut Libevdev, fd: c_int) -> c_int;
-    fn libevdev_get_fd(ctx: *mut Libevdev) -> c_int;
-    fn libevdev_grab(ctx: *mut Libevdev, grab: c_int) -> c_int;
-    fn libevdev_get_name(ctx: *const Libevdev) -> *const c_char;
-    fn libevdev_get_uniq(ctx: *const Libevdev) -> *const c_char;
-    fn libevdev_get_phys(ctx: *const Libevdev) -> *const c_char;
-    fn libevdev_get_abs_info(ctx: *const Libevdev, code: c_uint) -> *const input_absinfo;
-    fn libevdev_has_property(ctx: *const Libevdev, prop: c_uint) -> c_int;
-    fn libevdev_has_event_type(ctx: *const Libevdev, type_: c_uint) -> c_int;
-    fn libevdev_has_event_code(ctx: *const Libevdev, type_: c_uint, code: c_uint) -> c_int;
-    fn libevdev_fetch_event_value(ctx: *const Libevdev,
-                                  type_: c_uint,
-                                  code: c_uint,
-                                  value: *mut c_int) -> c_int;
-    fn libevdev_event_type_get_name(type_: c_uint) -> *const c_char;
-    fn libevdev_event_code_get_name(type_: c_uint, code: c_uint) -> *const c_char;
-    fn libevdev_property_get_name(prop: c_uint) -> *const c_char;
-}
 
 #[derive(Copy)]
 #[derive(Clone)]
@@ -78,7 +43,7 @@ pub struct Device {
     uniq: Option<String>,
     id: DeviceId,
 
-    libevdev: *mut Libevdev,
+    libevdev: *mut raw::libevdev,
     fd: Option<File>,
 }
 
@@ -102,26 +67,26 @@ fn ptr_to_str(ptr: *const c_char) -> Option<String> {
 
 pub fn property_get_name(prop: u32) -> Option<String> {
     ptr_to_str(unsafe {
-        libevdev_property_get_name(prop)
+        raw::libevdev_property_get_name(prop)
     })
 }
 
 pub fn event_type_get_name(type_: u32) -> Option<String> {
     ptr_to_str(unsafe {
-        libevdev_event_type_get_name(type_)
+        raw::libevdev_event_type_get_name(type_)
     })
 }
 
 pub fn event_code_get_name(type_: u32, code: u32) -> Option<String> {
     ptr_to_str(unsafe {
-        libevdev_event_code_get_name(type_, code)
+        raw::libevdev_event_code_get_name(type_, code)
     })
 }
 
 impl Device {
     pub fn new() -> Device {
         let libevdev = unsafe {
-            libevdev_new()
+            raw::libevdev_new()
         };
 
         if libevdev.is_null() {
@@ -168,21 +133,21 @@ impl Device {
     fn update(&mut self) {
         // libevdev guarantees name is not NULL
         self.name = ptr_to_str(unsafe {
-            libevdev_get_name(self.libevdev)
+            raw::libevdev_get_name(self.libevdev)
         }).unwrap();
 
         self.uniq = ptr_to_str(unsafe {
-            libevdev_get_uniq(self.libevdev)
+            raw::libevdev_get_uniq(self.libevdev)
         });
 
         self.phys = ptr_to_str(unsafe {
-            libevdev_get_phys(self.libevdev)
+            raw::libevdev_get_phys(self.libevdev)
         });
     }
 
     pub fn set_fd(&mut self, f: File) -> Result<(), nix::errno::Errno> {
         let result = unsafe {
-            libevdev_set_fd(self.libevdev, f.as_raw_fd())
+            raw::libevdev_set_fd(self.libevdev, f.as_raw_fd())
         };
 
         self.fd = Some(f);
@@ -198,7 +163,7 @@ impl Device {
 
     pub fn change_fd(&mut self, f: File) -> Result<(), nix::errno::Errno>  {
         let result = unsafe {
-            libevdev_change_fd(self.libevdev, f.as_raw_fd())
+            raw::libevdev_change_fd(self.libevdev, f.as_raw_fd())
         };
         self.fd = Some(f);
 
@@ -223,7 +188,7 @@ impl Device {
                 GrabMode::GRAB => 3,
                 GrabMode::UNGRAB => 4,
             };
-            libevdev_grab(self.libevdev, mode)
+            raw::libevdev_grab(self.libevdev, mode)
         };
         if result == 0 {
             Ok(())
@@ -234,7 +199,7 @@ impl Device {
 
     pub fn get_abs_info(&self, code: u32) -> Option<AbsInfo> {
         let a = unsafe {
-            libevdev_get_abs_info(self.libevdev, code)
+            raw::libevdev_get_abs_info(self.libevdev, code)
         };
 
         if a.is_null() {
@@ -256,29 +221,29 @@ impl Device {
 
     pub fn has_property(&self, prop: u32) -> bool {
         unsafe {
-            libevdev_has_property(self.libevdev, prop) != 0
+            raw::libevdev_has_property(self.libevdev, prop) != 0
         }
     }
 
     pub fn has_event_type(&self, type_: u32) -> bool {
         unsafe {
-            libevdev_has_event_type(self.libevdev, type_) != 0
+            raw::libevdev_has_event_type(self.libevdev, type_) != 0
         }
     }
 
     pub fn has_event_code(&self, type_: u32, code: u32) -> bool {
         unsafe {
-            libevdev_has_event_code(self.libevdev, type_, code) != 0
+            raw::libevdev_has_event_code(self.libevdev, type_, code) != 0
         }
     }
 
     pub fn get_event_value(&self, type_: u32, code: u32) -> Option<i32> {
         unsafe {
             let mut value :i32 = 0;
-            let valid = libevdev_fetch_event_value(self.libevdev,
-                                                   type_,
-                                                   code,
-                                                   &mut value);
+            let valid = raw::libevdev_fetch_event_value(self.libevdev,
+                                                        type_,
+                                                        code,
+                                                        &mut value);
             if valid != 0 {
                 Some(value)
             } else {
@@ -291,7 +256,7 @@ impl Device {
 impl Drop for Device {
     fn drop(&mut self) {
         unsafe {
-            libevdev_free(self.libevdev);
+            raw::libevdev_free(self.libevdev);
         }
     }
 }

@@ -1,9 +1,9 @@
 [package]
-name = "libevdev"
+name = "evdev"
 version = "0.1.0"
-build = "build.rs"
 authors = ["Peter Hutterer <peter.hutterer@who-t.net>"]
 
 [dependencies]
-libc="*"
-nix="*"
+evdev-sys = { path = "evdev-sys", version = "0.1" }
+nix = "^0.7"
+libc = "^0.2"
