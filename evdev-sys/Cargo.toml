@@ -12,3 +12,6 @@ High level Rust bindings are avilable in the `evdev` crate
 
 [dependencies]
 libc = "0.2"
+
+[build-dependencies]
+pkg-config = "^0.3"
