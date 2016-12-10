@@ -170,6 +170,7 @@ extern {
     pub fn libevdev_kernel_set_led_value(ctx: *mut libevdev,
                                          code: c_uint,
                                          value: libevdev_led_value) -> c_int;
+    pub fn libevdev_kernel_set_led_values(ctx: *mut libevdev, ...) -> c_int;
     pub fn libevdev_set_clock_id(ctx: *mut libevdev, clockid: c_int) -> c_int;
     pub fn libevdev_event_is_type(ev: *const input_event, type_: c_uint) -> c_int;
     pub fn libevdev_event_is_code(ev: *const input_event ,
