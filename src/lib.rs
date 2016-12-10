@@ -17,8 +17,31 @@ pub enum BusType {
 }
 
 pub enum GrabMode {
-    GRAB,
-    UNGRAB,
+    Grab = raw::LIBEVDEV_GRAB as isize,
+    Ungrab = raw::LIBEVDEV_UNGRAB as isize,
+}
+
+pub enum ReadFlag {
+    Sync = raw::LIBEVDEV_READ_FLAG_SYNC as isize,
+    Normal = raw::LIBEVDEV_READ_FLAG_NORMAL as isize,
+    ForceSync = raw::LIBEVDEV_READ_FLAG_FORCE_SYNC as isize,
+    Blocking = raw::LIBEVDEV_READ_FLAG_BLOCKING as isize,
+}
+
+pub enum LogPriority {
+    Error = raw::LIBEVDEV_LOG_ERROR as isize,
+    Info = raw::LIBEVDEV_LOG_INFO as isize,
+    Debug = raw::LIBEVDEV_LOG_DEBUG as isize,
+}
+
+pub enum ReadStatus {
+    Success = raw::LIBEVDEV_READ_STATUS_SUCCESS as isize,
+    Sync = raw::LIBEVDEV_READ_STATUS_SYNC as isize,
+}
+
+pub enum LedState {
+    On = raw::LIBEVDEV_LED_ON as isize,
+    Off = raw::LIBEVDEV_LED_OFF as isize,
 }
 
 pub struct DeviceId {
@@ -185,8 +208,8 @@ impl Device {
     pub fn grab(&mut self, grab: GrabMode) -> Result<(), i32> {
         let result = unsafe {
             let mode = match grab {
-                GrabMode::GRAB => 3,
-                GrabMode::UNGRAB => 4,
+                GrabMode::Grab => 3,
+                GrabMode::Ungrab => 4,
             };
             raw::libevdev_grab(self.libevdev, mode)
         };
