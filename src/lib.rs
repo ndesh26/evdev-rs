@@ -6,6 +6,7 @@ pub mod consts;
 
 use libc::{c_char};
 use std::os::unix::io::AsRawFd;
+use std::os::unix::io::FromRawFd;
 use std::fs::File;
 use std::ffi::CStr;
 use consts::*;
@@ -61,13 +62,7 @@ pub struct AbsInfo {
 }
 
 pub struct Device {
-    name: String,
-    phys: Option<String>,
-    uniq: Option<String>,
-    id: DeviceId,
-
-    libevdev: *mut raw::libevdev,
-    fd: Option<File>,
+    raw: *mut raw::libevdev,
 }
 
 fn ptr_to_str(ptr: *const c_char) -> Option<String> {
@@ -118,65 +113,34 @@ impl Device {
         }
 
         Device {
-            name: String::new(),
-            phys: None,
-            uniq: None,
-            id: DeviceId {
-                bustype: BusType::USB,
-                vendor: 0,
-                product: 0,
-                version: 0
-            },
-            libevdev: libevdev,
-            fd: None
+            raw: libevdev,
         }
     }
 
     pub fn name(&self) -> String {
-        self.name.clone()
+        ptr_to_str(unsafe {
+            raw::libevdev_get_name(self.raw)
+        }).unwrap()
     }
 
     pub fn uniq(&self) -> Option<String> {
-        self.uniq.clone()
+        ptr_to_str(unsafe {
+            raw::libevdev_get_uniq(self.raw)
+        })
     }
 
     pub fn phys(&self) -> Option<String> {
-        self.phys.clone()
+        ptr_to_str(unsafe {
+            raw::libevdev_get_phys(self.raw)
+        })
     }
 
-    pub fn id(&self) -> DeviceId {
-        DeviceId { 
-            bustype: self.id.bustype,
-            vendor: self.id.vendor,
-            product: self.id.product,
-            version: self.id.version,
-        }
-    }
-
-    fn update(&mut self) {
-        // libevdev guarantees name is not NULL
-        self.name = ptr_to_str(unsafe {
-            raw::libevdev_get_name(self.libevdev)
-        }).unwrap();
-
-        self.uniq = ptr_to_str(unsafe {
-            raw::libevdev_get_uniq(self.libevdev)
-        });
-
-        self.phys = ptr_to_str(unsafe {
-            raw::libevdev_get_phys(self.libevdev)
-        });
-    }
-
-    pub fn set_fd(&mut self, f: File) -> Result<(), nix::errno::Errno> {
+    pub fn set_fd(&mut self, f: &File) -> Result<(), nix::errno::Errno> {
         let result = unsafe {
-            raw::libevdev_set_fd(self.libevdev, f.as_raw_fd())
+            raw::libevdev_set_fd(self.raw, f.as_raw_fd())
         };
 
-        self.fd = Some(f);
-
         if result == 0 {
-            self.update();
             Ok(())
         } else {
             let e = nix::errno::from_i32(-result);
@@ -186,9 +150,8 @@ impl Device {
 
     pub fn change_fd(&mut self, f: File) -> Result<(), nix::errno::Errno>  {
         let result = unsafe {
-            raw::libevdev_change_fd(self.libevdev, f.as_raw_fd())
+            raw::libevdev_change_fd(self.raw, f.as_raw_fd())
         };
-        self.fd = Some(f);
 
         if result == 0 {
             Ok(())
@@ -198,21 +161,26 @@ impl Device {
         }
     }
 
-    pub fn get_fd(&self) -> Option<File> {
-        // FIXME: Drop trait prevents self.fd from being returned, and
-        // there's no clone() for File
-        // Not sure how this will fit with rust's ownership handling anyway
-        None
+    pub fn fd(&self) -> Option<File> {
+        let result = unsafe {
+            raw::libevdev_get_fd(self.raw)
+        };
+
+        if result == 0 {
+            None
+        } else {
+            unsafe {
+                let f = File::from_raw_fd(result);
+                Some(f)
+            }
+        }
     }
 
     pub fn grab(&mut self, grab: GrabMode) -> Result<(), i32> {
         let result = unsafe {
-            let mode = match grab {
-                GrabMode::Grab => 3,
-                GrabMode::Ungrab => 4,
-            };
-            raw::libevdev_grab(self.libevdev, mode)
+            raw::libevdev_grab(self.raw, grab as i32)
         };
+
         if result == 0 {
             Ok(())
         } else {
@@ -222,7 +190,7 @@ impl Device {
 
     pub fn get_abs_info(&self, code: u32) -> Option<AbsInfo> {
         let a = unsafe {
-            raw::libevdev_get_abs_info(self.libevdev, code)
+            raw::libevdev_get_abs_info(self.raw, code)
         };
 
         if a.is_null() {
@@ -244,26 +212,26 @@ impl Device {
 
     pub fn has_property(&self, prop: u32) -> bool {
         unsafe {
-            raw::libevdev_has_property(self.libevdev, prop) != 0
+            raw::libevdev_has_property(self.raw, prop) != 0
         }
     }
 
     pub fn has_event_type(&self, type_: u32) -> bool {
         unsafe {
-            raw::libevdev_has_event_type(self.libevdev, type_) != 0
+            raw::libevdev_has_event_type(self.raw, type_) != 0
         }
     }
 
     pub fn has_event_code(&self, type_: u32, code: u32) -> bool {
         unsafe {
-            raw::libevdev_has_event_code(self.libevdev, type_, code) != 0
+            raw::libevdev_has_event_code(self.raw, type_, code) != 0
         }
     }
 
     pub fn get_event_value(&self, type_: u32, code: u32) -> Option<i32> {
         unsafe {
             let mut value :i32 = 0;
-            let valid = raw::libevdev_fetch_event_value(self.libevdev,
+            let valid = raw::libevdev_fetch_event_value(self.raw,
                                                         type_,
                                                         code,
                                                         &mut value);
@@ -274,12 +242,18 @@ impl Device {
             }
         }
     }
+
+    pub fn has_event_pending(&self) -> i32 {
+        unsafe {
+            raw::libevdev_has_event_pending(self.raw)
+        }
+    }
 }
 
 impl Drop for Device {
     fn drop(&mut self) {
         unsafe {
-            raw::libevdev_free(self.libevdev);
+            raw::libevdev_free(self.raw);
         }
     }
 }
@@ -295,7 +269,7 @@ fn context_set_fd() {
     let mut d = Device::new();
     let f = File::open("/dev/input/event0").unwrap();
 
-    match d.set_fd(f) {
+    match d.set_fd(&f) {
         Ok(()) => ..,
         Err(result) => panic!("Error {}", result.desc()),
     };
@@ -307,7 +281,7 @@ fn context_change_fd() {
     let f1 = File::open("/dev/input/event0").unwrap();
     let f2 = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(f1).unwrap();
+    d.set_fd(&f1).unwrap();
     match d.change_fd(f2) {
         Ok(()) => ..,
         Err(result) => panic!("Error {}", result.desc()),
@@ -319,9 +293,9 @@ fn context_grab() {
     let mut d = Device::new();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(f).unwrap();
-    d.grab(GrabMode::GRAB).unwrap();
-    d.grab(GrabMode::UNGRAB).unwrap();
+    d.set_fd(&f).unwrap();
+    d.grab(GrabMode::Grab).unwrap();
+    d.grab(GrabMode::Ungrab).unwrap();
 }
 
 #[test]
@@ -329,7 +303,7 @@ fn device_get_name() {
     let mut d = Device::new();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(f).unwrap();
+    d.set_fd(&f).unwrap();
     match d.name().as_ref() {
         "" => panic!("Invalid name"),
         _ => ..,
@@ -341,7 +315,7 @@ fn device_get_uniq() {
     let mut d = Device::new();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(f).unwrap();
+    d.set_fd(&f).unwrap();
     match d.uniq() {
         _ => ..,
     };
@@ -352,7 +326,7 @@ fn device_get_phys() {
     let mut d = Device::new();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(f).unwrap();
+    d.set_fd(&f).unwrap();
     match d.phys() {
         _ => ..,
     };
@@ -363,7 +337,7 @@ fn device_get_absinfo() {
     let mut d = Device::new();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(f).unwrap();
+    d.set_fd(&f).unwrap();
     for code in 0..0xff {
         let absinfo: Option<AbsInfo> = d.get_abs_info(code);
 
@@ -379,7 +353,7 @@ fn device_has_property() {
     let mut d = Device::new();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(f).unwrap();
+    d.set_fd(&f).unwrap();
     for prop in 0..0xff {
         if d.has_property(prop) && prop > 4 {
             panic!("Prop {} is set, shouldn't be", prop);
@@ -392,7 +366,7 @@ fn device_has_type_code() {
     let mut d = Device::new();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(f).unwrap();
+    d.set_fd(&f).unwrap();
     for t in 0x18..0xff {
         if d.has_event_type(t) {
             panic!("Type {} is set, shouldn't be", t);
@@ -410,7 +384,7 @@ fn device_has_syn() {
     let mut d = Device::new();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(f).unwrap();
+    d.set_fd(&f).unwrap();
 
     assert!(d.has_event_type(0)); // EV_SYN
     assert!(d.has_event_code(0, 0)); // SYN_REPORT
@@ -421,7 +395,7 @@ fn device_get_value() {
     let mut d = Device::new();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(f).unwrap();
+    d.set_fd(&f).unwrap();
 
     let v1 = d.get_event_value(0xff, 0xff); // garbage
     assert_eq!(v1, None);

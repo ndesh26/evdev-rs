@@ -22,5 +22,5 @@ fn main() {
     let f = File::open(path).unwrap();
 
     let mut d = Device::new();
-    d.set_fd(f).unwrap();
+    d.set_fd(&f).unwrap();
 }
