@@ -3,6 +3,7 @@ extern crate nix;
 extern crate libc;
 
 pub mod consts;
+pub mod log;
 
 use libc::{c_char};
 use std::os::unix::io::AsRawFd;
@@ -27,12 +28,6 @@ pub enum ReadFlag {
     Normal = raw::LIBEVDEV_READ_FLAG_NORMAL as isize,
     ForceSync = raw::LIBEVDEV_READ_FLAG_FORCE_SYNC as isize,
     Blocking = raw::LIBEVDEV_READ_FLAG_BLOCKING as isize,
-}
-
-pub enum LogPriority {
-    Error = raw::LIBEVDEV_LOG_ERROR as isize,
-    Info = raw::LIBEVDEV_LOG_INFO as isize,
-    Debug = raw::LIBEVDEV_LOG_DEBUG as isize,
 }
 
 pub enum ReadStatus {

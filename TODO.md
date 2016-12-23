@@ -1,8 +1,6 @@
 ## These function need to implemented in evdev-rs
 
 * `int libevdev_new_from_fd(int fd, struct libevdev **dev);`
-* `void libevdev_set_log_priority(enum libevdev_log_priority priority);`
-* `enum libevdev_log_priority libevdev_get_log_priority(void);`
 * `int libevdev_next_event(struct libevdev *dev, unsigned int flags, struct input_event *ev);`
 * `void libevdev_set_name(struct libevdev *dev, const char *name);`
 * `void libevdev_set_phys(struct libevdev *dev, const char *phys);`
