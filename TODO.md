@@ -2,14 +2,6 @@
 
 * `int libevdev_new_from_fd(int fd, struct libevdev **dev);`
 * `int libevdev_next_event(struct libevdev *dev, unsigned int flags, struct input_event *ev);`
-* `int libevdev_get_id_product(const struct libevdev *dev);`
-* `void libevdev_set_id_product(struct libevdev *dev, int product_id);`
-* `int libevdev_get_id_vendor(const struct libevdev *dev);`
-* `void libevdev_set_id_vendor(struct libevdev *dev, int vendor_id);`
-* `int libevdev_get_id_bustype(const struct libevdev *dev);`
-* `void libevdev_set_id_bustype(struct libevdev *dev, int bustype);`
-* `int libevdev_get_id_version(const struct libevdev *dev);`
-* `void libevdev_set_id_version(struct libevdev *dev, int version);`
 * `int libevdev_get_driver_version(const struct libevdev *dev);`
 * `int libevdev_enable_property(struct libevdev *dev, unsigned int prop);`
 * `int libevdev_get_abs_minimum(const struct libevdev *dev, unsigned int code);`

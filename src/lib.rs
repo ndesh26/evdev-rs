@@ -263,6 +263,54 @@ impl Device {
             raw::libevdev_has_event_pending(self.raw)
         }
     }
+
+    pub fn product_id(&self) -> i32 {
+        unsafe {
+            raw::libevdev_get_id_product(self.raw) as i32
+        }
+    }
+
+    pub fn set_product_id(&self, product_id: i32) {
+        unsafe {
+            raw::libevdev_set_id_product(self.raw, product_id as c_int)
+        }
+    }
+
+    pub fn vendor_id(&self) -> i32 {
+        unsafe {
+            raw::libevdev_get_id_vendor(self.raw) as i32
+        }
+    }
+
+    pub fn set_vendor_id(&self, vendor_id: i32) {
+        unsafe {
+            raw::libevdev_set_id_vendor(self.raw, vendor_id as c_int)
+        }
+    }
+
+    pub fn bustype(&self) -> i32 {
+        unsafe {
+            raw::libevdev_get_id_bustype(self.raw) as i32
+        }
+    }
+
+    pub fn set_bustype(&self, bustype: i32) {
+        unsafe {
+            raw::libevdev_set_id_bustype(self.raw, bustype as c_int)
+        }
+    }
+
+    pub fn version(&self) -> i32 {
+        unsafe {
+            raw::libevdev_get_id_version(self.raw) as i32
+        }
+    }
+
+    pub fn set_version(&self, version: i32) {
+        unsafe {
+            raw::libevdev_set_id_version(self.raw, version as c_int)
+        }
+    }
 }
 
 impl Drop for Device {
