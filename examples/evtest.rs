@@ -7,9 +7,6 @@ fn usage() {
     println!("Usage: evtest /path/to/device");
 }
 
-fn print_info() {
-}
-
 fn main() {
     let mut args = std::env::args();
 
@@ -23,4 +20,5 @@ fn main() {
 
     let mut d = Device::new();
     d.set_fd(&f).unwrap();
+    println!("{}", d.name().unwrap());
 }
