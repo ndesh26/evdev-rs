@@ -5,7 +5,7 @@ extern crate libc;
 pub mod consts;
 pub mod log;
 
-use libc::{c_char, c_int};
+use libc::{c_char, c_int, c_uint};
 use std::os::unix::io::AsRawFd;
 use std::os::unix::io::FromRawFd;
 use std::fs::File;
@@ -227,19 +227,34 @@ impl Device {
 
     pub fn has_property(&self, prop: u32) -> bool {
         unsafe {
-            raw::libevdev_has_property(self.raw, prop) != 0
+            raw::libevdev_has_property(self.raw, prop as c_uint) != 0
+        }
+    }
+
+    pub fn enable_property(&self, prop: u32) -> Result<(), nix::errno::Errno> {
+        let result = unsafe {
+            raw::libevdev_enable_property(self.raw, prop as c_uint) as i32
+        };
+
+        if result == 0 {
+            Ok(())
+        } else {
+            let e = nix::errno::from_i32(-result);
+            Err(e)
         }
     }
 
     pub fn has_event_type(&self, type_: u32) -> bool {
         unsafe {
-            raw::libevdev_has_event_type(self.raw, type_) != 0
+            raw::libevdev_has_event_type(self.raw, type_ as c_uint) != 0
         }
     }
 
     pub fn has_event_code(&self, type_: u32, code: u32) -> bool {
         unsafe {
-            raw::libevdev_has_event_code(self.raw, type_, code) != 0
+            raw::libevdev_has_event_code(self.raw,
+                                         type_ as c_uint,
+                                         code as c_uint) != 0
         }
     }
 
@@ -247,8 +262,8 @@ impl Device {
         unsafe {
             let mut value :i32 = 0;
             let valid = raw::libevdev_fetch_event_value(self.raw,
-                                                        type_,
-                                                        code,
+                                                        type_ as c_uint,
+                                                        code as c_uint,
                                                         &mut value);
             if valid != 0 {
                 Some(value)
@@ -311,7 +326,15 @@ impl Device {
             raw::libevdev_set_id_version(self.raw, version as c_int)
         }
     }
+
+    pub fn driver_version(&self) -> i32 {
+        unsafe {
+            raw::libevdev_get_driver_version(self.raw) as i32
+        }
+    }
 }
+
+
 
 impl Drop for Device {
     fn drop(&mut self) {

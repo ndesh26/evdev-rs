@@ -2,8 +2,6 @@
 
 * `int libevdev_new_from_fd(int fd, struct libevdev **dev);`
 * `int libevdev_next_event(struct libevdev *dev, unsigned int flags, struct input_event *ev);`
-* `int libevdev_get_driver_version(const struct libevdev *dev);`
-* `int libevdev_enable_property(struct libevdev *dev, unsigned int prop);`
 * `int libevdev_get_abs_minimum(const struct libevdev *dev, unsigned int code);`
 * `int libevdev_get_abs_maximum(const struct libevdev *dev, unsigned int code);`
 * `int libevdev_get_abs_fuzz(const struct libevdev *dev, unsigned int code);`
