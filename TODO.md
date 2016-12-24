@@ -2,23 +2,12 @@
 
 * `int libevdev_new_from_fd(int fd, struct libevdev **dev);`
 * `int libevdev_next_event(struct libevdev *dev, unsigned int flags, struct input_event *ev);`
-* `int libevdev_get_abs_minimum(const struct libevdev *dev, unsigned int code);`
-* `int libevdev_get_abs_maximum(const struct libevdev *dev, unsigned int code);`
-* `int libevdev_get_abs_fuzz(const struct libevdev *dev, unsigned int code);`
-* `int libevdev_get_abs_flat(const struct libevdev *dev, unsigned int code);`
-* `int libevdev_get_abs_resolution(const struct libevdev *dev, unsigned int code);`
-* `int libevdev_get_event_value(const struct libevdev *dev, unsigned int type, unsigned int code);`
 * `int libevdev_set_event_value(struct libevdev *dev, unsigned int type, unsigned int code, int value);`
 * `int libevdev_get_slot_value(const struct libevdev *dev, unsigned int slot, unsigned int code);`
 * `int libevdev_set_slot_value(struct libevdev *dev, unsigned int slot, unsigned int code, int value);`
 * `int libevdev_fetch_slot_value(const struct libevdev *dev, unsigned int slot, unsigned int code, int *value);`
 * `int libevdev_get_num_slots(const struct libevdev *dev);`
 * `int libevdev_get_current_slot(const struct libevdev *dev);`
-* `void libevdev_set_abs_minimum(struct libevdev *dev, unsigned int code, int min);`
-* `void libevdev_set_abs_maximum(struct libevdev *dev, unsigned int code, int max);`
-* `void libevdev_set_abs_fuzz(struct libevdev *dev, unsigned int code, int fuzz);`
-* `void libevdev_set_abs_flat(struct libevdev *dev, unsigned int code, int flat);`
-* `void libevdev_set_abs_resolution(struct libevdev *dev, unsigned int code, int resolution);`
 * `void libevdev_set_abs_info(struct libevdev *dev, unsigned int code, const struct input_absinfo *abs);`
 * `int libevdev_enable_event_type(struct libevdev *dev, unsigned int type);`
 * `int libevdev_disable_event_type(struct libevdev *dev, unsigned int type);`

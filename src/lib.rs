@@ -4,6 +4,8 @@ extern crate libc;
 
 pub mod consts;
 pub mod log;
+#[macro_use]
+pub mod macros;
 
 use libc::{c_char, c_int, c_uint};
 use std::os::unix::io::AsRawFd;
@@ -111,44 +113,12 @@ impl Device {
         }
     }
 
-    pub fn name(&self) -> Option<&str> {
-        ptr_to_str(unsafe {
-            raw::libevdev_get_name(self.raw)
-        })
-    }
-
-    pub fn set_name(&self, name: &str) {
-        let name = CString::new(name).unwrap();
-        unsafe {
-            raw::libevdev_set_name(self.raw, name.as_ptr())
-        }
-    }
-
-    pub fn uniq(&self) -> Option<&str> {
-        ptr_to_str(unsafe {
-            raw::libevdev_get_uniq(self.raw)
-        })
-    }
-
-    pub fn set_uniq(&self, uniq: &str) {
-        let uniq = CString::new(uniq).unwrap();
-        unsafe {
-            raw::libevdev_set_uniq(self.raw, uniq.as_ptr())
-        }
-    }
-
-    pub fn phys(&self) -> Option<&str> {
-        ptr_to_str(unsafe {
-            raw::libevdev_get_phys(self.raw)
-        })
-    }
-
-    pub fn set_phys(&self, phys: &str) {
-        let phys = CString::new(phys).unwrap();
-        unsafe {
-            raw::libevdev_set_phys(self.raw, phys.as_ptr())
-        }
-    }
+    string_getter!(name, libevdev_get_name,
+                   phys, libevdev_get_phys,
+                   uniq, libevdev_get_uniq);
+    string_setter!(set_name, libevdev_set_name,
+                   set_phys, libevdev_set_phys,
+                   set_uniq, libevdev_set_uniq);
 
     pub fn fd(&self) -> Option<File> {
         let result = unsafe {
@@ -279,59 +249,34 @@ impl Device {
         }
     }
 
-    pub fn product_id(&self) -> i32 {
-        unsafe {
-            raw::libevdev_get_id_product(self.raw) as i32
-        }
-    }
+    product_getter!(product_id, libevdev_get_id_product,
+                    vendor_id, libevdev_get_id_vendor,
+                    bustype, libevdev_get_id_bustype,
+                    version, libevdev_get_id_version);
 
-    pub fn set_product_id(&self, product_id: i32) {
-        unsafe {
-            raw::libevdev_set_id_product(self.raw, product_id as c_int)
-        }
-    }
-
-    pub fn vendor_id(&self) -> i32 {
-        unsafe {
-            raw::libevdev_get_id_vendor(self.raw) as i32
-        }
-    }
-
-    pub fn set_vendor_id(&self, vendor_id: i32) {
-        unsafe {
-            raw::libevdev_set_id_vendor(self.raw, vendor_id as c_int)
-        }
-    }
-
-    pub fn bustype(&self) -> i32 {
-        unsafe {
-            raw::libevdev_get_id_bustype(self.raw) as i32
-        }
-    }
-
-    pub fn set_bustype(&self, bustype: i32) {
-        unsafe {
-            raw::libevdev_set_id_bustype(self.raw, bustype as c_int)
-        }
-    }
-
-    pub fn version(&self) -> i32 {
-        unsafe {
-            raw::libevdev_get_id_version(self.raw) as i32
-        }
-    }
-
-    pub fn set_version(&self, version: i32) {
-        unsafe {
-            raw::libevdev_set_id_version(self.raw, version as c_int)
-        }
-    }
+    product_setter!(set_product_id, libevdev_set_id_product,
+                    set_vendor_id, libevdev_set_id_vendor,
+                    set_bustype, libevdev_set_id_bustype,
+                    set_version, libevdev_set_id_version);
 
     pub fn driver_version(&self) -> i32 {
         unsafe {
             raw::libevdev_get_driver_version(self.raw) as i32
         }
     }
+
+    abs_getter!(abs_minimum, libevdev_get_abs_minimum,
+                abs_maximum, libevdev_get_abs_maximum,
+                abs_fuzz, libevdev_get_abs_fuzz,
+                abs_flat, libevdev_get_abs_flat,
+                abs_resolution, libevdev_get_abs_resolution);
+
+    abs_setter!(set_abs_minimum, libevdev_set_abs_minimum,
+                set_abs_maximum, libevdev_set_abs_maximum,
+                set_abs_fuzz, libevdev_set_abs_fuzz,
+                set_abs_flat, libevdev_set_abs_flat,
+                set_abs_resolution, libevdev_set_abs_resolution);
+
 }
 
 
