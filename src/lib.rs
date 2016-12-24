@@ -143,19 +143,6 @@ impl Device {
         }
     }
 
-    pub fn change_fd(&mut self, f: File) -> Result<(), nix::errno::Errno>  {
-        let result = unsafe {
-            raw::libevdev_change_fd(self.raw, f.as_raw_fd())
-        };
-
-        if result == 0 {
-            Ok(())
-        } else {
-            let e = nix::errno::from_i32(-result);
-            Err(e)
-        }
-    }
-
     pub fn fd(&self) -> Option<File> {
         let result = unsafe {
             raw::libevdev_get_fd(self.raw)
@@ -168,6 +155,19 @@ impl Device {
                 let f = File::from_raw_fd(result);
                 Some(f)
             }
+        }
+    }
+
+    pub fn change_fd(&mut self, f: &File) -> Result<(), nix::errno::Errno>  {
+        let result = unsafe {
+            raw::libevdev_change_fd(self.raw, f.as_raw_fd())
+        };
+
+        if result == 0 {
+            Ok(())
+        } else {
+            let e = nix::errno::from_i32(-result);
+            Err(e)
         }
     }
 
@@ -277,7 +277,7 @@ fn context_change_fd() {
     let f2 = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f1).unwrap();
-    match d.change_fd(f2) {
+    match d.change_fd(&f2) {
         Ok(()) => ..,
         Err(result) => panic!("Error {}", result.desc()),
     };
