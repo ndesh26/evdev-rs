@@ -5,11 +5,11 @@ extern crate libc;
 pub mod consts;
 pub mod log;
 
-use libc::{c_char};
+use libc::{c_char, c_int};
 use std::os::unix::io::AsRawFd;
 use std::os::unix::io::FromRawFd;
 use std::fs::File;
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 use consts::*;
 
 #[derive(Copy)]
@@ -60,7 +60,7 @@ pub struct Device {
     raw: *mut raw::libevdev,
 }
 
-fn ptr_to_str(ptr: *const c_char) -> Option<String> {
+fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
     let slice : Option<&CStr> = unsafe {
         if ptr.is_null() {
             return None
@@ -72,25 +72,24 @@ fn ptr_to_str(ptr: *const c_char) -> Option<String> {
         None => None,
         Some(s) => {
             let buf : &[u8] = s.to_bytes();
-            let str_slice: &str = std::str::from_utf8(buf).unwrap();
-            Some(str_slice.to_owned())
+            Some(std::str::from_utf8(buf).unwrap())
         }
     }
 }
 
-pub fn property_get_name(prop: u32) -> Option<String> {
+pub fn property_get_name(prop: u32) -> Option<&'static str> {
     ptr_to_str(unsafe {
         raw::libevdev_property_get_name(prop)
     })
 }
 
-pub fn event_type_get_name(type_: u32) -> Option<String> {
+pub fn event_type_get_name(type_: u32) -> Option<&'static str> {
     ptr_to_str(unsafe {
         raw::libevdev_event_type_get_name(type_)
     })
 }
 
-pub fn event_code_get_name(type_: u32, code: u32) -> Option<String> {
+pub fn event_code_get_name(type_: u32, code: u32) -> Option<&'static str> {
     ptr_to_str(unsafe {
         raw::libevdev_event_code_get_name(type_, code)
     })
@@ -112,34 +111,42 @@ impl Device {
         }
     }
 
-    pub fn name(&self) -> String {
+    pub fn name(&self) -> Option<&str> {
         ptr_to_str(unsafe {
             raw::libevdev_get_name(self.raw)
-        }).unwrap()
+        })
     }
 
-    pub fn uniq(&self) -> Option<String> {
+    pub fn set_name(&self, name: &str) {
+        let name = CString::new(name).unwrap();
+        unsafe {
+            raw::libevdev_set_name(self.raw, name.as_ptr())
+        }
+    }
+
+    pub fn uniq(&self) -> Option<&str> {
         ptr_to_str(unsafe {
             raw::libevdev_get_uniq(self.raw)
         })
     }
 
-    pub fn phys(&self) -> Option<String> {
+    pub fn set_uniq(&self, uniq: &str) {
+        let uniq = CString::new(uniq).unwrap();
+        unsafe {
+            raw::libevdev_set_uniq(self.raw, uniq.as_ptr())
+        }
+    }
+
+    pub fn phys(&self) -> Option<&str> {
         ptr_to_str(unsafe {
             raw::libevdev_get_phys(self.raw)
         })
     }
 
-    pub fn set_fd(&mut self, f: &File) -> Result<(), nix::errno::Errno> {
-        let result = unsafe {
-            raw::libevdev_set_fd(self.raw, f.as_raw_fd())
-        };
-
-        if result == 0 {
-            Ok(())
-        } else {
-            let e = nix::errno::from_i32(-result);
-            Err(e)
+    pub fn set_phys(&self, phys: &str) {
+        let phys = CString::new(phys).unwrap();
+        unsafe {
+            raw::libevdev_set_phys(self.raw, phys.as_ptr())
         }
     }
 
@@ -158,6 +165,19 @@ impl Device {
         }
     }
 
+    pub fn set_fd(&mut self, f: &File) -> Result<(), nix::errno::Errno> {
+        let result = unsafe {
+            raw::libevdev_set_fd(self.raw, f.as_raw_fd())
+        };
+
+        if result == 0 {
+            Ok(())
+        } else {
+            let e = nix::errno::from_i32(-result);
+            Err(e)
+        }
+    }
+
     pub fn change_fd(&mut self, f: &File) -> Result<(), nix::errno::Errno>  {
         let result = unsafe {
             raw::libevdev_change_fd(self.raw, f.as_raw_fd())
@@ -173,7 +193,7 @@ impl Device {
 
     pub fn grab(&mut self, grab: GrabMode) -> Result<(), i32> {
         let result = unsafe {
-            raw::libevdev_grab(self.raw, grab as i32)
+            raw::libevdev_grab(self.raw, grab as c_int)
         };
 
         if result == 0 {
@@ -296,13 +316,12 @@ fn context_grab() {
 #[test]
 fn device_get_name() {
     let mut d = Device::new();
-    let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(&f).unwrap();
-    match d.name().as_ref() {
-        "" => panic!("Invalid name"),
-        _ => ..,
-    };
+    d.set_name("hello");
+    match d.name() {
+        Some("hello") => (),
+        _ => panic!("Invalid name"),
+    }
 }
 
 #[test]

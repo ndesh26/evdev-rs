@@ -2,9 +2,6 @@
 
 * `int libevdev_new_from_fd(int fd, struct libevdev **dev);`
 * `int libevdev_next_event(struct libevdev *dev, unsigned int flags, struct input_event *ev);`
-* `void libevdev_set_name(struct libevdev *dev, const char *name);`
-* `void libevdev_set_phys(struct libevdev *dev, const char *phys);`
-* `void libevdev_set_uniq(struct libevdev *dev, const char *uniq);`
 * `int libevdev_get_id_product(const struct libevdev *dev);`
 * `void libevdev_set_id_product(struct libevdev *dev, int product_id);`
 * `int libevdev_get_id_vendor(const struct libevdev *dev);`
