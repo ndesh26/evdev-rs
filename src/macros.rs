@@ -56,11 +56,9 @@ macro_rules! abs_getter {
                     raw::$c_func(self.raw, code as c_uint) as i32
                 };
 
-                if result != 0 {
-                    Ok(result)
-                } else {
-                    let e = nix::errno::from_i32(result);
-                    Err(e)
+                match result {
+                    0 => Err(nix::errno::from_i32(0)),
+                    k => Ok(k)
                 }
             }
         )*

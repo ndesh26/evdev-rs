@@ -1,27 +1,12 @@
 ## These function need to implemented in evdev-rs
 
-* `int libevdev_new_from_fd(int fd, struct libevdev **dev);`
 * `int libevdev_next_event(struct libevdev *dev, unsigned int flags, struct input_event *ev);`
-* `int libevdev_set_event_value(struct libevdev *dev, unsigned int type, unsigned int code, int value);`
-* `int libevdev_get_slot_value(const struct libevdev *dev, unsigned int slot, unsigned int code);`
-* `int libevdev_set_slot_value(struct libevdev *dev, unsigned int slot, unsigned int code, int value);`
-* `int libevdev_fetch_slot_value(const struct libevdev *dev, unsigned int slot, unsigned int code, int *value);`
-* `int libevdev_get_num_slots(const struct libevdev *dev);`
-* `int libevdev_get_current_slot(const struct libevdev *dev);`
-* `void libevdev_set_abs_info(struct libevdev *dev, unsigned int code, const struct input_absinfo *abs);`
-* `int libevdev_enable_event_type(struct libevdev *dev, unsigned int type);`
-* `int libevdev_disable_event_type(struct libevdev *dev, unsigned int type);`
 * `int libevdev_enable_event_code(struct libevdev *dev, unsigned int type, unsigned int code, const void *data);`
-* `int libevdev_disable_event_code(struct libevdev *dev, unsigned int type, unsigned int code);`
-* `int libevdev_kernel_set_abs_info(struct libevdev *dev, unsigned int code, const struct input_absinfo *abs);`
 * `int libevdev_kernel_set_led_value(struct libevdev *dev, unsigned int code, enum libevdev_led_value value);`
 * `int libevdev_kernel_set_led_values(struct libevdev *dev, ...);`
 * `int libevdev_set_clock_id(struct libevdev *dev, int clockid);`
 * `int libevdev_event_is_type(const struct input_event *ev, unsigned int type);`
 * `int libevdev_event_is_code(const struct input_event *ev, unsigned int type, unsigned int code);`
-* `const char * libevdev_event_type_get_name(unsigned int type);`
-* `const char * libevdev_event_code_get_name(unsigned int type, unsigned int code);`
-* `const char* libevdev_property_get_name(unsigned int prop);`
 * `int libevdev_event_type_get_max(unsigned int type);`
 * `int libevdev_event_type_from_name(const char *name);`
 * `int libevdev_event_type_from_name_n(const char *name, size_t len);`

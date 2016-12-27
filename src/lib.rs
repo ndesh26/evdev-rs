@@ -12,6 +12,7 @@ use std::os::unix::io::AsRawFd;
 use std::os::unix::io::FromRawFd;
 use std::fs::File;
 use std::ffi::{CStr, CString};
+use nix::errno::Errno;
 use consts::*;
 
 #[derive(Copy)]
@@ -113,6 +114,17 @@ impl Device {
         }
     }
 
+    pub fn new_from_fd(fd: &File) -> Device {
+        let mut libevdev = 0 as *mut _;
+        unsafe {
+            raw::libevdev_new_from_fd(fd.as_raw_fd(), &mut libevdev);
+        }
+
+        Device {
+            raw: libevdev,
+        }
+    }
+
     string_getter!(name, libevdev_get_name,
                    phys, libevdev_get_phys,
                    uniq, libevdev_get_uniq);
@@ -135,29 +147,25 @@ impl Device {
         }
     }
 
-    pub fn set_fd(&mut self, f: &File) -> Result<(), nix::errno::Errno> {
+    pub fn set_fd(&mut self, f: &File) -> Result<(), Errno> {
         let result = unsafe {
             raw::libevdev_set_fd(self.raw, f.as_raw_fd())
         };
 
-        if result == 0 {
-            Ok(())
-        } else {
-            let e = nix::errno::from_i32(-result);
-            Err(e)
+        match result {
+            0 => Ok(()),
+            k => Err(Errno::from_i32(-k))
         }
     }
 
-    pub fn change_fd(&mut self, f: &File) -> Result<(), nix::errno::Errno>  {
+    pub fn change_fd(&mut self, f: &File) -> Result<(), Errno>  {
         let result = unsafe {
             raw::libevdev_change_fd(self.raw, f.as_raw_fd())
         };
 
-        if result == 0 {
-            Ok(())
-        } else {
-            let e = nix::errno::from_i32(-result);
-            Err(e)
+        match result {
+            0 => Ok(()),
+            k => Err(Errno::from_i32(-k))
         }
     }
 
@@ -166,14 +174,13 @@ impl Device {
             raw::libevdev_grab(self.raw, grab as c_int)
         };
 
-        if result == 0 {
-            Ok(())
-        } else {
-            Err(result)
+        match result {
+            0 => Ok(()),
+            k => Err(k)
         }
     }
 
-    pub fn get_abs_info(&self, code: u32) -> Option<AbsInfo> {
+    pub fn abs_info(&self, code: u32) -> Option<AbsInfo> {
         let a = unsafe {
             raw::libevdev_get_abs_info(self.raw, code)
         };
@@ -195,22 +202,36 @@ impl Device {
         }
     }
 
+    pub fn set_abs_info(&self, code: u32, absinfo: &AbsInfo) {
+        let absinfo = raw::input_absinfo {
+                        value: absinfo.value,
+                        minimum: absinfo.minimum,
+                        maximum: absinfo.maximum,
+                        fuzz: absinfo.fuzz,
+                        flat: absinfo.flat,
+                        resolution: absinfo.resolution,
+                      };
+
+        unsafe {
+            raw::libevdev_set_abs_info(self.raw, code as c_uint,
+                                       &absinfo as *const _);
+        }
+    }
+
     pub fn has_property(&self, prop: u32) -> bool {
         unsafe {
             raw::libevdev_has_property(self.raw, prop as c_uint) != 0
         }
     }
 
-    pub fn enable_property(&self, prop: u32) -> Result<(), nix::errno::Errno> {
+    pub fn enable_property(&self, prop: u32) -> Result<(), Errno> {
         let result = unsafe {
             raw::libevdev_enable_property(self.raw, prop as c_uint) as i32
         };
 
-        if result == 0 {
-            Ok(())
-        } else {
-            let e = nix::errno::from_i32(-result);
-            Err(e)
+        match result {
+            0 => Ok(()),
+            k => Err(Errno::from_i32(-k))
         }
     }
 
@@ -228,24 +249,39 @@ impl Device {
         }
     }
 
-    pub fn get_event_value(&self, type_: u32, code: u32) -> Option<i32> {
-        unsafe {
-            let mut value :i32 = 0;
-            let valid = raw::libevdev_fetch_event_value(self.raw,
-                                                        type_ as c_uint,
-                                                        code as c_uint,
-                                                        &mut value);
-            if valid != 0 {
-                Some(value)
-            } else {
-                None
-            }
+    pub fn event_value(&self, type_: u32, code: u32) -> Option<i32> {
+        let mut value: i32 = 0;
+        let valid = unsafe {
+            raw::libevdev_fetch_event_value(self.raw,
+                                            type_ as c_uint,
+                                            code as c_uint,
+                                            &mut value)
+        };
+
+        match valid {
+            0 => None,
+            _ => Some(value),
         }
     }
 
-    pub fn has_event_pending(&self) -> i32 {
+    pub fn set_event_value(&self, type_: u32, code: u32, val: i32)
+                           -> Result<(), Errno> {
+            let result = unsafe {
+                raw::libevdev_set_event_value(self.raw,
+                                              type_ as c_uint,
+                                              code as c_uint,
+                                              val as c_int)
+            };
+
+            match result {
+               0 => Ok(()),
+               k => Err(Errno::from_i32(-k))
+            }
+    }
+
+    pub fn has_event_pending(&self) -> bool {
         unsafe {
-            raw::libevdev_has_event_pending(self.raw)
+            raw::libevdev_has_event_pending(self.raw) > 0
         }
     }
 
@@ -277,6 +313,111 @@ impl Device {
                 set_abs_flat, libevdev_set_abs_flat,
                 set_abs_resolution, libevdev_set_abs_resolution);
 
+    pub fn slot_value(&self, slot: u32, code: u32) -> Option<i32> {
+        let mut value :i32 = 0;
+        let valid = unsafe {
+            raw::libevdev_fetch_slot_value(self.raw,
+                                           slot as c_uint,
+                                           code as c_uint,
+                                           &mut value)
+        };
+
+        match valid {
+            0 => None,
+            _ => Some(value),
+        }
+    }
+
+    pub fn set_slot_value(&self, slot: u32, code: u32, val: i32)
+                          -> Result<(), Errno> {
+        let result = unsafe {
+            raw::libevdev_set_slot_value(self.raw,
+                                         slot as c_uint,
+                                         code as c_uint,
+                                         val as c_int)
+        };
+
+        match result {
+            0 => Ok(()),
+            k => Err(Errno::from_i32(-k))
+        }
+    }
+
+    pub fn num_slots(&self) -> Option<i32> {
+        let result = unsafe {
+            raw::libevdev_get_num_slots(self.raw)
+        };
+
+        match result  {
+            -1 => None,
+             k => Some(k),
+        }
+    }
+
+    pub fn current_slot(&self) -> Option<i32> {
+        let result = unsafe {
+            raw::libevdev_get_current_slot(self.raw)
+        };
+
+        match result {
+            -1 => None,
+             k => Some(k),
+        }
+    }
+
+    pub fn enable_event_type(&self, type_: u32) -> Result<(), Errno> {
+         let result = unsafe {
+            raw::libevdev_enable_event_type(self.raw,
+                                            type_ as c_uint)
+        };
+
+        match result {
+            0 => Ok(()),
+            k => Err(Errno::from_i32(-k))
+        }
+    }
+
+    pub fn disable_event_type(&self, type_: u32) -> Result<(), Errno> {
+         let result = unsafe {
+            raw::libevdev_disable_event_type(self.raw,
+                                            type_ as c_uint)
+        };
+
+        match result {
+            0 => Ok(()),
+            k => Err(Errno::from_i32(-k))
+        }
+    }
+
+    pub fn disable_event_code(&self, type_: u32, code: u32)
+                              -> Result<(), Errno> {
+        let result = unsafe {
+            raw::libevdev_disable_event_code(self.raw,
+                                            type_ as c_uint,
+                                            code as c_uint)
+        };
+
+        match result {
+            0 => Ok(()),
+            k => Err(Errno::from_i32(-k))
+        }
+    }
+
+    pub fn set_kernel_abs_info(&self, code: u32, absinfo: &AbsInfo) {
+        let absinfo = raw::input_absinfo {
+                        value: absinfo.value,
+                        minimum: absinfo.minimum,
+                        maximum: absinfo.maximum,
+                        fuzz: absinfo.fuzz,
+                        flat: absinfo.flat,
+                        resolution: absinfo.resolution,
+                      };
+
+        unsafe {
+            raw::libevdev_kernel_set_abs_info(self.raw, code as c_uint,
+                                              &absinfo as *const _);
+        }
+    }
 }
 
 impl Drop for Device {
