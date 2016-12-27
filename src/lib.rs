@@ -146,29 +146,42 @@ pub fn event_type_get_max(type_: u32) -> Result<i32, Errno> {
 }
 
 impl Device {
-    pub fn new() -> Device {
+    /// Initialize a new libevdev device.
+    ///
+    /// This function only allocates the required memory and initializes
+    /// the struct to sane default values. To actually hook up the device
+    /// to a kernel device, use `set_fd`.
+    pub fn new() -> Option<Device> {
         let libevdev = unsafe {
             raw::libevdev_new()
         };
 
         if libevdev.is_null() {
-            // FIXME: what to do here?
-            panic!("OOM");
-        }
-
-        Device {
-            raw: libevdev,
+            None
+        } else {
+            Some(Device {
+                raw: libevdev,
+            })
         }
     }
 
-    pub fn new_from_fd(fd: &File) -> Device {
+    /// Initialize a new libevdev device from the given fd.
+    ///
+    /// This is a shortcut for
+    ///
+    /// ```
+    /// let device = Device::new();
+    /// device.set_fd(dev, fd);
+    /// ```
+    pub fn new_from_fd(fd: &File) -> Result<Device, Errno> {
         let mut libevdev = 0 as *mut _;
-        unsafe {
-            raw::libevdev_new_from_fd(fd.as_raw_fd(), &mut libevdev);
-        }
+        let result = unsafe {
+            raw::libevdev_new_from_fd(fd.as_raw_fd(), &mut libevdev)
+        };
 
-        Device {
-            raw: libevdev,
+        match result {
+            0 => Ok(Device { raw: libevdev }),
+            k => Err(Errno::from_i32(-k)),
         }
     }
 
@@ -179,6 +192,9 @@ impl Device {
                    set_phys, libevdev_set_phys,
                    set_uniq, libevdev_set_uniq);
 
+    /// Returns the file associated with the device
+    ///
+    /// if the `set_fd` hasn't been called yet then it return `None`
     pub fn fd(&self) -> Option<File> {
         let result = unsafe {
             raw::libevdev_get_fd(self.raw)
@@ -194,6 +210,24 @@ impl Device {
         }
     }
 
+    /// Set the file for this struct and initialize internal data.
+    ///
+    /// The file must be opened in O_RDONLY or O_RDWR mode.
+    /// This function may only be called once per device. If the device changed and
+    /// you need to re-read a device, use `new` method. If you need to change the file after
+    /// closing and re-opening the same device, use `change_fd`.
+    ///
+    /// A caller should ensure that any events currently pending on the fd are
+    /// drained before the refrence to the file is passed to evdev for
+    /// initialization. Due to how the kernel's ioctl handling works, the initial
+    /// device state will reflect the current device state *after* applying all
+    /// events currently pending on the fd. Thus, if the fd is not drained, the
+    /// state visible to the caller will be inconsistent with the events
+    /// immediately available on the device. This does not affect state-less
+    /// events like EV_REL.
+    ///
+    /// Unless otherwise specified, evdev function behavior is undefined until
+    /// a successfull call to `set_fd`.
     pub fn set_fd(&mut self, f: &File) -> Result<(), Errno> {
         let result = unsafe {
             raw::libevdev_set_fd(self.raw, f.as_raw_fd())
@@ -204,6 +238,31 @@ impl Device {
             k => Err(Errno::from_i32(-k))
         }
     }
+
+    /// TODO: change the document
+    /// Change the fd for this device, without re-reading the actual device.
+    ///
+    /// If the fd changes after initializing the device, for example after a
+    /// VT-switch in the X.org X server, this function updates the internal fd
+    /// to the newly opened. No check is made that new fd points to the same
+    /// device. If the device has changed, evdev's behavior is undefined.
+    ///
+    /// evdev device does not sync itself after changing the fd and keeps the current
+    /// device state. Use next_event with the LIBEVDEV_READ_FLAG_FORCE_SYNC flag to
+    /// force a re-sync.
+    ///
+    /// The example code below illustrates how to force a re-sync of the
+    /// library-internal state. Note that this code doesn't handle the events in
+    /// the caller, it merely forces an update of the internal library state.
+    /// @code
+    ///     struct input_event ev;
+    ///     libevdev_change_fd(dev, new_fd);
+    ///     libevdev_next_event(dev, LIBEVDEV_READ_FLAG_FORCE_SYNC, &ev);
+    ///     while (libevdev_next_event(dev, LIBEVDEV_READ_FLAG_SYNC, &ev) == LIBEVDEV_READ_STATUS_SYNC)
+    ///                             ; // noop
+    /// @endcode
+    /// The fd may be open in O_RDONLY or O_RDWR.
+    /// It is an error to call this function before calling libevdev_set_fd().
 
     pub fn change_fd(&mut self, f: &File) -> Result<(), Errno>  {
         let result = unsafe {
@@ -216,14 +275,20 @@ impl Device {
         }
     }
 
-    pub fn grab(&mut self, grab: GrabMode) -> Result<(), i32> {
+    /// Grab or ungrab the device through a kernel EVIOCGRAB.
+    ///
+    /// This prevents other clients (including kernel-internal ones such as
+    /// rfkill) from receiving events from this device. This is generally a
+    /// bad idea. Don't do this.Grabbing an already grabbed device, or
+    /// ungrabbing an ungrabbed device is a noop and always succeeds.
+    pub fn grab(&mut self, grab: GrabMode) -> Result<(), Errno> {
         let result = unsafe {
             raw::libevdev_grab(self.raw, grab as c_int)
         };
 
         match result {
             0 => Ok(()),
-            k => Err(k)
+            k => Err(Errno::from_i32(-k)),
         }
     }
 
@@ -326,6 +391,19 @@ impl Device {
             }
     }
 
+    /// Check if there are events waiting for us.
+    ///
+    /// This function does not read an event off the fd and may not access the
+    /// fd at all. If there are events queued internally this function will
+    /// return non-zero. If the internal queue is empty, this function will poll
+    /// the file descriptor for data.
+    ///
+    /// This is a convenience function for simple processes, most complex programs
+    /// are expected to use select(2) or poll(2) on the file descriptor. The kernel
+    /// guarantees that if data is available, it is a multiple of sizeof(struct
+    /// input_event), and thus calling `next_event` when select(2) or
+    /// poll(2) return is safe. You do not need `has_event_pending` if
+    /// you're using select(2) or poll(2).
     pub fn has_event_pending(&self) -> bool {
         unsafe {
             raw::libevdev_has_event_pending(self.raw) > 0
