@@ -98,6 +98,53 @@ pub fn event_code_get_name(type_: u32, code: u32) -> Option<&'static str> {
     })
 }
 
+pub fn event_type_from_name(name: &str) -> Result<i32, Errno> {
+    let name = CString::new(name).unwrap();
+    let result = unsafe {
+        raw::libevdev_event_type_from_name(name.as_ptr())
+    };
+
+    match result {
+        -1 => Err(Errno::from_i32(1)),
+         k => Ok(k),
+    }
+}
+
+pub fn event_code_from_name(type_: u32, name: &str) -> Result<i32, Errno> {
+    let name = CString::new(name).unwrap();
+    let result = unsafe {
+        raw::libevdev_event_code_from_name(type_ as c_uint, name.as_ptr())
+    };
+
+    match result {
+        -1 => Err(Errno::from_i32(1)),
+         k => Ok(k),
+    }
+}
+
+pub fn property_from_name(name: &str) -> Result<i32, Errno> {
+    let name = CString::new(name).unwrap();
+    let result = unsafe {
+        raw::libevdev_property_from_name(name.as_ptr())
+    };
+
+    match result {
+        -1 => Err(Errno::from_i32(1)),
+         k => Ok(k),
+    }
+}
+
+pub fn event_type_get_max(type_: u32) -> Result<i32, Errno> {
+    let result = unsafe {
+        raw::libevdev_event_type_get_max(type_ as c_uint)
+    };
+
+    match result {
+        -1 => Err(Errno::from_i32(1)),
+         k => Ok(k),
+    }
+}
+
 impl Device {
     pub fn new() -> Device {
         let libevdev = unsafe {
@@ -314,7 +361,7 @@ impl Device {
                 set_abs_resolution, libevdev_set_abs_resolution);
 
     pub fn slot_value(&self, slot: u32, code: u32) -> Option<i32> {
-        let mut value :i32 = 0;
+        let mut value: i32 = 0;
         let valid = unsafe {
             raw::libevdev_fetch_slot_value(self.raw,
                                            slot as c_uint,
@@ -416,6 +463,32 @@ impl Device {
         unsafe {
             raw::libevdev_kernel_set_abs_info(self.raw, code as c_uint,
                                               &absinfo as *const _);
+        }
+    }
+
+    pub fn kernel_set_led_value(&self, code: u32, value: LedState)
+                                 -> Result<(), Errno> {
+        let result = unsafe {
+            raw::libevdev_kernel_set_led_value(self.raw,
+                                               code as c_uint,
+                                               value as c_int)
+        };
+
+        match result {
+            0 => Ok(()),
+            k => Err(Errno::from_i32(-k))
+        }
+    }
+
+    pub fn set_clock_id(&self, clockid: i32) -> Result<(), Errno> {
+         let result = unsafe {
+            raw::libevdev_set_clock_id(self.raw,
+                                       clockid as c_int)
+        };
+
+        match result {
+            0 => Ok(()),
+            k => Err(Errno::from_i32(-k))
         }
     }
 }
