@@ -63,6 +63,18 @@ pub struct Device {
     raw: *mut raw::libevdev,
 }
 
+pub struct TimeVal {
+   pub tv_sec: i64,
+   pub tv_usec: i64,
+}
+
+pub struct InputEvent {
+    pub time: TimeVal,
+    pub type_: u16,
+    pub code: u16,
+    pub value: i32,
+}
+
 fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
     let slice : Option<&CStr> = unsafe {
         if ptr.is_null() {
@@ -567,6 +579,41 @@ impl Device {
         match result {
             0 => Ok(()),
             k => Err(Errno::from_i32(-k))
+        }
+    }
+
+    pub fn next_event(&self, flags: u32)
+                      -> Result<(ReadStatus, InputEvent), Errno> {
+        let mut ev = raw::input_event {
+            time: raw::timeval {
+                tv_sec: 0,
+                tv_usec: 0,
+            },
+            type_: 0,
+            code: 0,
+            value: 0,
+        };
+
+        let result = unsafe {
+            raw::libevdev_next_event(self.raw, flags as c_uint, &mut ev)
+        };
+
+        unsafe {
+            let event = InputEvent {
+                time: TimeVal {
+                    tv_sec: ev.time.tv_sec,
+                    tv_usec: ev.time.tv_usec,
+                },
+                type_: ev.type_,
+                code: ev.code,
+                value: ev.value,
+            };
+
+            match result {
+                0 => Ok((ReadStatus::Success, event)),
+                1 => Ok((ReadStatus::Sync, event)),
+                k => Err(Errno::from_i32(-k)),
+            }
         }
     }
 }

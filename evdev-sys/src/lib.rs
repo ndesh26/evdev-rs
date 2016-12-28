@@ -50,17 +50,17 @@ pub struct va_list {
 }
 
 #[repr(C)]
-struct timeval {
-       tv_sec: c_long,
-       tv_usec: c_long,
+pub struct timeval {
+       pub tv_sec: c_long,
+       pub tv_usec: c_long,
 }
 
 #[repr(C)]
 pub struct input_event {
-   time: timeval,
-   type_: u16,
-   code: u16,
-   value: i32,
+   pub time: timeval,
+   pub type_: u16,
+   pub code: u16,
+   pub value: i32,
 }
 
 type libevdev_log_func_t = extern fn(*const libevdev,
