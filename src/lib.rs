@@ -1,6 +1,8 @@
 extern crate evdev_sys as raw;
 extern crate nix;
 extern crate libc;
+#[macro_use]
+extern crate bitflags;
 
 pub mod consts;
 pub mod log;
@@ -26,11 +28,13 @@ pub enum GrabMode {
     Ungrab = raw::LIBEVDEV_UNGRAB as isize,
 }
 
-pub enum ReadFlag {
-    Sync = raw::LIBEVDEV_READ_FLAG_SYNC as isize,
-    Normal = raw::LIBEVDEV_READ_FLAG_NORMAL as isize,
-    ForceSync = raw::LIBEVDEV_READ_FLAG_FORCE_SYNC as isize,
-    Blocking = raw::LIBEVDEV_READ_FLAG_BLOCKING as isize,
+bitflags! {
+    pub flags ReadFlag: u32 {
+        const SYNC = 1,
+        const NORMAL = 2,
+        const FORCE_SYNC = 4,
+        const BLOCKING = 8,
+    }
 }
 
 pub enum ReadStatus {
@@ -582,7 +586,7 @@ impl Device {
         }
     }
 
-    pub fn next_event(&self, flags: u32)
+    pub fn next_event(&self, flags: ReadFlag)
                       -> Result<(ReadStatus, InputEvent), Errno> {
         let mut ev = raw::input_event {
             time: raw::timeval {
@@ -595,7 +599,7 @@ impl Device {
         };
 
         let result = unsafe {
-            raw::libevdev_next_event(self.raw, flags as c_uint, &mut ev)
+            raw::libevdev_next_event(self.raw, flags.bits as c_uint, &mut ev)
         };
 
         unsafe {
@@ -610,8 +614,8 @@ impl Device {
             };
 
             match result {
-                0 => Ok((ReadStatus::Success, event)),
-                1 => Ok((ReadStatus::Sync, event)),
+                raw::LIBEVDEV_READ_STATUS_SUCCESS => Ok((ReadStatus::Success, event)),
+                raw::LIBEVDEV_READ_STATUS_SYNC => Ok((ReadStatus::Sync, event)),
                 k => Err(Errno::from_i32(-k)),
             }
         }

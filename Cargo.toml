@@ -7,3 +7,4 @@ authors = ["Peter Hutterer <peter.hutterer@who-t.net>"]
 evdev-sys = { path = "evdev-sys", version = "0.1" }
 nix = "^0.7"
 libc = "^0.2"
+bitflags = "*"
