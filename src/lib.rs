@@ -15,7 +15,6 @@ use std::os::unix::io::FromRawFd;
 use std::fs::File;
 use std::ffi::{CStr, CString};
 use nix::errno::Errno;
-use consts::*;
 
 #[derive(Copy)]
 #[derive(Clone)]
@@ -602,22 +601,54 @@ impl Device {
             raw::libevdev_next_event(self.raw, flags.bits as c_uint, &mut ev)
         };
 
-        unsafe {
-            let event = InputEvent {
-                time: TimeVal {
-                    tv_sec: ev.time.tv_sec,
-                    tv_usec: ev.time.tv_usec,
-                },
-                type_: ev.type_,
-                code: ev.code,
-                value: ev.value,
-            };
+        let event = InputEvent {
+            time: TimeVal {
+                tv_sec: ev.time.tv_sec,
+                tv_usec: ev.time.tv_usec,
+            },
+            type_: ev.type_,
+            code: ev.code,
+            value: ev.value,
+        };
 
-            match result {
-                raw::LIBEVDEV_READ_STATUS_SUCCESS => Ok((ReadStatus::Success, event)),
-                raw::LIBEVDEV_READ_STATUS_SYNC => Ok((ReadStatus::Sync, event)),
-                k => Err(Errno::from_i32(-k)),
-            }
+        match result {
+            raw::LIBEVDEV_READ_STATUS_SUCCESS => Ok((ReadStatus::Success, event)),
+            raw::LIBEVDEV_READ_STATUS_SYNC => Ok((ReadStatus::Sync, event)),
+            k => Err(Errno::from_i32(-k)),
+        }
+    }
+}
+
+impl InputEvent {
+    pub fn is_type(&self, type_: u16) -> bool {
+        let ev = raw::input_event {
+            time: raw::timeval {
+                tv_sec: self.time.tv_sec,
+                tv_usec: self.time.tv_usec,
+            },
+            type_: self.type_,
+            code: self.code,
+            value: self.value,
+        };
+
+        unsafe {
+            raw::libevdev_event_is_type(&ev, type_ as c_uint) == 1
+        }
+    }
+
+    pub fn is_code(&self, type_: u16, code: u16) -> bool {
+        let ev = raw::input_event {
+            time: raw::timeval {
+                tv_sec: self.time.tv_sec,
+                tv_usec: self.time.tv_usec,
+            },
+            type_: self.type_,
+            code: self.code,
+            value: self.value,
+        };
+
+        unsafe {
+            raw::libevdev_event_is_code(&ev, type_ as c_uint, code as c_uint) == 1
         }
     }
 }

@@ -2,8 +2,6 @@
 
 * `int libevdev_enable_event_code(struct libevdev *dev, unsigned int type, unsigned int code, const void *data);`
 * `int libevdev_kernel_set_led_values(struct libevdev *dev, ...);`
-* `int libevdev_event_is_type(const struct input_event *ev, unsigned int type);`
-* `int libevdev_event_is_code(const struct input_event *ev, unsigned int type, unsigned int code);`
 
 ## We need to define this functions types and the corresponding functions
 
