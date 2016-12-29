@@ -7,11 +7,10 @@ extern crate bitflags;
 pub mod consts;
 pub mod log;
 #[macro_use]
-pub mod macros;
+mod macros;
 
 use libc::{c_char, c_int, c_uint};
-use std::os::unix::io::AsRawFd;
-use std::os::unix::io::FromRawFd;
+use std::os::unix::io::{AsRawFd, FromRawFd};
 use std::fs::File;
 use std::ffi::{CStr, CString};
 use nix::errno::Errno;
