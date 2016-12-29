@@ -319,6 +319,10 @@ impl Device {
         }
     }
 
+    /// Change the abs info for the given EV_ABS event code, if the code exists.
+    ///
+    /// This function has no effect if `has_event_code` returns false for
+    /// this code.
     pub fn set_abs_info(&self, code: u32, absinfo: &AbsInfo) {
         let absinfo = raw::input_absinfo {
                         value: absinfo.value,
@@ -369,6 +373,10 @@ impl Device {
         }
     }
 
+    ///  Returns the current value of the event type.
+    ///
+    /// If the device supports this event type and code, the return value is
+    /// set to the current value of this axis. Otherwise, `None` is returned.
     pub fn event_value(&self, type_: u32, code: u32) -> Option<i32> {
         let mut value: i32 = 0;
         let valid = unsafe {
@@ -463,6 +471,11 @@ impl Device {
                 set_abs_flat, libevdev_set_abs_flat,
                 set_abs_resolution, libevdev_set_abs_resolution);
 
+    /// Return the current value of the code for the given slot.
+    ///
+    /// If the device supports this event code, the return value is
+    /// is set to the current value of this axis. Otherwise, or
+    /// if the event code is not an ABS_MT_* event code, `None` is returned
     pub fn slot_value(&self, slot: u32, code: u32) -> Option<i32> {
         let mut value: i32 = 0;
         let valid = unsafe {
@@ -478,6 +491,14 @@ impl Device {
         }
     }
 
+    /// Set the value for a given code for the given slot.
+    ///
+    /// This is a local modification only affecting only this representation of
+    /// this device. A future call to `slot_value` will return this value,
+    /// unless the value was overwritten by an event.
+    ///
+    /// This function does not set event values for axes outside the ABS_MT range,
+    /// use `set_event_value` instead.
     pub fn set_slot_value(&self, slot: u32, code: u32, val: i32)
                           -> Result<(), Errno> {
         let result = unsafe {
@@ -493,6 +514,13 @@ impl Device {
         }
     }
 
+    /// Get the number of slots supported by this device.
+    ///
+    /// The number of slots supported, or `None` if the device does not provide
+    /// any slots
+    ///
+    /// A device may provide ABS_MT_SLOT but a total number of 0 slots. Hence
+    /// the return value of `None` for "device does not provide slots at all"
     pub fn num_slots(&self) -> Option<i32> {
         let result = unsafe {
             raw::libevdev_get_num_slots(self.raw)
@@ -504,6 +532,13 @@ impl Device {
         }
     }
 
+    /// Get the currently active slot.
+    ///
+    /// This may differ from the value an ioctl may return at this time as
+    /// events may have been read off the fd since changing the slot value
+    /// but those events are still in the buffer waiting to be processed.
+    /// The returned value is the value a caller would see if it were to
+    /// process events manually one-by-one.
     pub fn current_slot(&self) -> Option<i32> {
         let result = unsafe {
             raw::libevdev_get_current_slot(self.raw)
@@ -515,6 +550,12 @@ impl Device {
         }
     }
 
+    /// Forcibly enable an event type on this device, even if the underlying
+    /// device does not support it. While this cannot make the device actually
+    /// report such events, it will now return true for libevdev_has_event_type().
+    ///
+    /// This is a local modification only affecting only this representation of
+    /// this device.
     pub fn enable_event_type(&self, type_: u32) -> Result<(), Errno> {
          let result = unsafe {
             raw::libevdev_enable_event_type(self.raw,
@@ -527,6 +568,20 @@ impl Device {
         }
     }
 
+    /// Forcibly disable an event type on this device, even if the underlying
+    /// device provides it. This effectively mutes the respective set of
+    /// events. libevdev will filter any events matching this type and none will
+    /// reach the caller. libevdev_has_event_type() will return false for this
+    /// type.
+    ///
+    /// In most cases, a caller likely only wants to disable a single code, not
+    /// the whole type. Use `disable_event_code` for that.
+    ///
+    /// Disabling EV_SYN will not work. In Peter's Words "Don't shoot yourself
+    /// in the foot. It hurts".
+    ///
+    /// This is a local modification only affecting only this representation of
+    /// this device.
     pub fn disable_event_type(&self, type_: u32) -> Result<(), Errno> {
          let result = unsafe {
             raw::libevdev_disable_event_type(self.raw,
@@ -538,7 +593,20 @@ impl Device {
             k => Err(Errno::from_i32(-k))
         }
     }
-
+    /// Forcibly disable an event code on this device, even if the underlying
+    /// device provides it. This effectively mutes the respective set of
+    /// events. libevdev will filter any events matching this type and code and
+    /// none will reach the caller. `has_event_code` will return false for
+    /// this code.
+    ///
+    /// Disabling all event codes for a given type will not disable the event
+    /// type. Use `disable_event_type` for that.
+    ///
+    /// This is a local modification only affecting only this representation of
+    /// this device.
+    ///
+    /// Disabling codes of type EV_SYN will not work. Don't shoot yourself in the
+    /// foot. It hurts.
     pub fn disable_event_code(&self, type_: u32, code: u32)
                               -> Result<(), Errno> {
         let result = unsafe {
@@ -553,6 +621,8 @@ impl Device {
         }
     }
 
+    /// Set the device's EV_ABS axis to the value defined in the abs
+    /// parameter. This will be written to the kernel.
     pub fn set_kernel_abs_info(&self, code: u32, absinfo: &AbsInfo) {
         let absinfo = raw::input_absinfo {
                         value: absinfo.value,
@@ -569,6 +639,9 @@ impl Device {
         }
     }
 
+    /// Turn an LED on or off.
+    ///
+    /// enabling an LED requires write permissions on the device's file descriptor.
     pub fn kernel_set_led_value(&self, code: u32, value: LedState)
                                  -> Result<(), Errno> {
         let result = unsafe {
@@ -583,6 +656,11 @@ impl Device {
         }
     }
 
+    /// Set the clock ID to be used for timestamps. Further events from this device
+    /// will report an event time based on the given clock.
+    ///
+    /// This is a modification only affecting this representation of
+    /// this device.
     pub fn set_clock_id(&self, clockid: i32) -> Result<(), Errno> {
          let result = unsafe {
             raw::libevdev_set_clock_id(self.raw,
@@ -621,7 +699,6 @@ impl Device {
     /// e.g. after changing the file descriptor, use the `evdev::FORCE_SYNC` flag.
     /// This triggers an internal sync of the device and `next_event` returns
     /// `ReadStatus::Sync`.
-
     pub fn next_event(&self, flags: ReadFlag)
                       -> Result<(ReadStatus, InputEvent), Errno> {
         let mut ev = raw::input_event {
