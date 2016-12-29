@@ -7,12 +7,18 @@ use std::os::unix::io::AsRawFd;
 #[test]
 #[allow(dead_code)]
 fn context_create() {
-    Device::new();
+    Device::new().unwrap();
+}
+
+#[test]
+fn context_create_with_fd() {
+    let f = File::open("/dev/input/event0").unwrap();
+    let mut d = Device::new_from_fd(&f).unwrap();
 }
 
 #[test]
 fn context_set_fd() {
-    let mut d = Device::new();
+    let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
     match d.set_fd(&f) {
@@ -23,14 +29,14 @@ fn context_set_fd() {
 
 #[test]
 fn context_change_fd() {
-    let mut d = Device::new();
+    let mut d = Device::new().unwrap();
     let f1 = File::open("/dev/input/event0").unwrap();
     let f2 = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f1).unwrap();
     match d.change_fd(&f2) {
         Ok(()) => ..,
-        Err(result) => panic!("Error {}", result.desc()),
+        Err(result) => panic!("Error {}", result),
     };
 
     assert_eq!(d.fd().unwrap().as_raw_fd(), f2.as_raw_fd());
@@ -38,7 +44,7 @@ fn context_change_fd() {
 
 #[test]
 fn context_grab() {
-    let mut d = Device::new();
+    let mut d = Device::new().unwrap();
     let mut f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
@@ -48,7 +54,7 @@ fn context_grab() {
 
 #[test]
 fn device_get_name() {
-    let d = Device::new();
+    let d = Device::new().unwrap();
 
     d.set_name("hello");
     assert_eq!(d.name().unwrap(), "hello");
@@ -56,7 +62,7 @@ fn device_get_name() {
 
 #[test]
 fn device_get_uniq() {
-    let d = Device::new();
+    let d = Device::new().unwrap();
 
     d.set_uniq("test");
     assert_eq!(d.uniq().unwrap(), "test");
@@ -64,7 +70,7 @@ fn device_get_uniq() {
 
 #[test]
 fn device_get_phys() {
-    let d = Device::new();
+    let d = Device::new().unwrap();
 
     d.set_phys("test");
     assert_eq!(d.phys().unwrap(), "test");
@@ -72,7 +78,7 @@ fn device_get_phys() {
 
 #[test]
 fn device_get_product_id() {
-    let d = Device::new();
+    let d = Device::new().unwrap();
 
     d.set_product_id(5);
     assert_eq!(d.product_id(), 5);
@@ -80,7 +86,7 @@ fn device_get_product_id() {
 
 #[test]
 fn device_get_vendor_id() {
-    let d = Device::new();
+    let d = Device::new().unwrap();
 
     d.set_vendor_id(5);
     assert_eq!(d.vendor_id(), 5);
@@ -88,7 +94,7 @@ fn device_get_vendor_id() {
 
 #[test]
 fn device_get_bustype() {
-    let d = Device::new();
+    let d = Device::new().unwrap();
 
     d.set_bustype(5);
     assert_eq!(d.bustype(), 5);
@@ -96,7 +102,7 @@ fn device_get_bustype() {
 
 #[test]
 fn device_get_version() {
-    let d = Device::new();
+    let d = Device::new().unwrap();
 
     d.set_version(5);
     assert_eq!(d.version(), 5);
@@ -104,12 +110,12 @@ fn device_get_version() {
 
 #[test]
 fn device_get_absinfo() {
-    let mut d = Device::new();
+    let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
     for code in 0..0xff {
-        let absinfo: Option<AbsInfo> = d.get_abs_info(code);
+        let absinfo: Option<AbsInfo> = d.abs_info(code);
 
         match absinfo {
             None => ..,
@@ -120,7 +126,7 @@ fn device_get_absinfo() {
 
 #[test]
 fn device_has_property() {
-    let mut d = Device::new();
+    let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
@@ -133,7 +139,7 @@ fn device_has_property() {
 
 #[test]
 fn device_has_type_code() {
-    let mut d = Device::new();
+    let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
@@ -151,7 +157,7 @@ fn device_has_type_code() {
 
 #[test]
 fn device_has_syn() {
-    let mut d = Device::new();
+    let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
@@ -162,13 +168,18 @@ fn device_has_syn() {
 
 #[test]
 fn device_get_value() {
-    let mut d = Device::new();
+    let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
 
-    let v1 = d.get_event_value(0xff, 0xff); // garbage
+    let v1 = d.event_value(0xff, 0xff); // garbage
     assert_eq!(v1, None);
-    let v2 = d.get_event_value(consts::EV::EV_SYN as u32, consts::SYN::SYN_REPORT as u32); // SYN_REPORT
+    let v2 = d.event_value(consts::EV::EV_SYN as u32, consts::SYN::SYN_REPORT as u32); // SYN_REPORT
     assert_eq!(v2, Some(0));
+}
+
+#[test]
+fn check_event_name() {
+   assert_eq!("EV_ABS", event_type_get_name(3).unwrap());
 }
