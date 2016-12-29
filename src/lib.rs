@@ -162,9 +162,8 @@ pub fn event_type_get_max(type_: u32) -> Result<i32, Errno> {
 impl Device {
     /// Initialize a new libevdev device.
     ///
-    /// This function only allocates the required memory and initializes
-    /// the struct to sane default values. To actually hook up the device
-    /// to a kernel device, use `set_fd`.
+    /// This function only initializesthe struct to sane default values.
+    /// To actually hook up the device to a kernel device, use `set_fd`.
     pub fn new() -> Option<Device> {
         let libevdev = unsafe {
             raw::libevdev_new()
@@ -184,8 +183,12 @@ impl Device {
     /// This is a shortcut for
     ///
     /// ```
-    /// let device = Device::new();
-    /// device.set_fd(dev, fd);
+    /// use evdev::Device;
+    /// # use std::fs::File;
+    ///
+    /// let mut device = Device::new().unwrap();
+    /// # let fd = File::open("/dev/input/event0").unwrap();
+    /// device.set_fd(&fd);
     /// ```
     pub fn new_from_fd(fd: &File) -> Result<Device, Errno> {
         let mut libevdev = 0 as *mut _;
@@ -226,19 +229,9 @@ impl Device {
 
     /// Set the file for this struct and initialize internal data.
     ///
-    /// The file must be opened in O_RDONLY or O_RDWR mode.
     /// This function may only be called once per device. If the device changed and
     /// you need to re-read a device, use `new` method. If you need to change the file after
     /// closing and re-opening the same device, use `change_fd`.
-    ///
-    /// A caller should ensure that any events currently pending on the fd are
-    /// drained before the refrence to the file is passed to evdev for
-    /// initialization. Due to how the kernel's ioctl handling works, the initial
-    /// device state will reflect the current device state *after* applying all
-    /// events currently pending on the fd. Thus, if the fd is not drained, the
-    /// state visible to the caller will be inconsistent with the events
-    /// immediately available on the device. This does not affect state-less
-    /// events like EV_REL.
     ///
     /// Unless otherwise specified, evdev function behavior is undefined until
     /// a successfull call to `set_fd`.
@@ -253,7 +246,6 @@ impl Device {
         }
     }
 
-    /// TODO: change the document
     /// Change the fd for this device, without re-reading the actual device.
     ///
     /// If the fd changes after initializing the device, for example after a
@@ -262,22 +254,17 @@ impl Device {
     /// device. If the device has changed, evdev's behavior is undefined.
     ///
     /// evdev device does not sync itself after changing the fd and keeps the current
-    /// device state. Use next_event with the LIBEVDEV_READ_FLAG_FORCE_SYNC flag to
-    /// force a re-sync.
+    /// device state. Use next_event with the FORCE_SYNC flag to force a re-sync.
     ///
-    /// The example code below illustrates how to force a re-sync of the
-    /// library-internal state. Note that this code doesn't handle the events in
-    /// the caller, it merely forces an update of the internal library state.
-    /// @code
-    ///     struct input_event ev;
-    ///     libevdev_change_fd(dev, new_fd);
-    ///     libevdev_next_event(dev, LIBEVDEV_READ_FLAG_FORCE_SYNC, &ev);
-    ///     while (libevdev_next_event(dev, LIBEVDEV_READ_FLAG_SYNC, &ev) == LIBEVDEV_READ_STATUS_SYNC)
-    ///                             ; // noop
-    /// @endcode
-    /// The fd may be open in O_RDONLY or O_RDWR.
-    /// It is an error to call this function before calling libevdev_set_fd().
-
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// dev.change_fd(new_fd);
+    /// dev.next_event(evdev::FORCE_SYNC);
+    /// while dev.next_event(evdev::SYNC).ok().unwrap().0 == ReadStatus::SYNC
+    ///                             {} // noop
+    /// ```
+    /// It is an error to call this function before calling set_fd().
     pub fn change_fd(&mut self, f: &File) -> Result<(), Errno>  {
         let result = unsafe {
             raw::libevdev_change_fd(self.raw, f.as_raw_fd())
@@ -306,6 +293,10 @@ impl Device {
         }
     }
 
+    /// Get the axis info for the given axis, as advertised by the kernel.
+    ///
+    /// Returns the `AbsInfo` for the given the code or None if the device
+    /// doesn't support this code
     pub fn abs_info(&self, code: u32) -> Option<AbsInfo> {
         let a = unsafe {
             raw::libevdev_get_abs_info(self.raw, code)
@@ -344,12 +335,14 @@ impl Device {
         }
     }
 
+    /// Return `true` if device support the property and false otherwise
     pub fn has_property(&self, prop: u32) -> bool {
         unsafe {
             raw::libevdev_has_property(self.raw, prop as c_uint) != 0
         }
     }
 
+    /// Enables this property, a call to `set_fd` will overwrite any previously set values
     pub fn enable_property(&self, prop: u32) -> Result<(), Errno> {
         let result = unsafe {
             raw::libevdev_enable_property(self.raw, prop as c_uint) as i32
@@ -360,13 +353,14 @@ impl Device {
             k => Err(Errno::from_i32(-k))
         }
     }
-
+    /// Returns `true` is the device support this event type and `false` otherwise
     pub fn has_event_type(&self, type_: u32) -> bool {
         unsafe {
             raw::libevdev_has_event_type(self.raw, type_ as c_uint) != 0
         }
     }
 
+    /// Return `true` is the device support this event type and code and `false` otherwise
     pub fn has_event_code(&self, type_: u32, code: u32) -> bool {
         unsafe {
             raw::libevdev_has_event_code(self.raw,
@@ -390,6 +384,22 @@ impl Device {
         }
     }
 
+    /// Set the value for a given event type and code.
+    ///
+    /// This only makes sense for some event types, e.g. setting the value for
+    /// EV_REL is pointless.
+    ///
+    /// This is a local modification only affecting only this representation of
+    /// this device. A future call to libevdev_get_event_value() will return this
+    /// value, unless the value was overwritten by an event.
+    ///
+    /// If the device supports ABS_MT_SLOT, the value set for any ABS_MT_*
+    /// event code is the value of the currently active slot. You should use
+    /// `set_slot_value` instead.
+    ///
+    /// If the device supports ABS_MT_SLOT and the type is EV_ABS and the code is
+    /// ABS_MT_SLOT, the value must be a positive number less then the number of
+    /// slots on the device. Otherwise, `set_event_value` returns Err.
     pub fn set_event_value(&self, type_: u32, code: u32, val: i32)
                            -> Result<(), Errno> {
             let result = unsafe {
@@ -434,6 +444,7 @@ impl Device {
                     set_bustype, libevdev_set_id_bustype,
                     set_version, libevdev_set_id_version);
 
+    /// Return the driver version of a device already intialize with `set_fd`
     pub fn driver_version(&self) -> i32 {
         unsafe {
             raw::libevdev_get_driver_version(self.raw) as i32
@@ -583,6 +594,33 @@ impl Device {
             k => Err(Errno::from_i32(-k))
         }
     }
+
+    /// Get the next event from the device. This function operates in two different
+    /// modes: normal mode or sync mode.
+    ///
+    /// In normal mode (when flags has `evdev::NORMAL` set), this function returns
+    /// `ReadStatus::Success` and returns the event. If no events are available at
+    /// this time, it returns `-EAGAIN` as `Err`.
+    ///
+    /// If the current event is an `EV_SYN::SYN_DROPPED` event, this function returns
+    /// `ReadStatus::Sync` and is set to the `EV_SYN` event.The caller should now call
+    /// this function with the `evdev::SYNC` flag set, to get the set of events that
+    /// make up the device state delta. This function returns ReadStatus::Sync for
+    /// each event part of that delta, until it returns `-EAGAIN` once all events
+    /// have been synced.
+    ///
+    /// If a device needs to be synced by the caller but the caller does not call
+    /// with the `evdev::SYNC` flag set, all events from the diff are dropped after
+    /// evdev updates its internal state and event processing continues as normal.
+    /// Note that the current slot and the state of touch points may have updated
+    /// during the `SYN_DROPPED` event, it is strongly recommended that a caller
+    /// ignoring all sync events calls `get_current_slot` and checks the
+    /// `ABS_MT_TRACKING_ID` values for all slots.
+    ///
+    /// If a device has changed state without events being enqueued in evdev,
+    /// e.g. after changing the file descriptor, use the `evdev::FORCE_SYNC` flag.
+    /// This triggers an internal sync of the device and `next_event` returns
+    /// `ReadStatus::Sync`.
 
     pub fn next_event(&self, flags: ReadFlag)
                       -> Result<(ReadStatus, InputEvent), Errno> {
