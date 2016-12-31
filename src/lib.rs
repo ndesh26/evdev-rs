@@ -35,6 +35,7 @@ bitflags! {
     }
 }
 
+#[derive(PartialEq)]
 pub enum ReadStatus {
     Success = raw::LIBEVDEV_READ_STATUS_SUCCESS as isize,
     Sync = raw::LIBEVDEV_READ_STATUS_SYNC as isize,
