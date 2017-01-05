@@ -113,7 +113,7 @@ pub struct TimeVal {
    pub tv_usec: i64,
 }
 
-pub struct Event {
+pub struct InputEvent {
     pub time: TimeVal,
     pub type_: u16,
     pub code: u16,
@@ -743,7 +743,7 @@ impl Device {
     /// This triggers an internal sync of the device and `next_event` returns
     /// `ReadStatus::Sync`.
     pub fn next_event(&self, flags: ReadFlag)
-                      -> Result<(ReadStatus, Event), Errno> {
+                      -> Result<(ReadStatus, InputEvent), Errno> {
         let mut ev = raw::input_event {
             time: raw::timeval {
                 tv_sec: 0,
@@ -758,7 +758,7 @@ impl Device {
             raw::libevdev_next_event(self.raw, flags.bits as c_uint, &mut ev)
         };
 
-        let event = Event {
+        let event = InputEvent {
             time: TimeVal {
                 tv_sec: ev.time.tv_sec,
                 tv_usec: ev.time.tv_usec,
@@ -776,7 +776,7 @@ impl Device {
     }
 }
 
-impl Event {
+impl InputEvent {
     pub fn is_type(&self, type_: u16) -> bool {
         let ev = raw::input_event {
             time: raw::timeval {
