@@ -1,3 +1,45 @@
+//! Rust bindings to libevdev, an wrapper for evdev devices.
+//!
+//! This library intends to provide a safe interface to the libevdev library. It
+//! will look for the library on the local system, and link to the installed copy.
+//!
+//! # Examples
+//!
+//! ## Intializing a evdev device
+//!
+//! ```
+//! use evdev::Device;
+//! use std::fs::File;
+//!
+//! let f = File::open("/dev/input/event0").unwrap();
+//!
+//! let mut d = Device::new().unwrap();
+//! d.set_fd(&f).unwrap();
+//! ```
+//!
+//! ## Getting the next event
+//!
+//! ```rust,no_run
+//! use evdev::Device;
+//! use std::fs::File;
+//!
+//! let f = File::open("/dev/input/event0").unwrap();
+//!
+//! let mut d = Device::new().unwrap();
+//! d.set_fd(&f).unwrap();
+//!
+//! loop {
+//!     let a = d.next_event(evdev::NORMAL | evdev::BLOCKING);
+//!     match a {
+//!         Ok(k) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
+//!				              k.1.time.tv_sec,
+//!				              k.1.time.tv_usec,
+//!				              evdev::event_type_get_name(k.1.type_ as u32).unwrap()),
+//!         Err(e) => (),
+//!     }
+//! }
+//! ```
+
 extern crate evdev_sys as raw;
 extern crate nix;
 extern crate libc;
