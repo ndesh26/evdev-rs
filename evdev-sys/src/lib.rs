@@ -58,8 +58,8 @@ pub struct timeval {
 #[repr(C)]
 pub struct input_event {
    pub time: timeval,
-   pub type_: u16,
-   pub code: u16,
+   pub event_type: u16,
+   pub event_code: u16,
    pub value: i32,
 }
 

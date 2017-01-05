@@ -115,8 +115,8 @@ pub struct TimeVal {
 
 pub struct InputEvent {
     pub time: TimeVal,
-    pub type_: u16,
-    pub code: u16,
+    pub event_type: u16,
+    pub event_code: u16,
     pub value: i32,
 }
 
@@ -749,8 +749,8 @@ impl Device {
                 tv_sec: 0,
                 tv_usec: 0,
             },
-            type_: 0,
-            code: 0,
+            event_type: 0,
+            event_code: 0,
             value: 0,
         };
 
@@ -763,8 +763,8 @@ impl Device {
                 tv_sec: ev.time.tv_sec,
                 tv_usec: ev.time.tv_usec,
             },
-            type_: ev.type_,
-            code: ev.code,
+            event_type: ev.event_type,
+            event_code: ev.event_code,
             value: ev.value,
         };
 
@@ -783,8 +783,8 @@ impl InputEvent {
                 tv_sec: self.time.tv_sec,
                 tv_usec: self.time.tv_usec,
             },
-            type_: self.type_,
-            code: self.code,
+            event_type: self.event_type,
+            event_code: self.event_code,
             value: self.value,
         };
 
@@ -799,8 +799,8 @@ impl InputEvent {
                 tv_sec: self.time.tv_sec,
                 tv_usec: self.time.tv_usec,
             },
-            type_: self.type_,
-            code: self.code,
+            event_type: self.event_type,
+            event_code: self.event_code,
             value: self.value,
         };
 
