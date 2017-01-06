@@ -64,27 +64,41 @@ pub enum BusType {
 }
 
 pub enum GrabMode {
+    /// Grab the device if not currently grabbed
     Grab = raw::LIBEVDEV_GRAB as isize,
+    /// Ungrab the device if currently grabbed
     Ungrab = raw::LIBEVDEV_UNGRAB as isize,
 }
 
 bitflags! {
     pub flags ReadFlag: u32 {
+        /// Process data in sync mode
         const SYNC = 1,
+        /// Process data in normal mode
         const NORMAL = 2,
+        /// Pretend the next event is a SYN_DROPPED and require the
+        /// caller to sync
         const FORCE_SYNC = 4,
+        /// The fd is not in O_NONBLOCK and a read may block
         const BLOCKING = 8,
     }
 }
 
 #[derive(PartialEq)]
 pub enum ReadStatus {
+    /// `next_event` has finished without an error and an event is available
+    /// for processing.
     Success = raw::LIBEVDEV_READ_STATUS_SUCCESS as isize,
+    /// Depending on the `next_event` read flag:
+	/// libevdev received a SYN_DROPPED from the device, and the caller should
+	/// now resync the device, or, an event has been read in sync mode.
     Sync = raw::LIBEVDEV_READ_STATUS_SYNC as isize,
 }
 
 pub enum LedState {
+    /// Turn the LED on
     On = raw::LIBEVDEV_LED_ON as isize,
+    /// Turn the LED off
     Off = raw::LIBEVDEV_LED_OFF as isize,
 }
 
@@ -95,15 +109,26 @@ pub struct DeviceId {
     pub version: u16,
 }
 
+/// used by EVIOCGABS/EVIOCSABS ioctls
 pub struct AbsInfo {
+    /// latest reported value for the axis
     pub value: i32,
+    /// specifies minimum value for the axis
     pub minimum: i32,
+    /// specifies maximum value for the axis
     pub maximum: i32,
+    /// specifies fuzz value that is used to filter noise from
+    /// the event stream
     pub fuzz: i32,
+    /// values that are within this value will be discarded by
+    /// joydev interface and reported as 0 instead
     pub flat: i32,
+    /// specifies resolution for the values reported for
+    /// the axis
     pub resolution: i32,
 }
 
+/// Opaque struct representing an evdev device
 pub struct Device {
     raw: *mut raw::libevdev,
 }
@@ -113,7 +138,9 @@ pub struct TimeVal {
    pub tv_usec: i64,
 }
 
+/// The event structure itself
 pub struct InputEvent {
+    /// The time at which event occured
     pub time: TimeVal,
     pub event_type: u16,
     pub event_code: u16,
@@ -137,24 +164,31 @@ fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
     }
 }
 
+/// The name of the given input prop (e.g. INPUT_PROP_BUTTONPAD) or None for an
+/// invalid property
 pub fn property_get_name(prop: u32) -> Option<&'static str> {
     ptr_to_str(unsafe {
         raw::libevdev_property_get_name(prop)
     })
 }
 
+/// The name of the given event type (e.g. EV_ABS) or None for an
+/// invalid type
 pub fn event_type_get_name(type_: u32) -> Option<&'static str> {
     ptr_to_str(unsafe {
         raw::libevdev_event_type_get_name(type_)
     })
 }
 
+/// The name of the given event code (e.g. ABS_X) or None for an
+/// invalid type or code
 pub fn event_code_get_name(type_: u32, code: u32) -> Option<&'static str> {
     ptr_to_str(unsafe {
         raw::libevdev_event_code_get_name(type_, code)
     })
 }
 
+/// The given type constant for the passed name or Errno if not found.
 pub fn event_type_from_name(name: &str) -> Result<i32, Errno> {
     let name = CString::new(name).unwrap();
     let result = unsafe {
@@ -167,6 +201,10 @@ pub fn event_type_from_name(name: &str) -> Result<i32, Errno> {
     }
 }
 
+/// Look up an event code by its type and name. Event codes start with a fixed
+/// prefix followed by their name (eg., "ABS_X"). The prefix must be included in
+/// the name. It returns the constant assigned to the event code or Errno if not
+/// found.
 pub fn event_code_from_name(type_: u32, name: &str) -> Result<i32, Errno> {
     let name = CString::new(name).unwrap();
     let result = unsafe {
@@ -179,6 +217,10 @@ pub fn event_code_from_name(type_: u32, name: &str) -> Result<i32, Errno> {
     }
 }
 
+/// Look up an input property by its name. Properties start with the fixed
+/// prefix "INPUT_PROP_" followed by their name (eg., "INPUT_PROP_POINTER").
+/// The prefix must be included in the name. It returns the constant assigned
+/// to the property or Errno if not found.
 pub fn property_from_name(name: &str) -> Result<i32, Errno> {
     let name = CString::new(name).unwrap();
     let result = unsafe {
@@ -191,6 +233,8 @@ pub fn property_from_name(name: &str) -> Result<i32, Errno> {
     }
 }
 
+/// The max value defined for the given event type, e.g. ABS_MAX for a type
+/// of EV_ABS, or Errno for an invalid type.
 pub fn event_type_get_max(type_: u32) -> Result<i32, Errno> {
     let result = unsafe {
         raw::libevdev_event_type_get_max(type_ as c_uint)
