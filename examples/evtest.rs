@@ -29,12 +29,12 @@ fn print_abs_bits(dev: &Device, axis: u32) {
     }
 }
 
-fn print_code_bits(dev: &Device, type_: u32, max: u32) {
+fn print_code_bits(dev: &Device, event_type: u32, max: u32) {
     for i in  0..max {
-		if !dev.has_event_code(type_, i) { continue; }
+		if !dev.has_event_code(event_type, i) { continue; }
 
-		println!("    Event code {} ({})", i, event_code_get_name(type_, i).unwrap());
-		if type_ == consts::EV::EV_ABS as u32 {
+		println!("    Event code {} ({})", i, event_code_get_name(event_type, i).unwrap());
+		if event_type == consts::EV::EV_ABS as u32 {
 			print_abs_bits(dev, i);
 	    }
     }
@@ -48,8 +48,8 @@ fn print_bits(dev: &Device) {
 			println!("  Event type {} ({})", i, event_type_get_name(i).unwrap());
         }
 
-        let type_: consts::EV = unsafe { std::mem::transmute(i as u8) };
-		match type_ {
+        let event_type: consts::EV = unsafe { std::mem::transmute(i as u8) };
+		match event_type {
 		    consts::EV::EV_KEY => print_code_bits(dev, consts::EV::EV_KEY as u32,
                                                   consts::KEY::KEY_MAX as u32),
 			consts::EV::EV_REL => print_code_bits(dev, consts::EV::EV_REL as u32,
@@ -73,26 +73,26 @@ fn print_props(dev: &Device) {
     }
 }
 
-fn print_event(ev: &Event) {
-	if ev.type_ == consts::EV::EV_SYN as u16 {
+fn print_event(ev: &InputEvent) {
+	if ev.event_type == consts::EV::EV_SYN as u16 {
 		println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
 				ev.time.tv_sec,
 				ev.time.tv_usec,
-				event_type_get_name(ev.type_ as u32).unwrap());
+				event_type_get_name(ev.event_type as u32).unwrap());
     }
 	else {
 		println!("Event: time {}.{}, type {} ({}), code {} ({}), value {}",
 			ev.time.tv_sec,
 			ev.time.tv_usec,
-			ev.type_,
-			event_type_get_name(ev.type_ as u32).unwrap(),
-			ev.code,
-			event_code_get_name(ev.type_ as u32, ev.code as u32).unwrap(),
+			ev.event_type,
+			event_type_get_name(ev.event_type as u32).unwrap(),
+			ev.event_code,
+			event_code_get_name(ev.event_type as u32, ev.event_code as u32).unwrap(),
 			ev.value);
     }
 }
 
-fn print_sync_event(ev: &Event) {
+fn print_sync_event(ev: &InputEvent) {
 	print!("SYNC: ");
 	print_event(ev);
 }
@@ -123,7 +123,7 @@ fn main() {
 	print_bits(&d);
     print_props(&d);
 
-    let mut a: Result<(ReadStatus, Event), Errno>;
+    let mut a: Result<(ReadStatus, InputEvent), Errno>;
     loop {
         a = d.next_event(evdev::NORMAL | evdev::BLOCKING);
         if a.is_ok() {
