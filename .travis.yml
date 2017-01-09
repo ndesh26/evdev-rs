@@ -1,0 +1,27 @@
+sudo: required
+
+language: rust
+rust:
+  - stable
+  - beta
+  - nightly
+
+matrix:
+  allow_failures:
+    - rust: nightly
+
+addons:
+  apt:
+    packages:
+      - build-essential
+
+before_install:
+  - git clone git://anongit.freedesktop.org/libevdev
+  - cd libevdev && autoreconf --install --symlink && ./configure --prefix=$HOME/local && make && make install
+  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig pkg-config --list-all
+  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig pkg-config --libs libevdev
+  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig pkg-config --modversion libevdev
+
+script:
+  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH travis_retry cargo build --verbose
+  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH sudo -E env "PATH=$PATH" cargo test --verbose
