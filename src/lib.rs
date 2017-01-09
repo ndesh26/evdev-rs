@@ -34,7 +34,7 @@
 //!         Ok(k) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
 //!				              k.1.time.tv_sec,
 //!				              k.1.time.tv_usec,
-//!				              evdev::event_type_get_name(k.1.type_ as u32).unwrap()),
+//!				              evdev::event_type_get_name(k.1.event_type as u32).unwrap()),
 //!         Err(e) => (),
 //!     }
 //! }
