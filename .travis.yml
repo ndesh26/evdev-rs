@@ -21,7 +21,20 @@ before_install:
   - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig pkg-config --list-all
   - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig pkg-config --libs libevdev
   - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig pkg-config --modversion libevdev
+  - cd ..
+
+before_script:
+  - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
 
 script:
   - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH travis_retry cargo build --verbose
   - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH sudo -E env "PATH=$PATH" cargo test --verbose
+  - cargo doc --no-deps
+  - cargo doc --no-deps --manifest-path evdev-sys/Cargo.toml
+
+after_success:
+  - travis-cargo --only stable doc-upload
+
+notifications:
+  email:
+    on_success: never
