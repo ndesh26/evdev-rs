@@ -4,7 +4,7 @@
 
 extern crate libc;
 
-use libc::{c_int, c_uint, c_char, c_void, c_long, size_t};
+use libc::{c_int, c_uint, c_char, c_void, c_long, size_t, uint16_t};
 
 pub type __enum_ty = libc::c_int;
 pub type libevdev_read_flag = __enum_ty;
@@ -36,12 +36,12 @@ pub struct libevdev;
 
 #[repr(C)]
 pub struct input_absinfo {
-    pub value: i32,
-    pub minimum: i32,
-    pub maximum: i32,
-    pub fuzz: i32,
-    pub flat: i32,
-    pub resolution: i32,
+    pub value: c_int,
+    pub minimum: c_int,
+    pub maximum: c_int,
+    pub fuzz: c_int,
+    pub flat: c_int,
+    pub resolution: c_int,
 }
 
 #[repr(C)]
@@ -51,16 +51,16 @@ pub struct va_list {
 
 #[repr(C)]
 pub struct timeval {
-       pub tv_sec: c_long,
-       pub tv_usec: c_long,
+    pub tv_sec: c_long,
+    pub tv_usec: c_long,
 }
 
 #[repr(C)]
 pub struct input_event {
-   pub time: timeval,
-   pub event_type: u16,
-   pub event_code: u16,
-   pub value: i32,
+    pub time: timeval,
+    pub event_type: uint16_t,
+    pub event_code: uint16_t,
+    pub value: c_int,
 }
 
 type libevdev_log_func_t = extern fn(*const libevdev,
@@ -183,8 +183,8 @@ extern {
     pub fn libevdev_event_type_from_name_n(name: *const c_char, len: size_t) -> c_int;
     pub fn libevdev_event_code_from_name(type_: c_uint, name: *const c_char) -> c_int;
     pub fn libevdev_event_code_from_name_n(type_: c_uint,
-                                               name: *const c_char,
-				               len: size_t ) -> c_int;
+                                           name: *const c_char,
+                                           len: size_t) -> c_int;
     pub fn libevdev_property_from_name(name: *const c_char) -> c_int;
     pub fn libevdev_property_from_name_n(name: *const c_char, len: size_t) -> c_int;
     pub fn libevdev_get_repeat(ctx: *const libevdev, delay: *mut c_int, period: *mut c_int) -> c_int;
