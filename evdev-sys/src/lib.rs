@@ -31,8 +31,7 @@ pub const LIBEVDEV_READ_STATUS_SYNC: libevdev_read_status = 1;
 pub const LIBEVDEV_LED_ON: libevdev_led_value = 3;
 pub const LIBEVDEV_LED_OFF: libevdev_led_value = 4;
 
-#[repr(C)]
-pub struct libevdev;
+pub enum libevdev {}
 
 #[repr(C)]
 pub struct input_absinfo {
