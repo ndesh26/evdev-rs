@@ -1,10 +1,19 @@
 [package]
 name = "evdev"
 version = "0.1.0"
-authors = ["Peter Hutterer <peter.hutterer@who-t.net>"]
+authors = ["Nayan Deshmukh <nayan26deshmukh@gmail.com>"]
+license = "MIT/Apache-2.0"
+keywords = ["evdev"]
+readme = "README.md"
+repository = "https://github.com/ndesh26/evdev-rs"
+homepage = "https://github.com/ndesh26/evdev-rs"
+documentation = "http://ndesh26.github.io/evdev-rs"
+description = """
+Bindings to libevdev
+"""
 
 [dependencies]
 evdev-sys = { path = "evdev-sys", version = "0.1" }
 nix = "^0.7"
 libc = "^0.2"
-bitflags = "*"
+bitflags = "^0.7"
