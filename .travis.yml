@@ -15,14 +15,6 @@ addons:
     packages:
       - build-essential
 
-before_install:
-  - git clone git://anongit.freedesktop.org/libevdev
-  - cd libevdev && autoreconf --install --symlink && ./configure --prefix=$HOME/local && make && make install
-  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig pkg-config --list-all
-  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig pkg-config --libs libevdev
-  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig pkg-config --modversion libevdev
-  - cd ..
-
 before_script:
   - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
 
