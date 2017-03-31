@@ -143,7 +143,7 @@ fn device_has_type_code() {
     let f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
-    for t in 0x18..0xff {
+    /*for t in 0x18..0xff {
         if d.has_event_type(t) {
             panic!("Type {} is set, shouldn't be", t);
         }
@@ -152,7 +152,7 @@ fn device_has_type_code() {
                 panic!("Type {} Code {} is set, shouldn't be", t, c);
             }
         }
-    }
+    }*/
 }
 
 #[test]
@@ -162,8 +162,8 @@ fn device_has_syn() {
 
     d.set_fd(&f).unwrap();
 
-    assert!(d.has_event_type(0)); // EV_SYN
-    assert!(d.has_event_code(0, 0)); // SYN_REPORT
+    assert!(d.has_event_type(consts::EventType::EV_SYN)); // EV_SYN
+    assert!(d.has_event_code(consts::EventCode::EV_SYN(consts::SYN::SYN_REPORT))); // SYN_REPORT
 }
 
 #[test]
@@ -173,13 +173,11 @@ fn device_get_value() {
 
     d.set_fd(&f).unwrap();
 
-    let v1 = d.event_value(0xff, 0xff); // garbage
-    assert_eq!(v1, None);
-    let v2 = d.event_value(consts::EV::EV_SYN as u32, consts::SYN::SYN_REPORT as u32); // SYN_REPORT
+    let v2 = d.event_value(consts::EventCode::EV_SYN(consts::SYN::SYN_REPORT)); // SYN_REPORT
     assert_eq!(v2, Some(0));
 }
 
 #[test]
 fn check_event_name() {
-   assert_eq!("EV_ABS", event_type_get_name(3).unwrap());
+   assert_eq!("EV_ABS", event_type_get_name(consts::EventType::EV_ABS).unwrap());
 }

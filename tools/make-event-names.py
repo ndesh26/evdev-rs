@@ -61,17 +61,66 @@ names = [
 		"REP_",
 ]
 
+def convert(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
 def print_enums(bits, prefix):
+        if prefix == "ev":
+                enum_name = "EventType"
+        else:
+                enum_name = prefix.upper()
+
 	if  not hasattr(bits, prefix):
 		return
 
 	print("#[allow(non_camel_case_types)]")
-	print("pub enum %s {" % prefix.upper())
+	print("pub enum %s {" % enum_name)
 	for val, name in list(getattr(bits, prefix).items()):
-		print("	%s = %s," % (name, val))
+		print("    %s = %s," % (name, val))
 	if prefix == "key":
 		for val, name in list(getattr(bits, "btn").items()):
-			print("	%s = %s," % (name, val))
+			print("    %s = %s," % (name, val))
+	print("}");
+	print("");
+
+def print_enums_convert_fn(bits, prefix):
+        if prefix == "ev":
+                fn_name = "EventType"
+        else:
+                fn_name = prefix.upper()
+
+	if  not hasattr(bits, prefix):
+		return
+
+        print("pub fn %s(code: u32) -> Option<%s> {" %(convert(fn_name), fn_name))
+        print("    match code {")
+	for val, name in list(getattr(bits, prefix).items()):
+                print("        %s => Some(%s::%s)," % (val, fn_name, name))
+	if prefix == "key":
+		for val, name in list(getattr(bits, "btn").items()):
+                        print("        %s => Some(%s::%s)," % (val, fn_name, name))
+        print("        _ => None")
+	print("    }");
+	print("}");
+	print("");
+
+def print_event_code(bits, prefix):
+	if  not hasattr(bits, prefix):
+		return
+
+	print("#[allow(non_camel_case_types)]")
+	print("pub enum EventCode {")
+	for val, name in list(getattr(bits, prefix).items()):
+            if name[3:]+"_" in names:
+                    print("    %s(%s)," % (name, name[3:]))
+            elif name == "EV_FF_STATUS":
+                    print("    EV_FF_STATUS(FF),")
+            else:
+                    print("    %s," % (name))
+	if prefix == "key":
+		for val, name in list(getattr(bits, "btn").items()):
+			print("    %s = %s," % (name, val))
 	print("}");
 	print("");
 
@@ -140,13 +189,14 @@ def print_lookup_table(bits):
 	print("")
 
 def print_mapping_table(bits):
-	print("/* THIS FILE IS GENERATED, DO NOT EDIT */")
-	print("")
-
 	for prefix in prefixes:
 		if prefix == "BTN_":
 			continue
-		print_enums(bits, prefix[:-1].lower())
+                print_enums(bits, prefix[:-1].lower())
+                print_enums_convert_fn(bits, prefix[:-1].lower())
+                if prefix == "EV_":
+                        print_event_code(bits, prefix[:-1].lower())
+                
 
 #	for prefix in prefixes:
 #		if prefix == "BTN_":
@@ -197,10 +247,20 @@ def usage(prog):
 	print("Usage: %s /path/to/linux/input.h" % prog)
 
 if __name__ == "__main__":
-	if len(sys.argv) != 2:
+	if len(sys.argv) < 2:
 		usage(sys.argv[0])
 		sys.exit(2)
 
-	with open(sys.argv[1]) as f:
-		bits = parse(f)
-		print_mapping_table(bits)
+	print("/* THIS FILE IS GENERATED, DO NOT EDIT */")
+	print("")
+
+        if len(sys.argv) == 2:
+                with open(sys.argv[1]) as f:
+                        bits = parse(f)
+                        print_mapping_table(bits)
+                        sys.exit(2)
+
+        for i in (1, len(sys.argv) - 1):
+                with open(sys.argv[i]) as f:
+                        bits = parse(f)
+                        print_mapping_table(bits)

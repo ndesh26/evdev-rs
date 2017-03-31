@@ -34,7 +34,7 @@
 //!         Ok(k) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
 //!				              k.1.time.tv_sec,
 //!				              k.1.time.tv_usec,
-//!				              evdev::event_type_get_name(k.1.event_type as u32).unwrap()),
+//!				              evdev::event_type_get_name(k.1.event_type).unwrap()),
 //!         Err(e) => (),
 //!     }
 //! }
@@ -56,6 +56,7 @@ use std::os::unix::io::{AsRawFd, FromRawFd};
 use std::fs::File;
 use std::ffi::{CStr, CString};
 use nix::errno::Errno;
+use consts::*;
 
 #[derive(Copy)]
 #[derive(Clone)]
@@ -142,8 +143,8 @@ pub struct TimeVal {
 pub struct InputEvent {
     /// The time at which event occured
     pub time: TimeVal,
-    pub event_type: u16,
-    pub event_code: u16,
+    pub event_type: EventType,
+    pub event_code: EventCode,
     pub value: i32,
 }
 
@@ -164,6 +165,83 @@ fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
     }
 }
 
+fn event_code_to_raw(event_code: EventCode) -> (c_uint, c_uint) {
+    let mut ev_type: c_uint = 0;
+    let mut ev_code: c_uint = 0;
+    match event_code {
+        EventCode::EV_SYN(code) => {
+            ev_type = EventType::EV_SYN as c_uint;
+            ev_code = code as c_uint;
+        },
+        EventCode::EV_KEY(code) => {
+            ev_type = EventType::EV_KEY as c_uint;
+            ev_code = code as c_uint;
+        },
+        EventCode::EV_REL(code) => {
+            ev_type = EventType::EV_REL as c_uint;
+            ev_code = code as c_uint;
+        },
+        EventCode::EV_ABS(code) => {
+            ev_type = EventType::EV_ABS as c_uint;
+            ev_code = code as c_uint;
+        },
+        EventCode::EV_MSC(code) => {
+            ev_type = EventType::EV_MSC as c_uint;
+            ev_code = code as c_uint;
+        },
+        EventCode::EV_SW(code) => {
+            ev_type = EventType::EV_SW as c_uint;
+            ev_code = code as c_uint;
+        },
+        EventCode::EV_LED(code) => {
+            ev_type = EventType::EV_LED as c_uint;
+            ev_code = code as c_uint;
+        },
+        EventCode::EV_SND(code) => {
+            ev_type = EventType::EV_SND as c_uint;
+            ev_code = code as c_uint;
+        },
+        EventCode::EV_REP(code) => {
+            ev_type = EventType::EV_REP as c_uint;
+            ev_code = code as c_uint;
+        },
+        EventCode::EV_FF(code) => {
+            ev_type = EventType::EV_FF as c_uint;
+            ev_code = code as c_uint;
+        },
+        EventCode::EV_FF_STATUS(code) => {
+            ev_type = EventType::EV_FF_STATUS as c_uint;
+            ev_code = code as c_uint;
+        },
+        _ => {}
+    } 
+
+    (ev_type, ev_code)
+    
+}
+
+fn event_code_from_raw(event_type: c_uint, event_code: c_uint) -> EventCode {
+    let ev_type: EventType = consts::event_type(event_type as u32).unwrap();
+    let ev_code: EventCode;
+    match ev_type {
+        EventType::EV_SYN => ev_code = EventCode::EV_SYN(syn(event_code as u32).unwrap()),
+        EventType::EV_KEY => ev_code = EventCode::EV_KEY(key(event_code as u32).unwrap()),
+        EventType::EV_ABS => ev_code = EventCode::EV_ABS(abs(event_code as u32).unwrap()),
+        EventType::EV_REL => ev_code = EventCode::EV_REL(rel(event_code as u32).unwrap()),
+        EventType::EV_MSC => ev_code = EventCode::EV_MSC(msc(event_code as u32).unwrap()),
+        EventType::EV_SW => ev_code = EventCode::EV_SW(sw(event_code as u32).unwrap()),
+        EventType::EV_LED => ev_code = EventCode::EV_LED(led(event_code as u32).unwrap()),
+        EventType::EV_SND => ev_code = EventCode::EV_SND(snd(event_code as u32).unwrap()),
+        EventType::EV_REP => ev_code = EventCode::EV_REP(rep(event_code as u32).unwrap()),
+        EventType::EV_FF => ev_code = EventCode::EV_FF(ff(event_code as u32).unwrap()),
+        EventType::EV_PWR => ev_code = EventCode::EV_PWR,
+        EventType::EV_FF_STATUS => ev_code = EventCode::EV_FF_STATUS(ff(event_code as u32).unwrap()),
+        EventType::EV_MAX => ev_code = EventCode::EV_MAX,
+    }
+
+    ev_code
+}
+
 /// The name of the given input prop (e.g. INPUT_PROP_BUTTONPAD) or None for an
 /// invalid property
 pub fn property_get_name(prop: u32) -> Option<&'static str> {
@@ -174,17 +252,18 @@ pub fn property_get_name(prop: u32) -> Option<&'static str> {
 
 /// The name of the given event type (e.g. EV_ABS) or None for an
 /// invalid type
-pub fn event_type_get_name(type_: u32) -> Option<&'static str> {
+pub fn event_type_get_name(event_type: EventType) -> Option<&'static str> {
     ptr_to_str(unsafe {
-        raw::libevdev_event_type_get_name(type_)
+        raw::libevdev_event_type_get_name(event_type as c_uint)
     })
 }
 
 /// The name of the given event code (e.g. ABS_X) or None for an
 /// invalid type or code
-pub fn event_code_get_name(type_: u32, code: u32) -> Option<&'static str> {
+pub fn event_code_get_name(event_code: EventCode) -> Option<&'static str> {
+    let (ev_type, ev_code) = event_code_to_raw(event_code);
     ptr_to_str(unsafe {
-        raw::libevdev_event_code_get_name(type_, code)
+        raw::libevdev_event_code_get_name(ev_type, ev_code)
     })
 }
 
@@ -445,18 +524,19 @@ impl Device {
         }
     }
     /// Returns `true` is the device support this event type and `false` otherwise
-    pub fn has_event_type(&self, type_: u32) -> bool {
+    pub fn has_event_type(&self, ev_type: EventType) -> bool {
         unsafe {
-            raw::libevdev_has_event_type(self.raw, type_ as c_uint) != 0
+            raw::libevdev_has_event_type(self.raw, ev_type as c_uint) != 0
         }
     }
 
     /// Return `true` is the device support this event type and code and `false` otherwise
-    pub fn has_event_code(&self, type_: u32, code: u32) -> bool {
+    pub fn has_event_code(&self, code: EventCode) -> bool {
         unsafe {
+            let (ev_type, ev_code) = event_code_to_raw(code);
             raw::libevdev_has_event_code(self.raw,
-                                         type_ as c_uint,
-                                         code as c_uint) != 0
+                                         ev_type,
+                                         ev_code) != 0
         }
     }
 
@@ -464,12 +544,13 @@ impl Device {
     ///
     /// If the device supports this event type and code, the return value is
     /// set to the current value of this axis. Otherwise, `None` is returned.
-    pub fn event_value(&self, type_: u32, code: u32) -> Option<i32> {
+    pub fn event_value(&self, code: EventCode) -> Option<i32> {
         let mut value: i32 = 0;
+        let (ev_type, ev_code) = event_code_to_raw(code);
         let valid = unsafe {
             raw::libevdev_fetch_event_value(self.raw,
-                                            type_ as c_uint,
-                                            code as c_uint,
+                                            ev_type,
+                                            ev_code ,
                                             &mut value)
         };
 
@@ -807,8 +888,8 @@ impl Device {
                 tv_sec: ev.time.tv_sec,
                 tv_usec: ev.time.tv_usec,
             },
-            event_type: ev.event_type,
-            event_code: ev.event_code,
+            event_type: event_type(ev.event_type as u32).unwrap(),
+            event_code: event_code_from_raw(ev.event_type as u32, ev.event_code as u32),
             value: ev.value,
         };
 
@@ -827,8 +908,8 @@ impl InputEvent {
                 tv_sec: self.time.tv_sec,
                 tv_usec: self.time.tv_usec,
             },
-            event_type: self.event_type,
-            event_code: self.event_code,
+            event_type: self.event_type as u16,
+            event_code: event_code_to_raw(self.event_code).1 as u16,
             value: self.value,
         };
 
@@ -843,8 +924,8 @@ impl InputEvent {
                 tv_sec: self.time.tv_sec,
                 tv_usec: self.time.tv_usec,
             },
-            event_type: self.event_type,
-            event_code: self.event_code,
+            event_type: self.event_type as u16,
+            event_code: event_code_to_raw(self.event_code).1 as u16,
             value: self.value,
         };
 

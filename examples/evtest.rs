@@ -8,10 +8,10 @@ use std::fs::File;
 fn usage() {
     println!("Usage: evtest /path/to/device");
 }
-
+/*
 fn print_abs_bits(dev: &Device, axis: u32) {
 
-	if !dev.has_event_code(consts::EV::EV_ABS as u32, axis) { return; }
+	if !dev.has_event_code(consts::EV::EV_ABS, axis) { return; }
 
 	let abs = dev.abs_info(axis).unwrap();
 
@@ -50,19 +50,19 @@ fn print_bits(dev: &Device) {
 
         let event_type: consts::EV = unsafe { std::mem::transmute(i as u8) };
 		match event_type {
-		    consts::EV::EV_KEY => print_code_bits(dev, consts::EV::EV_KEY as u32,
+		    consts::EventType::EV_KEY => print_code_bits(dev, consts::EV::EV_KEY as u32,
                                                   consts::KEY::KEY_MAX as u32),
-			consts::EV::EV_REL => print_code_bits(dev, consts::EV::EV_REL as u32,
+			consts::EventType::EV_REL => print_code_bits(dev, consts::EV::EV_REL as u32,
                                                   consts::REL::REL_MAX as u32),
-			consts::EV::EV_ABS => print_code_bits(dev, consts::EV::EV_ABS as u32,
+			consts::EventType::EV_ABS => print_code_bits(dev, consts::EV::EV_ABS as u32,
                                                   consts::ABS::ABS_MAX as u32),
-			consts::EV::EV_LED => print_code_bits(dev, consts::EV::EV_LED as u32,
+			consts::EventType::EV_LED => print_code_bits(dev, consts::EV::EV_LED as u32,
                                                   consts::LED::LED_MAX as u32),
             _ => (),
 		}
 	}
 }
-
+*/
 fn print_props(dev: &Device) {
 	println!("Properties:");
 
@@ -74,21 +74,21 @@ fn print_props(dev: &Device) {
 }
 
 fn print_event(ev: &InputEvent) {
-	if ev.event_type == consts::EV::EV_SYN as u16 {
-		println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
-				ev.time.tv_sec,
-				ev.time.tv_usec,
-				event_type_get_name(ev.event_type as u32).unwrap());
-    }
-	else {
-		println!("Event: time {}.{}, type {} ({}), code {} ({}), value {}",
-			ev.time.tv_sec,
-			ev.time.tv_usec,
-			ev.event_type,
-			event_type_get_name(ev.event_type as u32).unwrap(),
-			ev.event_code,
-			event_code_get_name(ev.event_type as u32, ev.event_code as u32).unwrap(),
-			ev.value);
+    match ev.event_type {
+        consts::EventType::EV_SYN => {
+		    println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
+				     ev.time.tv_sec,
+				     ev.time.tv_usec,
+				     event_type_get_name(ev.event_type).unwrap());
+        }
+	    _ =>  {
+		    println!("Event: time {}.{}, type {} , code {} , value {}",
+			         ev.time.tv_sec,
+			         ev.time.tv_usec,
+			         event_type_get_name(ev.event_type).unwrap(),
+			         event_code_get_name(ev.event_code).unwrap(),
+			         ev.value);
+        }
     }
 }
 
@@ -120,8 +120,8 @@ fn main() {
     println!("Phys location: {}", d.phys().unwrap_or(""));
     println!("Uniq identifier: {}", d.uniq().unwrap_or(""));
 
-	print_bits(&d);
-    print_props(&d);
+	//print_bits(&d);
+    //print_props(&d);
 
     let mut a: Result<(ReadStatus, InputEvent), Errno>;
     loop {
