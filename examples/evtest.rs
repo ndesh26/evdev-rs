@@ -79,14 +79,14 @@ fn print_event(ev: &InputEvent) {
 		    println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
 				     ev.time.tv_sec,
 				     ev.time.tv_usec,
-				     event_type_get_name(ev.event_type).unwrap());
+				     ev.event_type);
         }
 	    _ =>  {
 		    println!("Event: time {}.{}, type {} , code {} , value {}",
 			         ev.time.tv_sec,
 			         ev.time.tv_usec,
-			         event_type_get_name(ev.event_type).unwrap(),
-			         event_code_get_name(ev.event_code).unwrap(),
+			         ev.event_type,
+			         ev.event_code,
 			         ev.value);
         }
     }

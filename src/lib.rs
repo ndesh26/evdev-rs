@@ -34,7 +34,7 @@
 //!         Ok(k) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
 //!				              k.1.time.tv_sec,
 //!				              k.1.time.tv_usec,
-//!				              evdev::event_type_get_name(k.1.event_type).unwrap()),
+//!				              k.1.event_type),
 //!         Err(e) => (),
 //!     }
 //! }
@@ -43,6 +43,7 @@
 extern crate evdev_sys as raw;
 extern crate nix;
 extern crate libc;
+use std::fmt;
 #[macro_use]
 extern crate bitflags;
 
@@ -242,28 +243,28 @@ fn event_code_from_raw(event_type: c_uint, event_code: c_uint) -> EventCode {
     ev_code
 }
 
+impl fmt::Display for EventType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ptr_to_str(unsafe {
+            raw::libevdev_event_type_get_name(*self as c_uint)
+        }).unwrap_or(""))
+    }
+}
+
+impl fmt::Display for EventCode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let (ev_type, ev_code) = event_code_to_raw(*self);
+        write!(f, "{}", ptr_to_str(unsafe {
+            raw::libevdev_event_code_get_name(ev_type, ev_code)
+        }).unwrap_or(""))
+    }
+}
+
 /// The name of the given input prop (e.g. INPUT_PROP_BUTTONPAD) or None for an
 /// invalid property
 pub fn property_get_name(prop: u32) -> Option<&'static str> {
     ptr_to_str(unsafe {
         raw::libevdev_property_get_name(prop)
-    })
-}
-
-/// The name of the given event type (e.g. EV_ABS) or None for an
-/// invalid type
-pub fn event_type_get_name(event_type: EventType) -> Option<&'static str> {
-    ptr_to_str(unsafe {
-        raw::libevdev_event_type_get_name(event_type as c_uint)
-    })
-}
-
-/// The name of the given event code (e.g. ABS_X) or None for an
-/// invalid type or code
-pub fn event_code_get_name(event_code: EventCode) -> Option<&'static str> {
-    let (ev_type, ev_code) = event_code_to_raw(event_code);
-    ptr_to_str(unsafe {
-        raw::libevdev_event_code_get_name(ev_type, ev_code)
     })
 }
 

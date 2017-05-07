@@ -179,5 +179,5 @@ fn device_get_value() {
 
 #[test]
 fn check_event_name() {
-   assert_eq!("EV_ABS", event_type_get_name(consts::EventType::EV_ABS).unwrap());
+   assert_eq!("EV_ABS", consts::EventType::EV_ABS.to_string());
 }
