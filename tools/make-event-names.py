@@ -75,6 +75,9 @@ def print_enums(bits, prefix):
 		return
 
 	print("#[allow(non_camel_case_types)]")
+	print("#[derive(Copy)]")
+	print("#[derive(Clone)]")
+	print("#[derive(PartialEq)]")
 	print("pub enum %s {" % enum_name)
 	for val, name in list(getattr(bits, prefix).items()):
 		print("    %s = %s," % (name, val))
@@ -110,6 +113,9 @@ def print_event_code(bits, prefix):
 		return
 
 	print("#[allow(non_camel_case_types)]")
+	print("#[derive(Copy)]")
+	print("#[derive(Clone)]")
+	print("#[derive(PartialEq)]")
 	print("pub enum EventCode {")
 	for val, name in list(getattr(bits, prefix).items()):
             if name[3:]+"_" in names:

@@ -3,6 +3,7 @@
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum EventType {
     EV_SYN = 0,
     EV_KEY = 1,
@@ -41,6 +42,7 @@ pub fn event_type(code: u32) -> Option<EventType> {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum EventCode {
     EV_SYN(SYN),
     EV_KEY(KEY),
@@ -60,6 +62,7 @@ pub enum EventCode {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum REL {
     REL_X = 0,
     REL_Y = 1,
@@ -94,6 +97,7 @@ pub fn rel(code: u32) -> Option<REL> {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum ABS {
     ABS_X = 0,
     ABS_Y = 1,
@@ -190,6 +194,7 @@ pub fn abs(code: u32) -> Option<ABS> {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum KEY {
     KEY_RESERVED = 0,
     KEY_ESC = 1,
@@ -1286,6 +1291,7 @@ pub fn key(code: u32) -> Option<KEY> {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum LED {
     LED_NUML = 0,
     LED_CAPSL = 1,
@@ -1322,6 +1328,7 @@ pub fn led(code: u32) -> Option<LED> {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum SND {
     SND_CLICK = 0,
     SND_BELL = 1,
@@ -1342,6 +1349,7 @@ pub fn snd(code: u32) -> Option<SND> {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum MSC {
     MSC_SERIAL = 0,
     MSC_PULSELED = 1,
@@ -1368,6 +1376,7 @@ pub fn msc(code: u32) -> Option<MSC> {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum SW {
     SW_LID = 0,
     SW_TABLET_MODE = 1,
@@ -1412,6 +1421,7 @@ pub fn sw(code: u32) -> Option<SW> {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum SYN {
     SYN_REPORT = 0,
     SYN_CONFIG = 1,
@@ -1434,6 +1444,7 @@ pub fn syn(code: u32) -> Option<SYN> {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum REP {
     REP_DELAY = 0,
     REP_MAX = 1,
@@ -1450,6 +1461,7 @@ pub fn rep(code: u32) -> Option<REP> {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum INPUT_PROP {
     INPUT_PROP_POINTER = 0,
     INPUT_PROP_DIRECT = 1,
@@ -1478,6 +1490,7 @@ pub fn input_prop(code: u32) -> Option<INPUT_PROP> {
 #[allow(non_camel_case_types)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum FF {
     FF_STATUS_STOPPED = 0,
     FF_STATUS_MAX = 1,
