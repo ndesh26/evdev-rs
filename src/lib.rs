@@ -48,7 +48,7 @@ use std::fmt;
 extern crate bitflags;
 
 pub mod consts;
-pub mod log;
+pub mod logging;
 #[macro_use]
 mod macros;
 
