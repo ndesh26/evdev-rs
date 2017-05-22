@@ -542,10 +542,10 @@ pub fn event_type_from_name(name: &str) -> Result<i32, Errno> {
 /// prefix followed by their name (eg., "ABS_X"). The prefix must be included in
 /// the name. It returns the constant assigned to the event code or Errno if not
 /// found.
-pub fn event_code_from_name(type_: u32, name: &str) -> Result<i32, Errno> {
+pub fn event_code_from_name(ev_type: EventType, name: &str) -> Result<i32, Errno> {
     let name = CString::new(name).unwrap();
     let result = unsafe {
-        raw::libevdev_event_code_from_name(type_ as c_uint, name.as_ptr())
+        raw::libevdev_event_code_from_name(ev_type as c_uint, name.as_ptr())
     };
 
     match result {
@@ -572,9 +572,9 @@ pub fn property_from_name(name: &str) -> Result<i32, Errno> {
 
 /// The max value defined for the given event type, e.g. ABS_MAX for a type
 /// of EV_ABS, or Errno for an invalid type.
-pub fn event_type_get_max(type_: u32) -> Result<i32, Errno> {
+pub fn event_type_get_max(ev_type: EventType) -> Result<i32, Errno> {
     let result = unsafe {
-        raw::libevdev_event_type_get_max(type_ as c_uint)
+        raw::libevdev_event_type_get_max(ev_type as c_uint)
     };
 
     match result {
@@ -836,12 +836,13 @@ impl Device {
     /// If the device supports ABS_MT_SLOT and the type is EV_ABS and the code is
     /// ABS_MT_SLOT, the value must be a positive number less then the number of
     /// slots on the device. Otherwise, `set_event_value` returns Err.
-    pub fn set_event_value(&self, type_: u32, code: u32, val: i32)
+    pub fn set_event_value(&self, code: EventCode, val: i32)
                            -> Result<(), Errno> {
+            let (ev_type, ev_code) = event_code_to_raw(code);
             let result = unsafe {
                 raw::libevdev_set_event_value(self.raw,
-                                              type_ as c_uint,
-                                              code as c_uint,
+                                              ev_type,
+                                              ev_code,
                                               val as c_int)
             };
 
@@ -904,12 +905,13 @@ impl Device {
     /// If the device supports this event code, the return value is
     /// is set to the current value of this axis. Otherwise, or
     /// if the event code is not an ABS_MT_* event code, `None` is returned
-    pub fn slot_value(&self, slot: u32, code: u32) -> Option<i32> {
+    pub fn slot_value(&self, slot: u32, code: EventCode) -> Option<i32> {
+        let (_, ev_code) = event_code_to_raw(code);
         let mut value: i32 = 0;
         let valid = unsafe {
             raw::libevdev_fetch_slot_value(self.raw,
                                            slot as c_uint,
-                                           code as c_uint,
+                                           ev_code,
                                            &mut value)
         };
 
@@ -927,12 +929,13 @@ impl Device {
     ///
     /// This function does not set event values for axes outside the ABS_MT range,
     /// use `set_event_value` instead.
-    pub fn set_slot_value(&self, slot: u32, code: u32, val: i32)
+    pub fn set_slot_value(&self, slot: u32, code: EventCode, val: i32)
                           -> Result<(), Errno> {
+        let (_, ev_code) = event_code_to_raw(code);
         let result = unsafe {
             raw::libevdev_set_slot_value(self.raw,
                                          slot as c_uint,
-                                         code as c_uint,
+                                         ev_code,
                                          val as c_int)
         };
 
@@ -984,10 +987,10 @@ impl Device {
     ///
     /// This is a local modification only affecting only this representation of
     /// this device.
-    pub fn enable_event_type(&self, type_: u32) -> Result<(), Errno> {
+    pub fn enable_event_type(&self, ev_type: EventType) -> Result<(), Errno> {
          let result = unsafe {
             raw::libevdev_enable_event_type(self.raw,
-                                            type_ as c_uint)
+                                            ev_type as c_uint)
         };
 
         match result {
@@ -1010,10 +1013,10 @@ impl Device {
     ///
     /// This is a local modification only affecting only this representation of
     /// this device.
-    pub fn disable_event_type(&self, type_: u32) -> Result<(), Errno> {
+    pub fn disable_event_type(&self, ev_type: EventType) -> Result<(), Errno> {
          let result = unsafe {
             raw::libevdev_disable_event_type(self.raw,
-                                            type_ as c_uint)
+                                            ev_type as c_uint)
         };
 
         match result {
@@ -1035,12 +1038,13 @@ impl Device {
     ///
     /// Disabling codes of type EV_SYN will not work. Don't shoot yourself in the
     /// foot. It hurts.
-    pub fn disable_event_code(&self, type_: u32, code: u32)
+    pub fn disable_event_code(&self, code: EventCode)
                               -> Result<(), Errno> {
+        let (ev_type, ev_code) = event_code_to_raw(code);
         let result = unsafe {
             raw::libevdev_disable_event_code(self.raw,
-                                            type_ as c_uint,
-                                            code as c_uint)
+                                            ev_type,
+                                            ev_code)
         };
 
         match result {
@@ -1071,11 +1075,12 @@ impl Device {
     /// Turn an LED on or off.
     ///
     /// enabling an LED requires write permissions on the device's file descriptor.
-    pub fn kernel_set_led_value(&self, code: u32, value: LedState)
+    pub fn kernel_set_led_value(&self, code: EventCode, value: LedState)
                                  -> Result<(), Errno> {
+        let (_, ev_code) = event_code_to_raw(code);
         let result = unsafe {
             raw::libevdev_kernel_set_led_value(self.raw,
-                                               code as c_uint,
+                                               ev_code,
                                                value as c_int)
         };
 
@@ -1163,7 +1168,7 @@ impl Device {
 }
 
 impl InputEvent {
-    pub fn is_type(&self, type_: u16) -> bool {
+    pub fn is_type(&self, ev_type: EventType) -> bool {
         let ev = raw::input_event {
             time: raw::timeval {
                 tv_sec: self.time.tv_sec,
@@ -1175,11 +1180,12 @@ impl InputEvent {
         };
 
         unsafe {
-            raw::libevdev_event_is_type(&ev, type_ as c_uint) == 1
+            raw::libevdev_event_is_type(&ev, ev_type as c_uint) == 1
         }
     }
 
-    pub fn is_code(&self, type_: u16, code: u16) -> bool {
+    pub fn is_code(&self, code: EventCode) -> bool {
+        let (ev_type, ev_code) = event_code_to_raw(code);
         let ev = raw::input_event {
             time: raw::timeval {
                 tv_sec: self.time.tv_sec,
@@ -1191,7 +1197,7 @@ impl InputEvent {
         };
 
         unsafe {
-            raw::libevdev_event_is_code(&ev, type_ as c_uint, code as c_uint) == 1
+            raw::libevdev_event_is_code(&ev, ev_type, ev_code) == 1
         }
     }
 }
