@@ -1,6 +1,7 @@
 extern crate evdev;
 
 use evdev::*;
+use evdev::consts::*;
 use std::fs::File;
 use std::os::unix::io::AsRawFd;
 
@@ -114,7 +115,7 @@ fn device_get_absinfo() {
     let f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
-    for code in 0..0xff {
+    for code in EventCode::iter() {
         let absinfo: Option<AbsInfo> = d.abs_info(code);
 
         match absinfo {
@@ -135,24 +136,6 @@ fn device_has_property() {
             panic!("Prop {} is set, shouldn't be", prop);
         }
     }
-}
-
-#[test]
-fn device_has_type_code() {
-    let mut d = Device::new().unwrap();
-    let f = File::open("/dev/input/event0").unwrap();
-
-    d.set_fd(&f).unwrap();
-    /*for t in 0x18..0xff {
-        if d.has_event_type(t) {
-            panic!("Type {} is set, shouldn't be", t);
-        }
-        for c in 0x00..0xff {
-            if d.has_event_code(t, c) {
-                panic!("Type {} Code {} is set, shouldn't be", t, c);
-            }
-        }
-    }*/
 }
 
 #[test]

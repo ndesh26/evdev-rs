@@ -2,18 +2,19 @@ extern crate evdev;
 extern crate nix;
 
 use evdev::*;
+use evdev::consts::*;
 use nix::errno::Errno;
 use std::fs::File;
 
 fn usage() {
     println!("Usage: evtest /path/to/device");
 }
-/*
-fn print_abs_bits(dev: &Device, axis: u32) {
 
-	if !dev.has_event_code(consts::EV::EV_ABS, axis) { return; }
+fn print_abs_bits(dev: &Device, axis: ABS) {
 
-	let abs = dev.abs_info(axis).unwrap();
+	if !dev.has_event_code(EventCode::EV_ABS(axis)) { return; }
+
+	let abs = dev.abs_info(EventCode::EV_ABS(axis)).unwrap();
 
 	println!("	Value	{}", abs.value);
 	println!("	Min	{}", abs.minimum);
@@ -29,40 +30,45 @@ fn print_abs_bits(dev: &Device, axis: u32) {
     }
 }
 
-fn print_code_bits(dev: &Device, event_type: u32, max: u32) {
-    for i in  0..max {
-		if !dev.has_event_code(event_type, i) { continue; }
+fn print_code_bits(dev: &Device, ev_code: EventCode, max: EventCode) {
+    let mut code = ev_code;
+    while code != max {
+        if !dev.has_event_code(code) {
+            code.next();
+            continue;
+        }
 
-		println!("    Event code {} ({})", i, event_code_get_name(event_type, i).unwrap());
-		if event_type == consts::EV::EV_ABS as u32 {
-			print_abs_bits(dev, i);
-	    }
+		println!("    Event code: {}", code);
+        match code {
+            EventCode::EV_ABS(k) => print_abs_bits(dev, k),
+            _ => ()
+        }
+        code.next();
     }
 }
 
 fn print_bits(dev: &Device) {
     println!("Supported events:");
 
-    for i in  0..consts::EV::EV_MAX as u32 {
-		if dev.has_event_type(i) {
-			println!("  Event type {} ({})", i, event_type_get_name(i).unwrap());
+    for ev_type in  EventType::iter() {
+		if dev.has_event_type(ev_type) {
+			println!("  Event type: {} ", ev_type);
         }
 
-        let event_type: consts::EV = unsafe { std::mem::transmute(i as u8) };
-		match event_type {
-		    consts::EventType::EV_KEY => print_code_bits(dev, consts::EV::EV_KEY as u32,
-                                                  consts::KEY::KEY_MAX as u32),
-			consts::EventType::EV_REL => print_code_bits(dev, consts::EV::EV_REL as u32,
-                                                  consts::REL::REL_MAX as u32),
-			consts::EventType::EV_ABS => print_code_bits(dev, consts::EV::EV_ABS as u32,
-                                                  consts::ABS::ABS_MAX as u32),
-			consts::EventType::EV_LED => print_code_bits(dev, consts::EV::EV_LED as u32,
-                                                  consts::LED::LED_MAX as u32),
+		match ev_type {
+		    EventType::EV_KEY => print_code_bits(dev, EventCode::EV_KEY(KEY::KEY_RESERVED),
+                                                 EventCode::EV_KEY(KEY::KEY_MAX)),
+			EventType::EV_REL => print_code_bits(dev, EventCode::EV_REL(REL::REL_X),
+                                                 EventCode::EV_REL(REL::REL_MAX)),
+			EventType::EV_ABS => print_code_bits(dev, EventCode::EV_ABS(ABS::ABS_X),
+                                                 EventCode::EV_ABS(ABS::ABS_MAX)),
+			EventType::EV_LED => print_code_bits(dev, EventCode::EV_LED(LED::LED_NUML),
+                                                 EventCode::EV_LED(LED::LED_MAX)),
             _ => (),
 		}
 	}
 }
-*/
+
 fn print_props(dev: &Device) {
 	println!("Properties:");
 
@@ -120,8 +126,8 @@ fn main() {
     println!("Phys location: {}", d.phys().unwrap_or(""));
     println!("Uniq identifier: {}", d.uniq().unwrap_or(""));
 
-	//print_bits(&d);
-    //print_props(&d);
+    print_bits(&d);
+    print_props(&d);
 
     let mut a: Result<(ReadStatus, InputEvent), Errno>;
     loop {

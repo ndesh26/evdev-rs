@@ -46,6 +46,8 @@ extern crate libc;
 use std::fmt;
 #[macro_use]
 extern crate bitflags;
+#[macro_use]
+extern crate log;
 
 pub mod consts;
 pub mod logging;
@@ -214,11 +216,13 @@ fn event_code_to_raw(event_code: EventCode) -> (c_uint, c_uint) {
             ev_type = EventType::EV_FF_STATUS as c_uint;
             ev_code = code as c_uint;
         },
-        _ => {}
-    } 
+        _ => {
+            warn!("Event code not found");
+        }
+    }
 
     (ev_type, ev_code)
-    
+
 }
 
 fn event_code_from_raw(event_type: c_uint, event_code: c_uint) -> EventCode {
@@ -257,6 +261,259 @@ impl fmt::Display for EventCode {
         write!(f, "{}", ptr_to_str(unsafe {
             raw::libevdev_event_code_get_name(ev_type, ev_code)
         }).unwrap_or(""))
+    }
+}
+
+impl EventType {
+    pub fn iter() -> EventType {
+        return EventType::EV_MAX;  // EV_MAX is a placeholde so that SYN_REPORT doesn't get missed
+    }
+}
+
+impl EventCode {
+    pub fn iter() -> EventCode {
+        return EventCode::EV_MAX; // EV_MAX is a placeholde so that SYN_REPORT doesn't get missed
+    }
+}
+
+impl Iterator for EventType {
+    type Item = EventType;
+
+    fn next(&mut self) -> Option<EventType> {
+        match *self {
+            EventType::EV_MAX => {
+                *self = EventType::EV_SYN;
+                return Some(*self);
+            }
+            EventType::EV_FF_STATUS => {
+                return None;
+            }
+            _ => {
+                let mut raw_code = (*self as u32) + 1;
+                loop {
+                    match event_type(raw_code) {
+                        Some(x) => {
+                            *self = x;
+                            return Some(*self);
+                        }
+                        None => raw_code += 1,
+                    }
+                }
+            }
+        }
+    }
+}
+
+impl Iterator for EventCode {
+    type Item = EventCode;
+
+    fn next(&mut self) -> Option<EventCode> {
+        match *self {
+            EventCode::EV_MAX => {
+                *self = EventCode::EV_SYN(SYN::SYN_REPORT);
+                return Some(*self);
+            }
+            EventCode::EV_SYN(code) => {
+                match code {
+                    SYN::SYN_MAX => {
+                        *self = EventCode::EV_KEY(KEY::KEY_RESERVED);
+                        return Some(*self);
+                    }
+                    _ => {
+                        let mut raw_code = (code as u32) + 1;
+                        loop {
+                            match syn(raw_code) {
+                                Some(x) => {
+                                    *self = EventCode::EV_SYN(x);
+                                    return Some(*self);
+                                }
+                                None => raw_code += 1,
+                            }
+                        }
+                    }
+                }
+            }
+            EventCode::EV_KEY(code) => {
+                match code {
+                    KEY::KEY_MAX => {
+                        *self = EventCode::EV_REL(REL::REL_X);
+                        return Some(*self);
+                    }
+                    _ => {
+                        let mut raw_code = (code as u32) + 1;
+                        loop {
+                            match key(raw_code) {
+                                Some(x) => {
+                                    *self = EventCode::EV_KEY(x);
+                                    return Some(*self);
+                                }
+                                None => raw_code += 1,
+                            }
+                        }
+                    }
+                }
+            }
+            EventCode::EV_REL(code) => {
+                match code {
+                    REL::REL_MAX=> {
+                        *self = EventCode::EV_ABS(ABS::ABS_X);
+                        return Some(*self);
+                    }
+                    _ => {
+                        let mut raw_code = (code as u32) + 1;
+                        loop {
+                            match rel(raw_code) {
+                                Some(x) => {
+                                    *self = EventCode::EV_REL(x);
+                                    return Some(*self);
+                                }
+                                None => raw_code += 1,
+                            }
+                        }
+                    }
+                }
+            }
+            EventCode::EV_ABS(code) => {
+                match code {
+                    ABS::ABS_MAX => {
+                        *self = EventCode::EV_MSC(MSC::MSC_SERIAL);
+                        return Some(*self);
+                    }
+                    _ => {
+                        let mut raw_code = (code as u32) + 1;
+                        loop {
+                            match abs(raw_code) {
+                                Some(x) => {
+                                    *self = EventCode::EV_ABS(x);
+                                    return Some(*self);
+                                }
+                                None => raw_code += 1,
+                            }
+                        }
+                    }
+                }
+            }
+            EventCode::EV_MSC(code) => {
+                match code {
+                    MSC::MSC_MAX => {
+                        *self = EventCode::EV_SW(SW::SW_LID);
+                        return Some(*self);
+                    }
+                    _ => {
+                        let mut raw_code = (code as u32) + 1;
+                        loop {
+                            match msc(raw_code) {
+                                Some(x) => {
+                                    *self = EventCode::EV_MSC(x);
+                                    return Some(*self);
+                                }
+                                None => raw_code += 1,
+                            }
+                        }
+                    }
+                }
+            }
+            EventCode::EV_SW(code) => {
+                match code {
+                    SW::SW_MAX => {
+                        *self = EventCode::EV_LED(LED::LED_NUML);
+                        return Some(*self);
+                    }
+                    _ => {
+                        let mut raw_code = (code as u32) + 1;
+                        loop {
+                            match sw(raw_code) {
+                                Some(x) => {
+                                    *self = EventCode::EV_SW(x);
+                                    return Some(*self);
+                                }
+                                None => raw_code += 1,
+                            }
+                        }
+                    }
+                }
+            }
+            EventCode::EV_LED(code) => {
+                match code {
+                    LED::LED_MAX => {
+                        *self = EventCode::EV_SND(SND::SND_CLICK);
+                        return Some(*self);
+                    }
+                    _ => {
+                        let mut raw_code = (code as u32) + 1;
+                        loop {
+                            match led(raw_code) {
+                                Some(x) => {
+                                    *self = EventCode::EV_LED(x);
+                                    return Some(*self);
+                                }
+                                None => raw_code += 1,
+                            }
+                        }
+                    }
+                }
+            }
+            EventCode::EV_SND(code) => {
+                match code {
+                    SND::SND_MAX => {
+                        *self = EventCode::EV_REP(REP::REP_DELAY);
+                        return Some(*self);
+                    }
+                    _ => {
+                        let mut raw_code = (code as u32) + 1;
+                        loop {
+                            match snd(raw_code) {
+                                Some(x) => {
+                                    *self = EventCode::EV_SND(x);
+                                    return Some(*self);
+                                }
+                                None => raw_code += 1,
+                            }
+                        }
+                    }
+                }
+            }
+            EventCode::EV_REP(code) => {
+                match code {
+                    REP::REP_MAX => {
+                        *self = EventCode::EV_FF(FF::FF_STATUS_STOPPED);
+                        return Some(*self);
+                    }
+                    _ => {
+                        let mut raw_code = (code as u32) + 1;
+                        loop {
+                            match rep(raw_code) {
+                                Some(x) => {
+                                    *self = EventCode::EV_REP(x);
+                                    return Some(*self);
+                                }
+                                None => raw_code += 1,
+                            }
+                        }
+                    }
+                }
+            }
+            EventCode::EV_FF(code) => {
+                match code {
+                    FF::FF_MAX => {
+                        return None
+                    }
+                    _ => {
+                        let mut raw_code = (code as u32) + 1;
+                        loop {
+                            match ff(raw_code) {
+                                Some(x) => {
+                                    *self = EventCode::EV_FF(x);
+                                    return Some(*self);
+                                }
+                                None => raw_code += 1,
+                            }
+                        }
+                    }
+                }
+            }
+            _ => None,
+        }
     }
 }
 
@@ -464,9 +721,10 @@ impl Device {
     ///
     /// Returns the `AbsInfo` for the given the code or None if the device
     /// doesn't support this code
-    pub fn abs_info(&self, code: u32) -> Option<AbsInfo> {
+    pub fn abs_info(&self, code: EventCode) -> Option<AbsInfo> {
+        let (_, ev_code) = event_code_to_raw(code);
         let a = unsafe {
-            raw::libevdev_get_abs_info(self.raw, code)
+            raw::libevdev_get_abs_info(self.raw, ev_code)
         };
 
         if a.is_null() {
@@ -490,7 +748,8 @@ impl Device {
     ///
     /// This function has no effect if `has_event_code` returns false for
     /// this code.
-    pub fn set_abs_info(&self, code: u32, absinfo: &AbsInfo) {
+    pub fn set_abs_info(&self, code: EventCode, absinfo: &AbsInfo) {
+        let (_, ev_code) = event_code_to_raw(code);
         let absinfo = raw::input_absinfo {
                         value: absinfo.value,
                         minimum: absinfo.minimum,
@@ -501,7 +760,7 @@ impl Device {
                       };
 
         unsafe {
-            raw::libevdev_set_abs_info(self.raw, code as c_uint,
+            raw::libevdev_set_abs_info(self.raw, ev_code,
                                        &absinfo as *const _);
         }
     }
@@ -792,7 +1051,8 @@ impl Device {
 
     /// Set the device's EV_ABS axis to the value defined in the abs
     /// parameter. This will be written to the kernel.
-    pub fn set_kernel_abs_info(&self, code: u32, absinfo: &AbsInfo) {
+    pub fn set_kernel_abs_info(&self, code: EventCode, absinfo: &AbsInfo) {
+        let (_, ev_code) = event_code_to_raw(code);
         let absinfo = raw::input_absinfo {
                         value: absinfo.value,
                         minimum: absinfo.minimum,
@@ -803,7 +1063,7 @@ impl Device {
                       };
 
         unsafe {
-            raw::libevdev_kernel_set_abs_info(self.raw, code as c_uint,
+            raw::libevdev_kernel_set_abs_info(self.raw, ev_code,
                                               &absinfo as *const _);
         }
     }
