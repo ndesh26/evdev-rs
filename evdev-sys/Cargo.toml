@@ -7,7 +7,7 @@ links = "evdev"
 description = """
 Raw bindings to libevdev
 
-High level Rust bindings are avilable in the `evdev` crate
+High level Rust bindings are available in the `evdev` crate
 """
 
 [dependencies]
