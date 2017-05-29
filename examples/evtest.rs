@@ -72,7 +72,7 @@ fn print_bits(dev: &Device) {
 fn print_props(dev: &Device) {
 	println!("Properties:");
 
-	for i in 0..consts::INPUT_PROP::INPUT_PROP_MAX as u32 {
+	for i in 0..INPUT_PROP::INPUT_PROP_MAX as u32 {
 		if dev.has_property(i) {
 			println!("  Property type {} ({})", i, property_get_name(i).unwrap());
         }
@@ -81,7 +81,7 @@ fn print_props(dev: &Device) {
 
 fn print_event(ev: &InputEvent) {
     match ev.event_type {
-        consts::EventType::EV_SYN => {
+        EventType::EV_SYN => {
 		    println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
 				     ev.time.tv_sec,
 				     ev.time.tv_usec,
