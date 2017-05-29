@@ -153,7 +153,10 @@ fn main() {
         } else {
             match a.err().unwrap() {
                 Errno::EAGAIN => continue,
-                err => println!("{}", err),
+                err => {
+                    println!("{}", err);
+                    break;
+                }
             }
         }
     }
