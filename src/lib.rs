@@ -266,13 +266,13 @@ impl fmt::Display for EventCode {
 
 impl EventType {
     pub fn iter() -> EventType {
-        return EventType::EV_MAX;  // EV_MAX is a placeholde so that SYN_REPORT doesn't get missed
+        EventType::EV_MAX  // EV_MAX is a placeholder so that SYN_REPORT doesn't get missed
     }
 }
 
 impl EventCode {
     pub fn iter() -> EventCode {
-        return EventCode::EV_MAX; // EV_MAX is a placeholde so that SYN_REPORT doesn't get missed
+        EventCode::EV_MAX // EV_MAX is a placeholder so that SYN_REPORT doesn't get missed
     }
 }
 
