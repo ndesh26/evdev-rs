@@ -98,8 +98,8 @@ fn print_event(ev: &InputEvent) {
     }
 }
 
-fn print_sync_event(ev: &InputEvent) {
-	print!("SYNC: ");
+fn print_sync_dropped_event(ev: &InputEvent) {
+	print!("SYNC DROPPED: ");
 	print_event(ev);
 }
 
@@ -138,7 +138,7 @@ fn main() {
                 ReadStatus::Sync => {
                     println!("::::::::::::::::::::: dropped ::::::::::::::::::::::");
                     while result.0 == ReadStatus::Sync {
-                        print_sync_event(&result.1);
+                        print_sync_dropped_event(&result.1);
                         a = d.next_event(evdev::SYNC);
                         if a.is_ok() {
                             result = a.ok().unwrap();
