@@ -146,7 +146,7 @@ fn device_has_syn() {
     d.set_fd(&f).unwrap();
 
     assert!(d.has_event_type(consts::EventType::EV_SYN)); // EV_SYN
-    assert!(d.has_event_code(consts::EventCode::EV_SYN(consts::SYN::SYN_REPORT))); // SYN_REPORT
+    assert!(d.has_event_code(consts::EventCode::EV_SYN(consts::EV_SYN::SYN_REPORT))); // SYN_REPORT
 }
 
 #[test]
@@ -156,7 +156,7 @@ fn device_get_value() {
 
     d.set_fd(&f).unwrap();
 
-    let v2 = d.event_value(consts::EventCode::EV_SYN(consts::SYN::SYN_REPORT)); // SYN_REPORT
+    let v2 = d.event_value(consts::EventCode::EV_SYN(consts::EV_SYN::SYN_REPORT)); // SYN_REPORT
     assert_eq!(v2, Some(0));
 }
 

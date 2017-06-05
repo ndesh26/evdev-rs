@@ -68,8 +68,10 @@ def convert(name):
 def print_enums(bits, prefix):
         if prefix == "ev":
                 enum_name = "EventType"
-        else:
+        elif prefix == "input_prop":
                 enum_name = prefix.upper()
+        else:
+                enum_name = "EV_" + prefix.upper()
 
 	if  not hasattr(bits, prefix):
 		return
@@ -90,13 +92,15 @@ def print_enums(bits, prefix):
 def print_enums_convert_fn(bits, prefix):
         if prefix == "ev":
                 fn_name = "EventType"
-        else:
+        elif prefix == "input_prop":
                 fn_name = prefix.upper()
+        else:
+                fn_name = "EV_" + prefix.upper()
 
 	if  not hasattr(bits, prefix):
 		return
 
-        print("pub fn %s(code: u32) -> Option<%s> {" %(convert(fn_name), fn_name))
+        print("pub fn %s(code: u32) -> Option<%s> {" %("int_to_" + convert(fn_name), fn_name))
         print("    match code {")
 	for val, name in list(getattr(bits, prefix).items()):
                 print("        %s => Some(%s::%s)," % (val, fn_name, name))

@@ -10,7 +10,7 @@ fn usage() {
     println!("Usage: evtest /path/to/device");
 }
 
-fn print_abs_bits(dev: &Device, axis: ABS) {
+fn print_abs_bits(dev: &Device, axis: EV_ABS) {
 
 	if !dev.has_event_code(EventCode::EV_ABS(axis)) { return; }
 
@@ -56,14 +56,14 @@ fn print_bits(dev: &Device) {
         }
 
 		match ev_type {
-		    EventType::EV_KEY => print_code_bits(dev, EventCode::EV_KEY(KEY::KEY_RESERVED),
-                                                 EventCode::EV_KEY(KEY::KEY_MAX)),
-			EventType::EV_REL => print_code_bits(dev, EventCode::EV_REL(REL::REL_X),
-                                                 EventCode::EV_REL(REL::REL_MAX)),
-			EventType::EV_ABS => print_code_bits(dev, EventCode::EV_ABS(ABS::ABS_X),
-                                                 EventCode::EV_ABS(ABS::ABS_MAX)),
-			EventType::EV_LED => print_code_bits(dev, EventCode::EV_LED(LED::LED_NUML),
-                                                 EventCode::EV_LED(LED::LED_MAX)),
+		    EventType::EV_KEY => print_code_bits(dev, EventCode::EV_KEY(EV_KEY::KEY_RESERVED),
+                                                 EventCode::EV_KEY(EV_KEY::KEY_MAX)),
+			EventType::EV_REL => print_code_bits(dev, EventCode::EV_REL(EV_REL::REL_X),
+                                                 EventCode::EV_REL(EV_REL::REL_MAX)),
+			EventType::EV_ABS => print_code_bits(dev, EventCode::EV_ABS(EV_ABS::ABS_X),
+                                                 EventCode::EV_ABS(EV_ABS::ABS_MAX)),
+			EventType::EV_LED => print_code_bits(dev, EventCode::EV_LED(EV_LED::LED_NUML),
+                                                 EventCode::EV_LED(EV_LED::LED_MAX)),
             _ => (),
 		}
 	}
