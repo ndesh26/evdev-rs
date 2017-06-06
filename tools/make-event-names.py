@@ -123,9 +123,9 @@ def print_event_code(bits, prefix):
 	print("pub enum EventCode {")
 	for val, name in list(getattr(bits, prefix).items()):
             if name[3:]+"_" in names:
-                    print("    %s(%s)," % (name, name[3:]))
+                    print("    %s(%s)," % (name, name))
             elif name == "EV_FF_STATUS":
-                    print("    EV_FF_STATUS(FF),")
+                    print("    EV_FF_STATUS(EV_FF),")
             else:
                     print("    %s," % (name))
 	if prefix == "key":
