@@ -206,7 +206,7 @@ def print_mapping_table(bits):
                 print_enums_convert_fn(bits, prefix[:-1].lower())
                 if prefix == "EV_":
                         print_event_code(bits, prefix[:-1].lower())
-                
+
 
 #	for prefix in prefixes:
 #		if prefix == "BTN_":
