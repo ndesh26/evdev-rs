@@ -225,7 +225,7 @@ fn event_code_to_int(event_code: EventCode) -> (c_uint, c_uint) {
 
 }
 
-fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> EventCode {
+fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> Option<EventCode> {
     let ev_type: EventType = int_to_event_type(event_type as u32).unwrap();
     let ev_code: EventCode;
     match ev_type {
@@ -244,7 +244,7 @@ fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> EventCode {
         EventType::EV_MAX => ev_code = EventCode::EV_MAX,
     }
 
-    ev_code
+    Some(ev_code)
 }
 
 impl fmt::Display for EventType {
@@ -526,15 +526,15 @@ pub fn property_get_name(prop: u32) -> Option<&'static str> {
 }
 
 /// The given type constant for the passed name or Errno if not found.
-pub fn event_type_from_name(name: &str) -> Result<i32, Errno> {
+pub fn event_type_from_name(name: &str) -> Option<EventType> {
     let name = CString::new(name).unwrap();
     let result = unsafe {
         raw::libevdev_event_type_from_name(name.as_ptr())
     };
 
     match result {
-        -1 => Err(Errno::from_i32(1)),
-         k => Ok(k),
+        -1 => None,
+         k => int_to_event_type(k as u32),
     }
 }
 
@@ -542,15 +542,15 @@ pub fn event_type_from_name(name: &str) -> Result<i32, Errno> {
 /// prefix followed by their name (eg., "ABS_X"). The prefix must be included in
 /// the name. It returns the constant assigned to the event code or Errno if not
 /// found.
-pub fn event_code_from_name(ev_type: EventType, name: &str) -> Result<i32, Errno> {
+pub fn event_code_from_name(ev_type: EventType, name: &str) -> Option<EventCode> {
     let name = CString::new(name).unwrap();
     let result = unsafe {
         raw::libevdev_event_code_from_name(ev_type as c_uint, name.as_ptr())
     };
 
     match result {
-        -1 => Err(Errno::from_i32(1)),
-         k => Ok(k),
+        -1 => None,
+         k => int_to_event_code(ev_type as u32, k as u32),
     }
 }
 
@@ -558,28 +558,28 @@ pub fn event_code_from_name(ev_type: EventType, name: &str) -> Result<i32, Errno
 /// prefix "INPUT_PROP_" followed by their name (eg., "INPUT_PROP_POINTER").
 /// The prefix must be included in the name. It returns the constant assigned
 /// to the property or Errno if not found.
-pub fn property_from_name(name: &str) -> Result<i32, Errno> {
+pub fn property_from_name(name: &str) -> Option<i32> {
     let name = CString::new(name).unwrap();
     let result = unsafe {
         raw::libevdev_property_from_name(name.as_ptr())
     };
 
     match result {
-        -1 => Err(Errno::from_i32(1)),
-         k => Ok(k),
+        -1 => None,
+         k => Some(k),
     }
 }
 
 /// The max value defined for the given event type, e.g. ABS_MAX for a type
 /// of EV_ABS, or Errno for an invalid type.
-pub fn event_type_get_max(ev_type: EventType) -> Result<i32, Errno> {
+pub fn event_type_get_max(ev_type: EventType) -> Option<i32> {
     let result = unsafe {
         raw::libevdev_event_type_get_max(ev_type as c_uint)
     };
 
     match result {
-        -1 => Err(Errno::from_i32(1)),
-         k => Ok(k),
+        -1 => None,
+         k => Some(k),
     }
 }
 
@@ -1155,7 +1155,7 @@ impl Device {
                 tv_usec: ev.time.tv_usec,
             },
             event_type: int_to_event_type(ev.event_type as u32).unwrap(),
-            event_code: int_to_event_code(ev.event_type as u32, ev.event_code as u32),
+            event_code: int_to_event_code(ev.event_type as u32, ev.event_code as u32).unwrap(),
             value: ev.value,
         };
 
