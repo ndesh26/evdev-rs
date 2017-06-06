@@ -1462,7 +1462,7 @@ pub fn int_to_ev_rep(code: u32) -> Option<EV_REP> {
 #[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
-pub enum INPUT_PROP {
+pub enum InputProp {
     INPUT_PROP_POINTER = 0,
     INPUT_PROP_DIRECT = 1,
     INPUT_PROP_BUTTONPAD = 2,
@@ -1473,16 +1473,16 @@ pub enum INPUT_PROP {
     INPUT_PROP_MAX = 31,
 }
 
-pub fn int_to_input_prop(code: u32) -> Option<INPUT_PROP> {
+pub fn int_to_input_prop(code: u32) -> Option<InputProp> {
     match code {
-        0 => Some(INPUT_PROP::INPUT_PROP_POINTER),
-        1 => Some(INPUT_PROP::INPUT_PROP_DIRECT),
-        2 => Some(INPUT_PROP::INPUT_PROP_BUTTONPAD),
-        3 => Some(INPUT_PROP::INPUT_PROP_SEMI_MT),
-        4 => Some(INPUT_PROP::INPUT_PROP_TOPBUTTONPAD),
-        5 => Some(INPUT_PROP::INPUT_PROP_POINTING_STICK),
-        6 => Some(INPUT_PROP::INPUT_PROP_ACCELEROMETER),
-        31 => Some(INPUT_PROP::INPUT_PROP_MAX),
+        0 => Some(InputProp::INPUT_PROP_POINTER),
+        1 => Some(InputProp::INPUT_PROP_DIRECT),
+        2 => Some(InputProp::INPUT_PROP_BUTTONPAD),
+        3 => Some(InputProp::INPUT_PROP_SEMI_MT),
+        4 => Some(InputProp::INPUT_PROP_TOPBUTTONPAD),
+        5 => Some(InputProp::INPUT_PROP_POINTING_STICK),
+        6 => Some(InputProp::INPUT_PROP_ACCELEROMETER),
+        31 => Some(InputProp::INPUT_PROP_MAX),
         _ => None
     }
 }

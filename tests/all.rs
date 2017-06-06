@@ -131,8 +131,8 @@ fn device_has_property() {
     let f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
-    for prop in 0..0xff {
-        if d.has_property(prop) && prop > 4 {
+    for prop in InputProp::iter() {
+        if d.has_property(prop) {
             panic!("Prop {} is set, shouldn't be", prop);
         }
     }

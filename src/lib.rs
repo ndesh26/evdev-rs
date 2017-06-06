@@ -264,6 +264,14 @@ impl fmt::Display for EventCode {
     }
 }
 
+impl fmt::Display for InputProp {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ptr_to_str(unsafe {
+            raw::libevdev_property_get_name(*self as c_uint)
+        }).unwrap_or(""))
+    }
+}
+
 impl EventType {
     pub fn iter() -> EventType {
         EventType::EV_MAX  // EV_MAX is a placeholder so that SYN_REPORT doesn't get missed
@@ -273,6 +281,12 @@ impl EventType {
 impl EventCode {
     pub fn iter() -> EventCode {
         EventCode::EV_MAX // EV_MAX is a placeholder so that SYN_REPORT doesn't get missed
+    }
+}
+
+impl InputProp {
+    pub fn iter() -> InputProp {
+        InputProp::INPUT_PROP_MAX // INPUT_PROP_MAX is a placeholder so that SYN_REPORT doesn't get missed
     }
 }
 
@@ -517,12 +531,32 @@ impl Iterator for EventCode {
     }
 }
 
-/// The name of the given input prop (e.g. INPUT_PROP_BUTTONPAD) or None for an
-/// invalid property
-pub fn property_get_name(prop: u32) -> Option<&'static str> {
-    ptr_to_str(unsafe {
-        raw::libevdev_property_get_name(prop)
-    })
+impl Iterator for InputProp {
+    type Item = InputProp;
+
+    fn next(&mut self) -> Option<InputProp> {
+        match *self {
+            InputProp::INPUT_PROP_MAX => {
+                *self = InputProp::INPUT_PROP_POINTER;
+                return Some(*self);
+            }
+            InputProp::INPUT_PROP_ACCELEROMETER => {
+                return None;
+            }
+            _ => {
+                let mut raw_enum = (*self as u32) + 1;
+                loop {
+                    match int_to_input_prop(raw_enum) {
+                        Some(x) => {
+                            *self = x;
+                            return Some(*self);
+                        }
+                        None => raw_enum += 1,
+                    }
+                }
+            }
+        }
+    }
 }
 
 /// The given type constant for the passed name or Errno if not found.
@@ -558,7 +592,7 @@ pub fn event_code_from_name(ev_type: EventType, name: &str) -> Option<EventCode>
 /// prefix "INPUT_PROP_" followed by their name (eg., "INPUT_PROP_POINTER").
 /// The prefix must be included in the name. It returns the constant assigned
 /// to the property or Errno if not found.
-pub fn property_from_name(name: &str) -> Option<i32> {
+pub fn property_from_name(name: &str) -> Option<InputProp> {
     let name = CString::new(name).unwrap();
     let result = unsafe {
         raw::libevdev_property_from_name(name.as_ptr())
@@ -566,7 +600,7 @@ pub fn property_from_name(name: &str) -> Option<i32> {
 
     match result {
         -1 => None,
-         k => Some(k),
+         k => int_to_input_prop(k as u32),
     }
 }
 
@@ -766,14 +800,14 @@ impl Device {
     }
 
     /// Return `true` if device support the property and false otherwise
-    pub fn has_property(&self, prop: u32) -> bool {
+    pub fn has_property(&self, prop: InputProp) -> bool {
         unsafe {
             raw::libevdev_has_property(self.raw, prop as c_uint) != 0
         }
     }
 
     /// Enables this property, a call to `set_fd` will overwrite any previously set values
-    pub fn enable_property(&self, prop: u32) -> Result<(), Errno> {
+    pub fn enable_property(&self, prop: InputProp) -> Result<(), Errno> {
         let result = unsafe {
             raw::libevdev_enable_property(self.raw, prop as c_uint) as i32
         };

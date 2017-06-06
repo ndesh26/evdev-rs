@@ -72,9 +72,9 @@ fn print_bits(dev: &Device) {
 fn print_props(dev: &Device) {
 	println!("Properties:");
 
-	for i in 0..INPUT_PROP::INPUT_PROP_MAX as u32 {
-		if dev.has_property(i) {
-			println!("  Property type {} ({})", i, property_get_name(i).unwrap());
+	for input_prop in InputProp::iter() {
+		if dev.has_property(input_prop) {
+			println!("  Property type: {}", input_prop);
         }
     }
 }

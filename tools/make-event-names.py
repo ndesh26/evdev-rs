@@ -69,7 +69,7 @@ def print_enums(bits, prefix):
         if prefix == "ev":
                 enum_name = "EventType"
         elif prefix == "input_prop":
-                enum_name = prefix.upper()
+                enum_name = "InputProp"
         else:
                 enum_name = "EV_" + prefix.upper()
 
@@ -93,7 +93,7 @@ def print_enums_convert_fn(bits, prefix):
         if prefix == "ev":
                 fn_name = "EventType"
         elif prefix == "input_prop":
-                fn_name = prefix.upper()
+                fn_name = "InputProp"
         else:
                 fn_name = "EV_" + prefix.upper()
 
