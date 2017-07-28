@@ -31,10 +31,11 @@ fn print_abs_bits(dev: &Device, axis: EV_ABS) {
 }
 
 fn print_code_bits(dev: &Device, ev_code: EventCode, max: EventCode) {
-    let mut code = ev_code;
-    while code != max {
+    for code in ev_code.iter() {
+        if code == max {
+            break;
+        }
         if !dev.has_event_code(code) {
-            code.next();
             continue;
         }
 
@@ -43,14 +44,13 @@ fn print_code_bits(dev: &Device, ev_code: EventCode, max: EventCode) {
             EventCode::EV_ABS(k) => print_abs_bits(dev, k),
             _ => ()
         }
-        code.next();
     }
 }
 
 fn print_bits(dev: &Device) {
     println!("Supported events:");
 
-    for ev_type in  EventType::iter() {
+    for ev_type in  EventType::EV_SYN.iter() {
 		if dev.has_event_type(ev_type) {
 			println!("  Event type: {} ", ev_type);
         }
@@ -72,7 +72,7 @@ fn print_bits(dev: &Device) {
 fn print_props(dev: &Device) {
 	println!("Properties:");
 
-	for input_prop in InputProp::iter() {
+	for input_prop in InputProp::INPUT_PROP_POINTER.iter() {
 		if dev.has_property(input_prop) {
 			println!("  Property type: {}", input_prop);
         }

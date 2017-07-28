@@ -115,7 +115,7 @@ fn device_get_absinfo() {
     let f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
-    for code in EventCode::iter() {
+    for code in EventCode::EV_SYN(EV_SYN::SYN_REPORT).iter() {
         let absinfo: Option<AbsInfo> = d.abs_info(code);
 
         match absinfo {
@@ -131,7 +131,7 @@ fn device_has_property() {
     let f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
-    for prop in InputProp::iter() {
+    for prop in InputProp::INPUT_PROP_POINTER.iter() {
         if d.has_property(prop) {
             panic!("Prop {} is set, shouldn't be", prop);
         }
