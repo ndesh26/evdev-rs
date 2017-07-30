@@ -1,7 +1,6 @@
 /* THIS FILE IS GENERATED, DO NOT EDIT */
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EventType {
@@ -40,7 +39,6 @@ pub fn int_to_event_type(code: u32) -> Option<EventType> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EventCode {
@@ -60,7 +58,6 @@ pub enum EventCode {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EV_REL {
@@ -95,7 +92,6 @@ pub fn int_to_ev_rel(code: u32) -> Option<EV_REL> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EV_ABS {
@@ -192,7 +188,6 @@ pub fn int_to_ev_abs(code: u32) -> Option<EV_ABS> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EV_KEY {
@@ -1289,7 +1284,6 @@ pub fn int_to_ev_key(code: u32) -> Option<EV_KEY> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EV_LED {
@@ -1326,7 +1320,6 @@ pub fn int_to_ev_led(code: u32) -> Option<EV_LED> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EV_SND {
@@ -1347,7 +1340,6 @@ pub fn int_to_ev_snd(code: u32) -> Option<EV_SND> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EV_MSC {
@@ -1374,7 +1366,6 @@ pub fn int_to_ev_msc(code: u32) -> Option<EV_MSC> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EV_SW {
@@ -1419,7 +1410,6 @@ pub fn int_to_ev_sw(code: u32) -> Option<EV_SW> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EV_SYN {
@@ -1442,7 +1432,6 @@ pub fn int_to_ev_syn(code: u32) -> Option<EV_SYN> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EV_REP {
@@ -1459,7 +1448,6 @@ pub fn int_to_ev_rep(code: u32) -> Option<EV_REP> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum InputProp {
@@ -1488,7 +1476,6 @@ pub fn int_to_input_prop(code: u32) -> Option<InputProp> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy)]
 #[derive(Clone)]
 #[derive(PartialEq)]
 pub enum EV_FF {

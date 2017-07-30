@@ -10,11 +10,13 @@ fn usage() {
     println!("Usage: evtest /path/to/device");
 }
 
-fn print_abs_bits(dev: &Device, axis: EV_ABS) {
+fn print_abs_bits(dev: &Device, axis: &EV_ABS) {
 
-	if !dev.has_event_code(EventCode::EV_ABS(axis)) { return; }
+    let code = EventCode::EV_ABS(axis.clone());
 
-	let abs = dev.abs_info(EventCode::EV_ABS(axis)).unwrap();
+	if !dev.has_event_code(&code) { return; }
+
+	let abs = dev.abs_info(&code).unwrap();
 
 	println!("	Value	{}", abs.value);
 	println!("	Min	{}", abs.minimum);
@@ -30,18 +32,18 @@ fn print_abs_bits(dev: &Device, axis: EV_ABS) {
     }
 }
 
-fn print_code_bits(dev: &Device, ev_code: EventCode, max: EventCode) {
+fn print_code_bits(dev: &Device, ev_code: &EventCode, max: &EventCode) {
     for code in ev_code.iter() {
-        if code == max {
+        if code == *max {
             break;
         }
-        if !dev.has_event_code(code) {
+        if !dev.has_event_code(&code) {
             continue;
         }
 
 		println!("    Event code: {}", code);
         match code {
-            EventCode::EV_ABS(k) => print_abs_bits(dev, k),
+            EventCode::EV_ABS(k) => print_abs_bits(dev, &k),
             _ => ()
         }
     }
@@ -51,19 +53,19 @@ fn print_bits(dev: &Device) {
     println!("Supported events:");
 
     for ev_type in  EventType::EV_SYN.iter() {
-		if dev.has_event_type(ev_type) {
+		if dev.has_event_type(&ev_type) {
 			println!("  Event type: {} ", ev_type);
         }
 
-		match ev_type {
-		    EventType::EV_KEY => print_code_bits(dev, EventCode::EV_KEY(EV_KEY::KEY_RESERVED),
-                                                 EventCode::EV_KEY(EV_KEY::KEY_MAX)),
-			EventType::EV_REL => print_code_bits(dev, EventCode::EV_REL(EV_REL::REL_X),
-                                                 EventCode::EV_REL(EV_REL::REL_MAX)),
-			EventType::EV_ABS => print_code_bits(dev, EventCode::EV_ABS(EV_ABS::ABS_X),
-                                                 EventCode::EV_ABS(EV_ABS::ABS_MAX)),
-			EventType::EV_LED => print_code_bits(dev, EventCode::EV_LED(EV_LED::LED_NUML),
-                                                 EventCode::EV_LED(EV_LED::LED_MAX)),
+        match ev_type {
+            EventType::EV_KEY => print_code_bits(dev, &EventCode::EV_KEY(EV_KEY::KEY_RESERVED),
+                                                 &EventCode::EV_KEY(EV_KEY::KEY_MAX)),
+            EventType::EV_REL => print_code_bits(dev, &EventCode::EV_REL(EV_REL::REL_X),
+                                                 &EventCode::EV_REL(EV_REL::REL_MAX)),
+            EventType::EV_ABS => print_code_bits(dev, &EventCode::EV_ABS(EV_ABS::ABS_X),
+                                                 &EventCode::EV_ABS(EV_ABS::ABS_MAX)),
+            EventType::EV_LED => print_code_bits(dev, &EventCode::EV_LED(EV_LED::LED_NUML),
+                                                 &EventCode::EV_LED(EV_LED::LED_MAX)),
             _ => (),
 		}
 	}
@@ -73,7 +75,7 @@ fn print_props(dev: &Device) {
 	println!("Properties:");
 
 	for input_prop in InputProp::INPUT_PROP_POINTER.iter() {
-		if dev.has_property(input_prop) {
+		if dev.has_property(&input_prop) {
 			println!("  Property type: {}", input_prop);
         }
     }

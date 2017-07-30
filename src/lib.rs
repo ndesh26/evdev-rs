@@ -180,10 +180,10 @@ fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
     }
 }
 
-fn event_code_to_int(event_code: EventCode) -> (c_uint, c_uint) {
+fn event_code_to_int(event_code: &EventCode) -> (c_uint, c_uint) {
     let mut ev_type: c_uint = 0;
     let mut ev_code: c_uint = 0;
-    match event_code {
+    match event_code.clone() {
         EventCode::EV_SYN(code) => {
             ev_type = EventType::EV_SYN as c_uint;
             ev_code = code as c_uint;
@@ -262,14 +262,14 @@ fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> Option<EventCode
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ptr_to_str(unsafe {
-            raw::libevdev_event_type_get_name(*self as c_uint)
+            raw::libevdev_event_type_get_name(self.clone() as c_uint)
         }).unwrap_or(""))
     }
 }
 
 impl fmt::Display for EventCode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let (ev_type, ev_code) = event_code_to_int(*self);
+        let (ev_type, ev_code) = event_code_to_int(self);
         write!(f, "{}", ptr_to_str(unsafe {
             raw::libevdev_event_code_get_name(ev_type, ev_code)
         }).unwrap_or(""))
@@ -279,7 +279,7 @@ impl fmt::Display for EventCode {
 impl fmt::Display for InputProp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ptr_to_str(unsafe {
-            raw::libevdev_property_get_name(*self as c_uint)
+            raw::libevdev_property_get_name(self.clone() as c_uint)
         }).unwrap_or(""))
     }
 }
@@ -312,11 +312,11 @@ impl Iterator for EventTypeIterator {
                 return None;
             }
             _ => {
-                let mut raw_code = (self.current as u32) + 1;
+                let mut raw_code = (self.current.clone() as u32) + 1;
                 loop {
                     match int_to_event_type(raw_code) {
                         Some(x) => {
-                            let code = self.current;
+                            let code = self.current.clone();
                             self.current = x;
                             return Some(code);
                         }
@@ -332,11 +332,11 @@ impl Iterator for EventCodeIterator {
     type Item = EventCode;
 
     fn next(&mut self) -> Option<EventCode> {
-        match self.current {
+        match self.current.clone() {
             EventCode::EV_SYN(code) => {
                 match code {
                     EV_SYN::SYN_MAX => {
-                        let ev_code = self.current;
+                        let ev_code = self.current.clone();
                         self.current = EventCode::EV_KEY(EV_KEY::KEY_RESERVED);
                         return Some(ev_code);
                     }
@@ -345,7 +345,7 @@ impl Iterator for EventCodeIterator {
                         loop {
                             match int_to_ev_syn(raw_code) {
                                 Some(x) => {
-                                    let ev_code = self.current;
+                                    let ev_code = self.current.clone();
                                     self.current = EventCode::EV_SYN(x);
                                     return Some(ev_code);
                                 }
@@ -358,7 +358,7 @@ impl Iterator for EventCodeIterator {
             EventCode::EV_KEY(code) => {
                 match code {
                     EV_KEY::KEY_MAX => {
-                        let ev_code = self.current;
+                        let ev_code = self.current.clone();
                         self.current = EventCode::EV_REL(EV_REL::REL_X);
                         return Some(ev_code);
                     }
@@ -367,7 +367,7 @@ impl Iterator for EventCodeIterator {
                         loop {
                             match int_to_ev_key(raw_code) {
                                 Some(x) => {
-                                    let ev_code = self.current;
+                                    let ev_code = self.current.clone();
                                     self.current = EventCode::EV_KEY(x);
                                     return Some(ev_code);
                                 }
@@ -380,7 +380,7 @@ impl Iterator for EventCodeIterator {
             EventCode::EV_REL(code) => {
                 match code {
                     EV_REL::REL_MAX=> {
-                        let ev_code = self.current;
+                        let ev_code = self.current.clone();
                         self.current = EventCode::EV_ABS(EV_ABS::ABS_X);
                         return Some(ev_code);
                     }
@@ -389,7 +389,7 @@ impl Iterator for EventCodeIterator {
                         loop {
                             match int_to_ev_rel(raw_code) {
                                 Some(x) => {
-                                    let ev_code = self.current;
+                                    let ev_code = self.current.clone();
                                     self.current = EventCode::EV_REL(x);
                                     return Some(ev_code);
                                 }
@@ -402,7 +402,7 @@ impl Iterator for EventCodeIterator {
             EventCode::EV_ABS(code) => {
                 match code {
                     EV_ABS::ABS_MAX => {
-                        let ev_code = self.current;
+                        let ev_code = self.current.clone();
                         self.current = EventCode::EV_MSC(EV_MSC::MSC_SERIAL);
                         return Some(ev_code);
                     }
@@ -411,7 +411,7 @@ impl Iterator for EventCodeIterator {
                         loop {
                             match int_to_ev_abs(raw_code) {
                                 Some(x) => {
-                                    let ev_code = self.current;
+                                    let ev_code = self.current.clone();
                                     self.current = EventCode::EV_ABS(x);
                                     return Some(ev_code);
                                 }
@@ -424,7 +424,7 @@ impl Iterator for EventCodeIterator {
             EventCode::EV_MSC(code) => {
                 match code {
                     EV_MSC::MSC_MAX => {
-                        let ev_code = self.current;
+                        let ev_code = self.current.clone();
                         self.current = EventCode::EV_SW(EV_SW::SW_LID);
                         return Some(ev_code);
                     }
@@ -433,7 +433,7 @@ impl Iterator for EventCodeIterator {
                         loop {
                             match int_to_ev_msc(raw_code) {
                                 Some(x) => {
-                                    let ev_code = self.current;
+                                    let ev_code = self.current.clone();
                                     self.current = EventCode::EV_MSC(x);
                                     return Some(ev_code);
                                 }
@@ -446,7 +446,7 @@ impl Iterator for EventCodeIterator {
             EventCode::EV_SW(code) => {
                 match code {
                     EV_SW::SW_MAX => {
-                        let ev_code = self.current;
+                        let ev_code = self.current.clone();
                         self.current = EventCode::EV_LED(EV_LED::LED_NUML);
                         return Some(ev_code);
                     }
@@ -455,7 +455,7 @@ impl Iterator for EventCodeIterator {
                         loop {
                             match int_to_ev_sw(raw_code) {
                                 Some(x) => {
-                                    let ev_code = self.current;
+                                    let ev_code = self.current.clone();
                                     self.current = EventCode::EV_SW(x);
                                     return Some(ev_code);
                                 }
@@ -468,7 +468,7 @@ impl Iterator for EventCodeIterator {
             EventCode::EV_LED(code) => {
                 match code {
                     EV_LED::LED_MAX => {
-                        let ev_code = self.current;
+                        let ev_code = self.current.clone();
                         self.current = EventCode::EV_SND(EV_SND::SND_CLICK);
                         return Some(ev_code);
                     }
@@ -477,7 +477,7 @@ impl Iterator for EventCodeIterator {
                         loop {
                             match int_to_ev_led(raw_code) {
                                 Some(x) => {
-                                    let ev_code = self.current;
+                                    let ev_code = self.current.clone();
                                     self.current = EventCode::EV_LED(x);
                                     return Some(ev_code);
                                 }
@@ -490,7 +490,7 @@ impl Iterator for EventCodeIterator {
             EventCode::EV_SND(code) => {
                 match code {
                     EV_SND::SND_MAX => {
-                        let ev_code = self.current;
+                        let ev_code = self.current.clone();
                         self.current = EventCode::EV_REP(EV_REP::REP_DELAY);
                         return Some(ev_code);
                     }
@@ -499,7 +499,7 @@ impl Iterator for EventCodeIterator {
                         loop {
                             match int_to_ev_snd(raw_code) {
                                 Some(x) => {
-                                    let ev_code = self.current;
+                                    let ev_code = self.current.clone();
                                     self.current = EventCode::EV_SND(x);
                                     return Some(ev_code);
                                 }
@@ -512,7 +512,7 @@ impl Iterator for EventCodeIterator {
             EventCode::EV_REP(code) => {
                 match code {
                     EV_REP::REP_MAX => {
-                        let ev_code = self.current;
+                        let ev_code = self.current.clone();
                         self.current = EventCode::EV_FF(EV_FF::FF_STATUS_STOPPED);
                         return Some(ev_code);
                     }
@@ -521,7 +521,7 @@ impl Iterator for EventCodeIterator {
                         loop {
                             match int_to_ev_rep(raw_code) {
                                 Some(x) => {
-                                    let ev_code = self.current;
+                                    let ev_code = self.current.clone();
                                     self.current = EventCode::EV_REP(x);
                                     return Some(ev_code);
                                 }
@@ -541,7 +541,7 @@ impl Iterator for EventCodeIterator {
                         loop {
                             match int_to_ev_ff(raw_code) {
                                 Some(x) => {
-                                    let ev_code = self.current;
+                                    let ev_code = self.current.clone();
                                     self.current = EventCode::EV_FF(x);
                                     return Some(ev_code);
                                 }
@@ -565,11 +565,11 @@ impl Iterator for InputPropIterator {
                 return None;
             }
             _ => {
-                let mut raw_enum = (self.current as u32) + 1;
+                let mut raw_enum = (self.current.clone() as u32) + 1;
                 loop {
                     match int_to_input_prop(raw_enum) {
                         Some(x) => {
-                            let prop = self.current;
+                            let prop = self.current.clone();
                             self.current = x;
                             return Some(prop);
                         }
@@ -598,15 +598,15 @@ pub fn event_type_from_name(name: &str) -> Option<EventType> {
 /// prefix followed by their name (eg., "ABS_X"). The prefix must be included in
 /// the name. It returns the constant assigned to the event code or Errno if not
 /// found.
-pub fn event_code_from_name(ev_type: EventType, name: &str) -> Option<EventCode> {
+pub fn event_code_from_name(ev_type: &EventType, name: &str) -> Option<EventCode> {
     let name = CString::new(name).unwrap();
     let result = unsafe {
-        raw::libevdev_event_code_from_name(ev_type as c_uint, name.as_ptr())
+        raw::libevdev_event_code_from_name(ev_type.clone() as c_uint, name.as_ptr())
     };
 
     match result {
         -1 => None,
-         k => int_to_event_code(ev_type as u32, k as u32),
+         k => int_to_event_code(ev_type.clone() as u32, k as u32),
     }
 }
 
@@ -628,9 +628,9 @@ pub fn property_from_name(name: &str) -> Option<InputProp> {
 
 /// The max value defined for the given event type, e.g. ABS_MAX for a type
 /// of EV_ABS, or Errno for an invalid type.
-pub fn event_type_get_max(ev_type: EventType) -> Option<i32> {
+pub fn event_type_get_max(ev_type: &EventType) -> Option<i32> {
     let result = unsafe {
-        raw::libevdev_event_type_get_max(ev_type as c_uint)
+        raw::libevdev_event_type_get_max(ev_type.clone() as c_uint)
     };
 
     match result {
@@ -777,7 +777,7 @@ impl Device {
     ///
     /// Returns the `AbsInfo` for the given the code or None if the device
     /// doesn't support this code
-    pub fn abs_info(&self, code: EventCode) -> Option<AbsInfo> {
+    pub fn abs_info(&self, code: &EventCode) -> Option<AbsInfo> {
         let (_, ev_code) = event_code_to_int(code);
         let a = unsafe {
             raw::libevdev_get_abs_info(self.raw, ev_code)
@@ -804,7 +804,7 @@ impl Device {
     ///
     /// This function has no effect if `has_event_code` returns false for
     /// this code.
-    pub fn set_abs_info(&self, code: EventCode, absinfo: &AbsInfo) {
+    pub fn set_abs_info(&self, code: &EventCode, absinfo: &AbsInfo) {
         let (_, ev_code) = event_code_to_int(code);
         let absinfo = raw::input_absinfo {
                         value: absinfo.value,
@@ -822,16 +822,16 @@ impl Device {
     }
 
     /// Return `true` if device support the property and false otherwise
-    pub fn has_property(&self, prop: InputProp) -> bool {
+    pub fn has_property(&self, prop: &InputProp) -> bool {
         unsafe {
-            raw::libevdev_has_property(self.raw, prop as c_uint) != 0
+            raw::libevdev_has_property(self.raw, prop.clone() as c_uint) != 0
         }
     }
 
     /// Enables this property, a call to `set_fd` will overwrite any previously set values
-    pub fn enable_property(&self, prop: InputProp) -> Result<(), Errno> {
+    pub fn enable_property(&self, prop: &InputProp) -> Result<(), Errno> {
         let result = unsafe {
-            raw::libevdev_enable_property(self.raw, prop as c_uint) as i32
+            raw::libevdev_enable_property(self.raw, prop.clone() as c_uint) as i32
         };
 
         match result {
@@ -840,14 +840,14 @@ impl Device {
         }
     }
     /// Returns `true` is the device support this event type and `false` otherwise
-    pub fn has_event_type(&self, ev_type: EventType) -> bool {
+    pub fn has_event_type(&self, ev_type: &EventType) -> bool {
         unsafe {
-            raw::libevdev_has_event_type(self.raw, ev_type as c_uint) != 0
+            raw::libevdev_has_event_type(self.raw, ev_type.clone() as c_uint) != 0
         }
     }
 
     /// Return `true` is the device support this event type and code and `false` otherwise
-    pub fn has_event_code(&self, code: EventCode) -> bool {
+    pub fn has_event_code(&self, code: &EventCode) -> bool {
         unsafe {
             let (ev_type, ev_code) = event_code_to_int(code);
             raw::libevdev_has_event_code(self.raw,
@@ -860,7 +860,7 @@ impl Device {
     ///
     /// If the device supports this event type and code, the return value is
     /// set to the current value of this axis. Otherwise, `None` is returned.
-    pub fn event_value(&self, code: EventCode) -> Option<i32> {
+    pub fn event_value(&self, code: &EventCode) -> Option<i32> {
         let mut value: i32 = 0;
         let (ev_type, ev_code) = event_code_to_int(code);
         let valid = unsafe {
@@ -892,7 +892,7 @@ impl Device {
     /// If the device supports ABS_MT_SLOT and the type is EV_ABS and the code is
     /// ABS_MT_SLOT, the value must be a positive number less then the number of
     /// slots on the device. Otherwise, `set_event_value` returns Err.
-    pub fn set_event_value(&self, code: EventCode, val: i32)
+    pub fn set_event_value(&self, code: &EventCode, val: i32)
                            -> Result<(), Errno> {
             let (ev_type, ev_code) = event_code_to_int(code);
             let result = unsafe {
@@ -961,7 +961,7 @@ impl Device {
     /// If the device supports this event code, the return value is
     /// is set to the current value of this axis. Otherwise, or
     /// if the event code is not an ABS_MT_* event code, `None` is returned
-    pub fn slot_value(&self, slot: u32, code: EventCode) -> Option<i32> {
+    pub fn slot_value(&self, slot: u32, code: &EventCode) -> Option<i32> {
         let (_, ev_code) = event_code_to_int(code);
         let mut value: i32 = 0;
         let valid = unsafe {
@@ -985,7 +985,7 @@ impl Device {
     ///
     /// This function does not set event values for axes outside the ABS_MT range,
     /// use `set_event_value` instead.
-    pub fn set_slot_value(&self, slot: u32, code: EventCode, val: i32)
+    pub fn set_slot_value(&self, slot: u32, code: &EventCode, val: i32)
                           -> Result<(), Errno> {
         let (_, ev_code) = event_code_to_int(code);
         let result = unsafe {
@@ -1043,10 +1043,10 @@ impl Device {
     ///
     /// This is a local modification only affecting only this representation of
     /// this device.
-    pub fn enable_event_type(&self, ev_type: EventType) -> Result<(), Errno> {
+    pub fn enable_event_type(&self, ev_type: &EventType) -> Result<(), Errno> {
          let result = unsafe {
             raw::libevdev_enable_event_type(self.raw,
-                                            ev_type as c_uint)
+                                            ev_type.clone() as c_uint)
         };
 
         match result {
@@ -1069,10 +1069,10 @@ impl Device {
     ///
     /// This is a local modification only affecting only this representation of
     /// this device.
-    pub fn disable_event_type(&self, ev_type: EventType) -> Result<(), Errno> {
+    pub fn disable_event_type(&self, ev_type: &EventType) -> Result<(), Errno> {
          let result = unsafe {
             raw::libevdev_disable_event_type(self.raw,
-                                            ev_type as c_uint)
+                                             ev_type.clone() as c_uint)
         };
 
         match result {
@@ -1094,7 +1094,7 @@ impl Device {
     ///
     /// Disabling codes of type EV_SYN will not work. Don't shoot yourself in the
     /// foot. It hurts.
-    pub fn disable_event_code(&self, code: EventCode)
+    pub fn disable_event_code(&self, code: &EventCode)
                               -> Result<(), Errno> {
         let (ev_type, ev_code) = event_code_to_int(code);
         let result = unsafe {
@@ -1111,7 +1111,7 @@ impl Device {
 
     /// Set the device's EV_ABS axis to the value defined in the abs
     /// parameter. This will be written to the kernel.
-    pub fn set_kernel_abs_info(&self, code: EventCode, absinfo: &AbsInfo) {
+    pub fn set_kernel_abs_info(&self, code: &EventCode, absinfo: &AbsInfo) {
         let (_, ev_code) = event_code_to_int(code);
         let absinfo = raw::input_absinfo {
                         value: absinfo.value,
@@ -1131,7 +1131,7 @@ impl Device {
     /// Turn an LED on or off.
     ///
     /// enabling an LED requires write permissions on the device's file descriptor.
-    pub fn kernel_set_led_value(&self, code: EventCode, value: LedState)
+    pub fn kernel_set_led_value(&self, code: &EventCode, value: LedState)
                                  -> Result<(), Errno> {
         let (_, ev_code) = event_code_to_int(code);
         let result = unsafe {
@@ -1224,31 +1224,31 @@ impl Device {
 }
 
 impl InputEvent {
-    pub fn is_type(&self, ev_type: EventType) -> bool {
+    pub fn is_type(&self, ev_type: &EventType) -> bool {
         let ev = raw::input_event {
             time: raw::timeval {
                 tv_sec: self.time.tv_sec,
                 tv_usec: self.time.tv_usec,
             },
-            event_type: self.event_type as u16,
-            event_code: event_code_to_int(self.event_code).1 as u16,
+            event_type: self.event_type.clone() as u16,
+            event_code: event_code_to_int(&self.event_code).1 as u16,
             value: self.value,
         };
 
         unsafe {
-            raw::libevdev_event_is_type(&ev, ev_type as c_uint) == 1
+            raw::libevdev_event_is_type(&ev, ev_type.clone() as c_uint) == 1
         }
     }
 
-    pub fn is_code(&self, code: EventCode) -> bool {
+    pub fn is_code(&self, code: &EventCode) -> bool {
         let (ev_type, ev_code) = event_code_to_int(code);
         let ev = raw::input_event {
             time: raw::timeval {
                 tv_sec: self.time.tv_sec,
                 tv_usec: self.time.tv_usec,
             },
-            event_type: self.event_type as u16,
-            event_code: event_code_to_int(self.event_code).1 as u16,
+            event_type: self.event_type.clone() as u16,
+            event_code: event_code_to_int(&self.event_code).1 as u16,
             value: self.value,
         };
 
