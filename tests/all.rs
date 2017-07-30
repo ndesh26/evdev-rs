@@ -14,7 +14,7 @@ fn context_create() {
 #[test]
 fn context_create_with_fd() {
     let f = File::open("/dev/input/event0").unwrap();
-    let mut d = Device::new_from_fd(&f).unwrap();
+    let d = Device::new_from_fd(&f).unwrap();
 }
 
 #[test]
@@ -46,7 +46,7 @@ fn context_change_fd() {
 #[test]
 fn context_grab() {
     let mut d = Device::new().unwrap();
-    let mut f = File::open("/dev/input/event0").unwrap();
+    let f = File::open("/dev/input/event0").unwrap();
 
     d.set_fd(&f).unwrap();
     d.grab(GrabMode::Grab).unwrap();
