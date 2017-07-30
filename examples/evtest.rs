@@ -2,7 +2,7 @@ extern crate evdev;
 extern crate nix;
 
 use evdev::*;
-use evdev::consts::*;
+use evdev::enums::*;
 use nix::errno::Errno;
 use std::fs::File;
 
