@@ -54,11 +54,13 @@ pub mod util;
 #[macro_use]
 mod macros;
 
-use libc::{c_char, c_int, c_uint};
-use std::os::unix::io::{AsRawFd, FromRawFd};
-use std::fs::File;
-use std::ffi::{CStr, CString};
+use libc::{c_char, c_int, c_uint, c_void};
 use nix::errno::Errno;
+use std::any::Any;
+use std::ffi::{CStr, CString};
+use std::fs::File;
+use std::os::unix::io::{AsRawFd, FromRawFd};
+
 use enums::*;
 use util::*;
 
@@ -352,7 +354,38 @@ impl Device {
         }
     }
 
-    /// Return `true` if device support the property and false otherwise
+    /// Returns `true` if device support the InputProp/EventType/EventCode and false otherwise
+    pub fn has(&self, blob: &Any) -> bool {
+        if let Some(ev_type) = blob.downcast_ref::<EventType>() {
+            self.has_event_type(ev_type)
+        } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
+            self.has_event_code(ev_code)
+        } else if let Some(prop) = blob.downcast_ref::<InputProp>() {
+            self.has_property(prop)
+        } else {
+            false
+        }
+    }
+
+    /// Forcibly enable an EventType/InputProp on this device, even if the underlying
+    /// device does not support it. While this cannot make the device actually
+    /// report such events, it will now return true for libevdev_has_event_type().
+    ///
+    /// This is a local modification only affecting only this representation of
+    /// this device.
+    pub fn enable(&self, blob: &Any) -> Result<(),Errno> {
+        if let Some(ev_type) = blob.downcast_ref::<EventType>() {
+            self.enable_event_type(ev_type)
+        } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
+            self.enable_event_code(ev_code, &0)
+        } else if let Some(prop) = blob.downcast_ref::<InputProp>() {
+            self.enable_property(prop)
+        } else {
+            Err(Errno::from_i32(-1))
+        }
+    }
+
+    /// Returns `true` if device support the property and false otherwise
     pub fn has_property(&self, prop: &InputProp) -> bool {
         unsafe {
             raw::libevdev_has_property(self.raw, prop.clone() as c_uint) != 0
@@ -583,6 +616,36 @@ impl Device {
         match result {
             0 => Ok(()),
             k => Err(Errno::from_i32(-k))
+        }
+    }
+
+    pub fn enable_event_code(&self, ev_code: &EventCode, data: &Any)
+                         -> Result<(), Errno> {
+        let (ev_type, ev_code) = event_code_to_int(ev_code);
+
+        let result = unsafe {
+            raw::libevdev_enable_event_code(self.raw,
+                                            ev_type as c_uint,
+                                            ev_code as c_uint,
+                                            data as *const _ as *const c_void)
+        };
+
+        match result {
+            0 => Ok(()),
+            k => Err(Errno::from_i32(-k))
+        }
+    }
+
+    /// Forcibly disable an [`EventType`](enums/enum.EventType.html)/
+    /// [`EventCode`](enums/enum.EventType.html) on this device, even if the
+    /// underlying device provides it.
+    pub fn disable(&self, blob: &Any) -> Result<(),Errno> {
+        if let Some(ev_type) = blob.downcast_ref::<EventType>() {
+            self.disable_event_type(ev_type)
+        } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
+            self.disable_event_code(ev_code)
+        } else {
+            Err(Errno::from_i32(-1))
         }
     }
 
