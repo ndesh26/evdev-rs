@@ -369,7 +369,7 @@ impl Device {
 
     /// Forcibly enable an EventType/InputProp on this device, even if the underlying
     /// device does not support it. While this cannot make the device actually
-    /// report such events, it will now return true for libevdev_has_event_type().
+    /// report such events, it will now return true for has().
     ///
     /// This is a local modification only affecting only this representation of
     /// this device.
@@ -446,7 +446,7 @@ impl Device {
     /// EV_REL is pointless.
     ///
     /// This is a local modification only affecting only this representation of
-    /// this device. A future call to libevdev_get_event_value() will return this
+    /// this device. A future call to get_event_value() will return this
     /// value, unless the value was overwritten by an event.
     ///
     /// If the device supports ABS_MT_SLOT, the value set for any ABS_MT_*
@@ -636,9 +636,18 @@ impl Device {
         }
     }
 
-    /// Forcibly disable an [`EventType`](enums/enum.EventType.html)/
-    /// [`EventCode`](enums/enum.EventType.html) on this device, even if the
-    /// underlying device provides it.
+    /// Forcibly disable an EventType/EventCode on this device, even if the
+    /// underlying device provides it. This effectively mutes the respective set of
+    /// events. has() will return false for this EventType/EventCode
+    ///
+    /// In most cases, a caller likely only wants to disable a single code, not
+    /// the whole type.
+    ///
+    /// Disabling EV_SYN will not work. In Peter's Words "Don't shoot yourself
+    /// in the foot. It hurts".
+    ///
+    /// This is a local modification only affecting only this representation of
+    /// this device.
     pub fn disable(&self, blob: &Any) -> Result<(),Errno> {
         if let Some(ev_type) = blob.downcast_ref::<EventType>() {
             self.disable_event_type(ev_type)
