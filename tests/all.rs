@@ -132,7 +132,7 @@ fn device_has_property() {
 
     d.set_fd(&f).unwrap();
     for prop in InputProp::INPUT_PROP_POINTER.iter() {
-        if d.has_property(&prop) {
+        if d.has(&prop) {
             panic!("Prop {} is set, shouldn't be", prop);
         }
     }
@@ -145,8 +145,8 @@ fn device_has_syn() {
 
     d.set_fd(&f).unwrap();
 
-    assert!(d.has_event_type(&EventType::EV_SYN)); // EV_SYN
-    assert!(d.has_event_code(&EventCode::EV_SYN(EV_SYN::SYN_REPORT))); // SYN_REPORT
+    assert!(d.has(&EventType::EV_SYN)); // EV_SYN
+    assert!(d.has(&EventCode::EV_SYN(EV_SYN::SYN_REPORT))); // SYN_REPORT
 }
 
 #[test]
