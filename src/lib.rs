@@ -64,12 +64,6 @@ use std::os::unix::io::{AsRawFd, FromRawFd};
 use enums::*;
 use util::*;
 
-#[derive(Copy)]
-#[derive(Clone)]
-pub enum BusType {
-    USB,
-}
-
 pub enum GrabMode {
     /// Grab the device if not currently grabbed
     Grab = raw::LIBEVDEV_GRAB as isize,
