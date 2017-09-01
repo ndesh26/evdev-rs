@@ -211,7 +211,7 @@ impl Device {
 
         match result {
             0 => Ok(Device { raw: libevdev }),
-            k => Err(Errno::from_i32(-k)),
+            error => Err(Errno::from_i32(-error)),
         }
     }
 
@@ -255,7 +255,7 @@ impl Device {
 
         match result {
             0 => Ok(()),
-            k => Err(Errno::from_i32(-k))
+            error => Err(Errno::from_i32(-error))
         }
     }
 
@@ -285,7 +285,7 @@ impl Device {
 
         match result {
             0 => Ok(()),
-            k => Err(Errno::from_i32(-k))
+            error => Err(Errno::from_i32(-error))
         }
     }
 
@@ -302,7 +302,7 @@ impl Device {
 
         match result {
             0 => Ok(()),
-            k => Err(Errno::from_i32(-k)),
+            error => Err(Errno::from_i32(-error)),
         }
     }
 
@@ -400,7 +400,7 @@ impl Device {
 
         match result {
             0 => Ok(()),
-            k => Err(Errno::from_i32(-k))
+            error => Err(Errno::from_i32(-error))
         }
     }
     /// Returns `true` is the device support this event type and `false` otherwise
@@ -468,7 +468,7 @@ impl Device {
 
             match result {
                0 => Ok(()),
-               k => Err(Errno::from_i32(-k))
+               error => Err(Errno::from_i32(-error))
             }
     }
 
@@ -561,7 +561,7 @@ impl Device {
 
         match result {
             0 => Ok(()),
-            k => Err(Errno::from_i32(-k))
+            error => Err(Errno::from_i32(-error))
         }
     }
 
@@ -579,7 +579,7 @@ impl Device {
 
         match result  {
             -1 => None,
-             k => Some(k),
+             slots => Some(slots),
         }
     }
 
@@ -597,7 +597,7 @@ impl Device {
 
         match result {
             -1 => None,
-             k => Some(k),
+             slots => Some(slots),
         }
     }
 
@@ -615,7 +615,7 @@ impl Device {
 
         match result {
             0 => Ok(()),
-            k => Err(Errno::from_i32(-k))
+            error => Err(Errno::from_i32(-error))
         }
     }
 
@@ -632,7 +632,7 @@ impl Device {
 
         match result {
             0 => Ok(()),
-            k => Err(Errno::from_i32(-k))
+            error => Err(Errno::from_i32(-error))
         }
     }
 
@@ -671,7 +671,7 @@ impl Device {
 
         match result {
             0 => Ok(()),
-            k => Err(Errno::from_i32(-k))
+            error => Err(Errno::from_i32(-error))
         }
     }
     /// Forcibly disable an event code on this device, even if the underlying
@@ -699,7 +699,7 @@ impl Device {
 
         match result {
             0 => Ok(()),
-            k => Err(Errno::from_i32(-k))
+            error => Err(Errno::from_i32(-error))
         }
     }
 
@@ -736,7 +736,7 @@ impl Device {
 
         match result {
             0 => Ok(()),
-            k => Err(Errno::from_i32(-k))
+            error => Err(Errno::from_i32(-error))
         }
     }
 
@@ -753,7 +753,7 @@ impl Device {
 
         match result {
             0 => Ok(()),
-            k => Err(Errno::from_i32(-k))
+            error => Err(Errno::from_i32(-error))
         }
     }
 
@@ -812,7 +812,7 @@ impl Device {
         match result {
             raw::LIBEVDEV_READ_STATUS_SUCCESS => Ok((ReadStatus::Success, event)),
             raw::LIBEVDEV_READ_STATUS_SYNC => Ok((ReadStatus::Sync, event)),
-            k => Err(Errno::from_i32(-k)),
+            error => Err(Errno::from_i32(-error)),
         }
     }
 }
