@@ -1,4 +1,4 @@
-extern crate evdev;
+extern crate evdev_rs as evdev;
 
 use evdev::*;
 use evdev::enums::*;

@@ -1,5 +1,5 @@
 [package]
-name = "evdev"
+name = "evdev-rs"
 version = "0.0.1"
 authors = ["Nayan Deshmukh <nayan26deshmukh@gmail.com>"]
 license = "MIT/Apache-2.0"

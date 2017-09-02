@@ -8,7 +8,7 @@
 //! ## Intializing a evdev device
 //!
 //! ```
-//! use evdev::Device;
+//! use evdev_rs::Device;
 //! use std::fs::File;
 //!
 //! let f = File::open("/dev/input/event0").unwrap();
@@ -20,7 +20,7 @@
 //! ## Getting the next event
 //!
 //! ```rust,no_run
-//! use evdev::Device;
+//! use evdev_rs::Device;
 //! use std::fs::File;
 //!
 //! let f = File::open("/dev/input/event0").unwrap();
@@ -29,7 +29,7 @@
 //! d.set_fd(&f).unwrap();
 //!
 //! loop {
-//!     let a = d.next_event(evdev::NORMAL | evdev::BLOCKING);
+//!     let a = d.next_event(evdev_rs::NORMAL | evdev_rs::BLOCKING);
 //!     match a {
 //!         Ok(k) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
 //!				              k.1.time.tv_sec,
@@ -190,7 +190,7 @@ impl Device {
     /// This is a shortcut for
     ///
     /// ```
-    /// use evdev::Device;
+    /// use evdev_rs::Device;
     /// # use std::fs::File;
     ///
     /// let mut device = Device::new().unwrap();

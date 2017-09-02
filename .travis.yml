@@ -21,7 +21,7 @@ before_script:
 script:
   - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH travis_retry cargo build --verbose
   - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH sudo -E env "PATH=$PATH" cargo test --verbose
-  - cargo doc --no-deps -p evdev-sys -p evdev
+  - cargo doc --no-deps -p evdev-sys -p evdev-rs
 
 after_success:
   - travis-cargo --only stable doc-upload
