@@ -6,6 +6,12 @@
 
 A Rust wrapper for libevdev
 
+```toml
+# Cargo.toml
+[dependencies]
+evdev-rs = "0.3"
+```
+
 Why a libevdev wrapper?
 -----------------------
 The evdev protocol is simple, but quirky, with a couple of behaviors that

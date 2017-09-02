@@ -1,6 +1,6 @@
 [package]
 name = "evdev-sys"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Nayan Deshmukh <nayan26deshmukh@gmail.com"]
 build = "build.rs"
 links = "evdev"
@@ -14,5 +14,5 @@ High level Rust bindings are available in the `evdev` crate
 libc = "0.2"
 
 [build-dependencies]
-pkg-config = "^0.3"
-gcc = "^0.3"
+pkg-config = "0.3"
+gcc = "0.3"

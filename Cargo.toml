@@ -1,6 +1,6 @@
 [package]
 name = "evdev"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Nayan Deshmukh <nayan26deshmukh@gmail.com>"]
 license = "MIT/Apache-2.0"
 keywords = ["evdev"]
@@ -9,12 +9,14 @@ repository = "https://github.com/ndesh26/evdev-rs"
 homepage = "https://github.com/ndesh26/evdev-rs"
 documentation = "http://ndesh26.github.io/evdev-rs"
 description = """
-Bindings to libevdev
+Bindings to libevdev for interacting with evdev devices. It moves the
+common tasks when dealing with evdev devices into a library and provides
+a library interface to the callers, thus avoiding erroneous ioctls, etc.
 """
 
 [dependencies]
-evdev-sys = { path = "evdev-sys", version = "0.1" }
-nix = "^0.7"
-libc = "^0.2"
-bitflags = "^0.7"
-log = "*"
+evdev-sys = { path = "evdev-sys", version = "0.0.1" }
+nix = "0.7"
+libc = "0.2"
+bitflags = "0.7"
+log = "0.3"
