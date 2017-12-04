@@ -440,7 +440,7 @@ impl Device {
     /// EV_REL is pointless.
     ///
     /// This is a local modification only affecting only this representation of
-    /// this device. A future call to get_event_value() will return this
+    /// this device. A future call to event_value() will return this
     /// value, unless the value was overwritten by an event.
     ///
     /// If the device supports ABS_MT_SLOT, the value set for any ABS_MT_*
@@ -779,7 +779,7 @@ impl Device {
     /// evdev updates its internal state and event processing continues as normal.
     /// Note that the current slot and the state of touch points may have updated
     /// during the `SYN_DROPPED` event, it is strongly recommended that a caller
-    /// ignoring all sync events calls `get_current_slot` and checks the
+    /// ignoring all sync events calls `current_slot` and checks the
     /// `ABS_MT_TRACKING_ID` values for all slots.
     ///
     /// If a device has changed state without events being enqueued in evdev,
