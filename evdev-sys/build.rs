@@ -54,6 +54,11 @@ fn main() {
        .arg(src.join("libevdev/autogen.sh").to_str().unwrap()
                .replace("C:\\", "/c/")
                .replace("\\", "/"));
+    match env::var("HOST") {
+        Ok(h) => { cmd.arg(format!("--host={}", h)); },
+        Err(_) => {}
+    }
+
     cmd.arg(format!("--prefix={}", sanitize_sh(&dst)));
 
     run(&mut cmd);

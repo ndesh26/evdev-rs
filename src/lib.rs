@@ -54,7 +54,7 @@ pub mod util;
 #[macro_use]
 mod macros;
 
-use libc::{c_char, c_int, c_uint, c_void};
+use libc::{c_char, c_int, c_long, c_uint, c_void};
 use nix::errno::Errno;
 use std::any::Any;
 use std::ffi::{CStr, CString};
@@ -135,8 +135,8 @@ pub struct Device {
 }
 
 pub struct TimeVal {
-   pub tv_sec: i64,
-   pub tv_usec: i64,
+   pub tv_sec: c_long,
+   pub tv_usec: c_long,
 }
 
 /// The event structure itself
