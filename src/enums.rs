@@ -1,8 +1,7 @@
 /* THIS FILE IS GENERATED, DO NOT EDIT */
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EventType {
     EV_SYN = 0,
     EV_KEY = 1,
@@ -39,8 +38,7 @@ pub fn int_to_event_type(code: u32) -> Option<EventType> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EventCode {
     EV_SYN(EV_SYN),
     EV_KEY(EV_KEY),
@@ -58,8 +56,7 @@ pub enum EventCode {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EV_REL {
     REL_X = 0,
     REL_Y = 1,
@@ -92,8 +89,7 @@ pub fn int_to_ev_rel(code: u32) -> Option<EV_REL> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EV_ABS {
     ABS_X = 0,
     ABS_Y = 1,
@@ -188,8 +184,7 @@ pub fn int_to_ev_abs(code: u32) -> Option<EV_ABS> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EV_KEY {
     KEY_RESERVED = 0,
     KEY_ESC = 1,
@@ -1284,8 +1279,7 @@ pub fn int_to_ev_key(code: u32) -> Option<EV_KEY> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EV_LED {
     LED_NUML = 0,
     LED_CAPSL = 1,
@@ -1320,8 +1314,7 @@ pub fn int_to_ev_led(code: u32) -> Option<EV_LED> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EV_SND {
     SND_CLICK = 0,
     SND_BELL = 1,
@@ -1340,8 +1333,7 @@ pub fn int_to_ev_snd(code: u32) -> Option<EV_SND> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EV_MSC {
     MSC_SERIAL = 0,
     MSC_PULSELED = 1,
@@ -1366,8 +1358,7 @@ pub fn int_to_ev_msc(code: u32) -> Option<EV_MSC> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EV_SW {
     SW_LID = 0,
     SW_TABLET_MODE = 1,
@@ -1410,8 +1401,7 @@ pub fn int_to_ev_sw(code: u32) -> Option<EV_SW> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EV_SYN {
     SYN_REPORT = 0,
     SYN_CONFIG = 1,
@@ -1432,8 +1422,7 @@ pub fn int_to_ev_syn(code: u32) -> Option<EV_SYN> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EV_REP {
     REP_DELAY = 0,
     REP_MAX = 1,
@@ -1448,8 +1437,7 @@ pub fn int_to_ev_rep(code: u32) -> Option<EV_REP> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum InputProp {
     INPUT_PROP_POINTER = 0,
     INPUT_PROP_DIRECT = 1,
@@ -1476,8 +1464,7 @@ pub fn int_to_input_prop(code: u32) -> Option<InputProp> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EV_FF {
     FF_STATUS_STOPPED = 0,
     FF_STATUS_MAX = 1,
@@ -1526,8 +1513,7 @@ pub fn int_to_ev_ff(code: u32) -> Option<EV_FF> {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum BusType {
     BUS_PCI = 1,
     BUS_ISAPNP = 2,
