@@ -134,12 +134,14 @@ pub struct Device {
     raw: *mut raw::libevdev,
 }
 
+#[derive(Debug)]
 pub struct TimeVal {
    pub tv_sec: c_long,
    pub tv_usec: c_long,
 }
 
 /// The event structure itself
+#[derive(Debug)]
 pub struct InputEvent {
     /// The time at which event occured
     pub time: TimeVal,
