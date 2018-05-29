@@ -134,14 +134,14 @@ pub struct Device {
     raw: *mut raw::libevdev,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct TimeVal {
    pub tv_sec: c_long,
    pub tv_usec: c_long,
 }
 
 /// The event structure itself
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct InputEvent {
     /// The time at which event occured
     pub time: TimeVal,
