@@ -38,7 +38,9 @@ blacklist = [
     "BTN_GAMEPAD",
     "BTN_DIGI",
     "BTN_WHEEL",
-    "BTN_TRIGGER_HAPPY"
+    "BTN_TRIGGER_HAPPY",
+    "SW_MAX",
+    "REP_MAX",
 ]
 
 btn_additional = [
@@ -135,38 +137,6 @@ def print_event_code(bits, prefix):
         print("}");
         print("");
 
-def print_bits(bits, prefix):
-    if  not hasattr(bits, prefix):
-        return
-    print("pub enum %s_map= {" % (prefix))
-    for val, name in list(getattr(bits, prefix).items()):
-        print("	[%s] = \"%s\"," % (name, name))
-    if prefix == "key":
-        for val, name in list(getattr(bits, "btn").items()):
-            print("	[%s] = \"%s\"," % (name, name))
-    print("};")
-    print("")
-
-def print_map(bits):
-    print("pub enum event_type_map = {")
-
-    for prefix in prefixes:
-        if prefix == "BTN_" or prefix == "EV_" or prefix == "INPUT_PROP_":
-            continue
-        print("	[EV_%s] = %s_map," % (prefix[:-1], prefix[:-1].lower()))
-
-    print("};")
-    print("")
-
-    print("pub enum ev_max = {")
-    print("	[0 ... EV_MAX] = -1,")
-    for prefix in prefixes:
-        if prefix == "BTN_" or prefix == "EV_" or prefix == "INPUT_PROP_":
-            continue
-        print("	[EV_%s] = %s_MAX," % (prefix[:-1], prefix[:-1]))
-    print("};")
-    print("")
-
 def print_lookup(bits, prefix):
     if not hasattr(bits, prefix):
         return
@@ -208,15 +178,6 @@ def print_mapping_table(bits):
                 if prefix == "EV_":
                         print_event_code(bits, prefix[:-1].lower())
 
-
-#    for prefix in prefixes:
-#        if prefix == "BTN_":
-#            continue
-#        print_bits(bits, prefix[:-1].lower())
-#
-#    print_map(bits)
-#    print_lookup_table(bits)
-#
 def parse_define(bits, line):
     m = re.match(r"^#define\s+(\w+)\s+(\w+)", line)
     if m == None:
