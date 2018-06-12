@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/ndesh26/evdev-rs.svg?branch=master)](https://travis-ci.org/ndesh26/evdev-rs)
 
-[Documentation](http://ndesh26.github.io/evdev-rs/evdev/index.html)
+[Documentation](http://ndesh26.github.io/evdev-rs/evdev_rs/index.html)
 
 A Rust wrapper for libevdev
 
