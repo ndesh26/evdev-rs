@@ -1,6 +1,6 @@
 [package]
 name = "evdev-sys"
-version = "0.0.1"
+version = "0.1.0"
 authors = ["Nayan Deshmukh <nayan26deshmukh@gmail.com"]
 build = "build.rs"
 license = "MIT/Apache-2.0"
