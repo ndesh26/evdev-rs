@@ -76,24 +76,56 @@ pub fn event_code_to_int(event_code: &EventCode) -> (c_uint, c_uint) {
 
 pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> Option<EventCode> {
     let ev_type: EventType = int_to_event_type(event_type as u32).unwrap();
-    let ev_code: EventCode;
-    match ev_type {
-        EventType::EV_SYN => ev_code = EventCode::EV_SYN(int_to_ev_syn(event_code as u32).unwrap()),
-        EventType::EV_KEY => ev_code = EventCode::EV_KEY(int_to_ev_key(event_code as u32).unwrap()),
-        EventType::EV_ABS => ev_code = EventCode::EV_ABS(int_to_ev_abs(event_code as u32).unwrap()),
-        EventType::EV_REL => ev_code = EventCode::EV_REL(int_to_ev_rel(event_code as u32).unwrap()),
-        EventType::EV_MSC => ev_code = EventCode::EV_MSC(int_to_ev_msc(event_code as u32).unwrap()),
-        EventType::EV_SW => ev_code = EventCode::EV_SW(int_to_ev_sw(event_code as u32).unwrap()),
-        EventType::EV_LED => ev_code = EventCode::EV_LED(int_to_ev_led(event_code as u32).unwrap()),
-        EventType::EV_SND => ev_code = EventCode::EV_SND(int_to_ev_snd(event_code as u32).unwrap()),
-        EventType::EV_REP => ev_code = EventCode::EV_REP(int_to_ev_rep(event_code as u32).unwrap()),
-        EventType::EV_FF => ev_code = EventCode::EV_FF(int_to_ev_ff(event_code as u32).unwrap()),
-        EventType::EV_PWR => ev_code = EventCode::EV_PWR,
-        EventType::EV_FF_STATUS => ev_code = EventCode::EV_FF_STATUS(int_to_ev_ff(event_code as u32).unwrap()),
-        EventType::EV_MAX => ev_code = EventCode::EV_MAX,
-    }
 
-    Some(ev_code)
+    match ev_type {
+        EventType::EV_SYN =>    match int_to_ev_syn(event_code as u32) {
+                                    None => None,
+                                    Some(k) => Some(EventCode::EV_SYN(k)),
+                                },
+        EventType::EV_KEY =>    match int_to_ev_key(event_code as u32) {
+                                    None => None,
+                                    Some(k) => Some(EventCode::EV_KEY(k)),
+
+                                },
+        EventType::EV_ABS =>    match int_to_ev_abs(event_code as u32) {
+                                    None => None,
+                                    Some(k) => Some(EventCode::EV_ABS(k)),
+                                },
+        EventType::EV_REL =>    match int_to_ev_rel(event_code as u32) {
+                                    None => None,
+                                    Some(k) => Some(EventCode::EV_REL(k)),
+                                },
+        EventType::EV_MSC =>    match int_to_ev_msc(event_code as u32) {
+                                    None => None,
+                                    Some(k) => Some(EventCode::EV_MSC(k)),
+                                },
+        EventType::EV_SW =>     match int_to_ev_sw(event_code as u32) {
+                                    None => None,
+                                    Some(k) => Some(EventCode::EV_SW(k)),
+                                },
+        EventType::EV_LED =>    match int_to_ev_led(event_code as u32) {
+                                    None => None,
+                                    Some(k) => Some(EventCode::EV_LED(k)),
+                                },
+        EventType::EV_SND =>    match int_to_ev_snd(event_code as u32) {
+                                    None => None,
+                                    Some(k) => Some(EventCode::EV_SND(k)),
+                                },
+        EventType::EV_REP =>    match int_to_ev_rep(event_code as u32) {
+                                    None => None,
+                                    Some(k) => Some(EventCode::EV_REP(k)),
+                                },
+        EventType::EV_FF =>     match int_to_ev_ff(event_code as u32) {
+                                    None => None,
+                                    Some(k) => Some(EventCode::EV_FF(k)),
+                                },
+        EventType::EV_PWR =>    Some(EventCode::EV_PWR),
+        EventType::EV_FF_STATUS => match int_to_ev_ff(event_code as u32) {
+                                    None => None,
+                                    Some(k) => Some(EventCode::EV_FF_STATUS(k)),
+                                },
+        EventType::EV_MAX =>    Some(EventCode::EV_MAX),
+    }
 }
 
 impl fmt::Display for EventType {
