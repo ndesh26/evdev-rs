@@ -25,6 +25,7 @@ script:
 
 after_success:
   - travis-cargo --only stable doc-upload
+  - travis-cargo coveralls
 
 notifications:
   email:
