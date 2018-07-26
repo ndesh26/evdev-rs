@@ -1,8 +1,8 @@
 # evdev-rs
 
 [![Build Status](https://travis-ci.org/ndesh26/evdev-rs.svg?branch=master)](https://travis-ci.org/ndesh26/evdev-rs)
-
-[Documentation](http://ndesh26.github.io/evdev-rs/evdev_rs/index.html)
+[![Latest Version](https://img.shields.io/crates/v/evdev-rs.svg)](https://crates.io/crates/evdev-rs)
+[![Documentation](https://docs.rs/evdev-rs/badge.svg)](https://docs.rs/evdev-rs)
 
 A Rust wrapper for libevdev
 
