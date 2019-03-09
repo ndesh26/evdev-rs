@@ -140,15 +140,6 @@ pub struct TimeVal {
    pub tv_usec: c_long,
 }
 
-impl TimeVal {
-    pub fn as_raw(&self) -> libc::timeval {
-        libc::timeval {
-            tv_sec: self.tv_sec,
-            tv_usec: self.tv_usec,
-        }
-    }
-}
-
 /// The event structure itself
 #[derive(Clone, Debug, PartialEq)]
 pub struct InputEvent {
@@ -157,18 +148,6 @@ pub struct InputEvent {
     pub event_type: EventType,
     pub event_code: EventCode,
     pub value: i32,
-}
-
-impl InputEvent {
-    pub fn as_raw(&self) -> libc::input_event {
-        let (ev_type,ev_code) = event_code_to_int(&self.event_code);
-        libc::input_event {
-            time: self.time.as_raw(),
-            code: ev_code as u16,
-            type_: ev_type as u16,
-            value: self.value
-        }
-    }
 }
 
 fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
@@ -850,6 +829,15 @@ impl Device {
     }
 }
 
+impl TimeVal {
+    pub fn as_raw(&self) -> libc::timeval {
+        libc::timeval {
+            tv_sec: self.tv_sec,
+            tv_usec: self.tv_usec,
+        }
+    }
+}
+
 impl InputEvent {
     pub fn is_type(&self, ev_type: &EventType) -> bool {
         let ev = raw::input_event {
@@ -881,6 +869,16 @@ impl InputEvent {
 
         unsafe {
             raw::libevdev_event_is_code(&ev, ev_type, ev_code) == 1
+        }
+    }
+
+    pub fn as_raw(&self) -> libc::input_event {
+        let (ev_type,ev_code) = event_code_to_int(&self.event_code);
+        libc::input_event {
+            time: self.time.as_raw(),
+            code: ev_code as u16,
+            type_: ev_type as u16,
+            value: self.value
         }
     }
 }
