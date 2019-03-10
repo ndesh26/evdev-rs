@@ -802,8 +802,8 @@ impl Device {
                 tv_sec: 0,
                 tv_usec: 0,
             },
-            event_type: 0,
-            event_code: 0,
+            type_: 0,
+            code: 0,
             value: 0,
         };
 
@@ -816,8 +816,8 @@ impl Device {
                 tv_sec: ev.time.tv_sec,
                 tv_usec: ev.time.tv_usec,
             },
-            event_type: int_to_event_type(ev.event_type as u32).unwrap(),
-            event_code: int_to_event_code(ev.event_type as u32, ev.event_code as u32).unwrap(),
+            event_type: int_to_event_type(ev.type_ as u32).unwrap(),
+            event_code: int_to_event_code(ev.type_ as u32, ev.code as u32).unwrap(),
             value: ev.value,
         };
 
@@ -836,8 +836,8 @@ impl InputEvent {
                 tv_sec: self.time.tv_sec,
                 tv_usec: self.time.tv_usec,
             },
-            event_type: self.event_type.clone() as u16,
-            event_code: event_code_to_int(&self.event_code).1 as u16,
+            type_: self.event_type.clone() as u16,
+            code: event_code_to_int(&self.event_code).1 as u16,
             value: self.value,
         };
 
@@ -853,8 +853,8 @@ impl InputEvent {
                 tv_sec: self.time.tv_sec,
                 tv_usec: self.time.tv_usec,
             },
-            event_type: self.event_type.clone() as u16,
-            event_code: event_code_to_int(&self.event_code).1 as u16,
+            type_: self.event_type.clone() as u16,
+            code: event_code_to_int(&self.event_code).1 as u16,
             value: self.value,
         };
 
