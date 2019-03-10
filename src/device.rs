@@ -5,6 +5,7 @@ use std::any::Any;
 use std::ffi::CString;
 use std::fs::File;
 use std::os::unix::io::{AsRawFd, FromRawFd};
+use std::ptr;
 
 use enums::*;
 use util::*;
@@ -188,18 +189,10 @@ impl Device {
     /// this code.
     pub fn set_abs_info(&self, code: &EventCode, absinfo: &AbsInfo) {
         let (_, ev_code) = event_code_to_int(code);
-        let absinfo = raw::input_absinfo {
-                        value: absinfo.value,
-                        minimum: absinfo.minimum,
-                        maximum: absinfo.maximum,
-                        fuzz: absinfo.fuzz,
-                        flat: absinfo.flat,
-                        resolution: absinfo.resolution,
-                      };
 
         unsafe {
             raw::libevdev_set_abs_info(self.raw, ev_code,
-                                       &absinfo as *const _);
+                                       &absinfo.as_raw() as *const _);
         }
     }
 
@@ -226,7 +219,7 @@ impl Device {
         if let Some(ev_type) = blob.downcast_ref::<EventType>() {
             self.enable_event_type(ev_type)
         } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
-            self.enable_event_code(ev_code, &0)
+            self.enable_event_code(ev_code, None)
         } else if let Some(prop) = blob.downcast_ref::<InputProp>() {
             self.enable_property(prop)
         } else {
@@ -468,15 +461,33 @@ impl Device {
         }
     }
 
-    fn enable_event_code(&self, ev_code: &EventCode, data: &Any)
-                         -> Result<(), Errno> {
+    /// Forcibly enable an event type on this device, even if the underlying
+    /// device does not support it. While this cannot make the device actually
+    /// report such events, it will now return true for libevdev_has_event_code().
+    ///
+    /// The last argument depends on the type and code:
+    /// If type is EV_ABS, data must be a pointer to a struct input_absinfo
+    /// containing the data for this axis.
+    /// If type is EV_REP, data must be a pointer to a int containing the data
+    /// for this axis.
+    /// For all other types, the argument must be NULL.
+    pub fn enable_event_code(&self, ev_code: &EventCode, blob: Option<&Any>)
+                             -> Result<(), Errno> {
         let (ev_type, ev_code) = event_code_to_int(ev_code);
+
+        let data = blob
+            .map(|data| {
+                data.downcast_ref::<AbsInfo>()
+                    .map(|absinfo| &absinfo.as_raw() as *const _ as *const c_void)
+                    .unwrap_or_else(|| data as *const _ as *const c_void)
+            })
+            .unwrap_or_else(|| ptr::null() as *const _ as *const c_void);
 
         let result = unsafe {
             raw::libevdev_enable_event_code(self.raw,
                                             ev_type as c_uint,
                                             ev_code as c_uint,
-                                            data as *const _ as *const c_void)
+                                            data)
         };
 
         match result {
@@ -565,18 +576,10 @@ impl Device {
     /// parameter. This will be written to the kernel.
     pub fn set_kernel_abs_info(&self, code: &EventCode, absinfo: &AbsInfo) {
         let (_, ev_code) = event_code_to_int(code);
-        let absinfo = raw::input_absinfo {
-                        value: absinfo.value,
-                        minimum: absinfo.minimum,
-                        maximum: absinfo.maximum,
-                        fuzz: absinfo.fuzz,
-                        flat: absinfo.flat,
-                        resolution: absinfo.resolution,
-                      };
 
         unsafe {
             raw::libevdev_kernel_set_abs_info(self.raw, ev_code,
-                                              &absinfo as *const _);
+                                              &absinfo.as_raw() as *const _);
         }
     }
 

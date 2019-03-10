@@ -131,10 +131,36 @@ pub struct AbsInfo {
     pub resolution: i32,
 }
 
+impl AbsInfo {
+    pub fn as_raw(&self) -> libc::input_absinfo {
+        libc::input_absinfo {
+            value: self.value,
+            minimum: self.minimum,
+            maximum: self.maximum,
+            fuzz: self.fuzz,
+            flat: self.flat,
+            resolution: self.resolution,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct TimeVal {
    pub tv_sec: c_long,
    pub tv_usec: c_long,
+}
+
+impl TimeVal {
+    pub fn new(tv_sec: i64, tv_usec: i64) -> TimeVal {
+        TimeVal { tv_sec, tv_usec }
+    }
+
+    pub fn as_raw(&self) -> libc::timeval {
+        libc::timeval {
+            tv_sec: self.tv_sec,
+            tv_usec: self.tv_usec
+        }
+    }
 }
 
 /// The event structure itself
@@ -148,36 +174,37 @@ pub struct InputEvent {
 }
 
 impl InputEvent {
-    pub fn is_type(&self, ev_type: &EventType) -> bool {
-        let ev = raw::input_event {
-            time: raw::timeval {
-                tv_sec: self.time.tv_sec,
-                tv_usec: self.time.tv_usec,
-            },
-            type_: self.event_type.clone() as u16,
-            code: event_code_to_int(&self.event_code).1 as u16,
-            value: self.value,
-        };
+    pub fn new(timeval: &TimeVal, code: &EventCode, value: i32) -> InputEvent {
+        let (ev_type, _) = event_code_to_int(&code);
+        InputEvent {
+            time: timeval.clone(),
+            event_type: int_to_event_type(ev_type).unwrap(),
+            event_code: code.clone(),
+            value
+        }
+    }
 
+    pub fn as_raw(&self) -> libc::input_event {
+        let (ev_type, ev_code) = event_code_to_int(&self.event_code);
+        libc::input_event {
+            time: self.time.as_raw(),
+            type_: ev_type as u16,
+            code: ev_code as u16,
+            value: self.value
+        }
+    }
+
+    pub fn is_type(&self, ev_type: &EventType) -> bool {
         unsafe {
-            raw::libevdev_event_is_type(&ev, ev_type.clone() as c_uint) == 1
+            raw::libevdev_event_is_type(&self.as_raw(), ev_type.clone() as c_uint) == 1
         }
     }
 
     pub fn is_code(&self, code: &EventCode) -> bool {
         let (ev_type, ev_code) = event_code_to_int(code);
-        let ev = raw::input_event {
-            time: raw::timeval {
-                tv_sec: self.time.tv_sec,
-                tv_usec: self.time.tv_usec,
-            },
-            type_: self.event_type.clone() as u16,
-            code: event_code_to_int(&self.event_code).1 as u16,
-            value: self.value,
-        };
 
         unsafe {
-            raw::libevdev_event_is_code(&ev, ev_type, ev_code) == 1
+            raw::libevdev_event_is_code(&self.as_raw(), ev_type, ev_code) == 1
         }
     }
 }
