@@ -1,5 +1,6 @@
+use InputEvent;
 use libc::c_int;
-use {Device, InputEvent};
+use device::Device;
 use std::fs::File;
 use std::os::unix::io::FromRawFd;
 use nix::errno::Errno;
