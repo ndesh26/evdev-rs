@@ -4,7 +4,8 @@
 
 extern crate libc;
 
-use libc::{c_int, c_uint, c_char, c_void, c_long, size_t, uint16_t};
+use libc::{c_int, c_uint, c_char, c_void, size_t};
+pub use libc::{timeval, input_event, input_absinfo};
 
 pub type __enum_ty = libc::c_int;
 pub type libevdev_read_flag = __enum_ty;
@@ -34,32 +35,8 @@ pub const LIBEVDEV_LED_OFF: libevdev_led_value = 4;
 pub enum libevdev {}
 
 #[repr(C)]
-pub struct input_absinfo {
-    pub value: c_int,
-    pub minimum: c_int,
-    pub maximum: c_int,
-    pub fuzz: c_int,
-    pub flat: c_int,
-    pub resolution: c_int,
-}
-
-#[repr(C)]
 pub struct va_list {
     // TODO
-}
-
-#[repr(C)]
-pub struct timeval {
-    pub tv_sec: c_long,
-    pub tv_usec: c_long,
-}
-
-#[repr(C)]
-pub struct input_event {
-    pub time: timeval,
-    pub event_type: uint16_t,
-    pub event_code: uint16_t,
-    pub value: c_int,
 }
 
 type libevdev_log_func_t = extern fn(*const libevdev,
