@@ -13,6 +13,7 @@ pub type libevdev_log_priority = __enum_ty;
 pub type libevdev_grab_mode = __enum_ty;
 pub type libevdev_read_status = __enum_ty;
 pub type libevdev_led_value = __enum_ty;
+pub type libevdev_uinput_open_mode = __enum_ty;
 
 pub const LIBEVDEV_READ_FLAG_SYNC: libevdev_read_flag = 1;
 pub const LIBEVDEV_READ_FLAG_NORMAL: libevdev_read_flag = 2;
@@ -32,7 +33,10 @@ pub const LIBEVDEV_READ_STATUS_SYNC: libevdev_read_status = 1;
 pub const LIBEVDEV_LED_ON: libevdev_led_value = 3;
 pub const LIBEVDEV_LED_OFF: libevdev_led_value = 4;
 
+pub const LIBEVDEV_UINPUT_OPEN_MANAGED: libevdev_uinput_open_mode = -2;
+
 pub enum libevdev {}
+pub enum libevdev_uinput {}
 
 #[repr(C)]
 pub struct va_list {
@@ -164,4 +168,10 @@ extern {
     pub fn libevdev_property_from_name(name: *const c_char) -> c_int;
     pub fn libevdev_property_from_name_n(name: *const c_char, len: size_t) -> c_int;
     pub fn libevdev_get_repeat(ctx: *const libevdev, delay: *mut c_int, period: *mut c_int) -> c_int;
+    pub fn libevdev_uinput_create_from_device(ctx: *const libevdev, uinput_fd: c_int, uinput_dev: *mut *mut libevdev_uinput) -> c_int;
+    pub fn libevdev_uinput_destroy(uinput_dev: *mut libevdev_uinput);
+    pub fn libevdev_uinput_get_devnode(uinput_dev: *mut libevdev_uinput) -> *const c_char;
+    pub fn libevdev_uinput_get_fd(uinput_dev: *const libevdev_uinput) -> c_int;
+    pub fn libevdev_uinput_get_syspath(uinput_dev: *mut libevdev_uinput) -> *const c_char;
+    pub fn libevdev_uinput_write_event(uinput_dev: *const libevdev_uinput, type_: c_uint, code: c_uint, value: c_int) -> c_int;
 }
