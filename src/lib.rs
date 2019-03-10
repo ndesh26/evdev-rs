@@ -132,6 +132,17 @@ pub struct AbsInfo {
 }
 
 impl AbsInfo {
+    pub fn from_raw(absinfo: libc::input_absinfo) -> AbsInfo {
+        AbsInfo {
+            value: absinfo.value,
+            minimum: absinfo.minimum,
+            maximum: absinfo.maximum,
+            fuzz: absinfo.fuzz,
+            flat: absinfo.flat,
+            resolution: absinfo.resolution,
+        }
+    }
+
     pub fn as_raw(&self) -> libc::input_absinfo {
         libc::input_absinfo {
             value: self.value,
@@ -153,6 +164,13 @@ pub struct TimeVal {
 impl TimeVal {
     pub fn new(tv_sec: i64, tv_usec: i64) -> TimeVal {
         TimeVal { tv_sec, tv_usec }
+    }
+
+    pub fn from_raw(timeval: &libc::timeval) -> TimeVal {
+        TimeVal {
+            tv_sec: timeval.tv_sec,
+            tv_usec: timeval.tv_usec,
+        }
     }
 
     pub fn as_raw(&self) -> libc::timeval {
@@ -181,6 +199,18 @@ impl InputEvent {
             event_type: int_to_event_type(ev_type).unwrap(),
             event_code: code.clone(),
             value
+        }
+    }
+
+    pub fn from_raw(event: &libc::input_event) -> InputEvent {
+        let ev_type = event.type_ as u32;
+        let event_type = int_to_event_type(ev_type).unwrap();
+        let event_code = int_to_event_code(ev_type, event.code as u32).unwrap();
+        InputEvent {
+            time: TimeVal::from_raw(&event.time),
+            event_type,
+            event_code,
+            value: event.value
         }
     }
 
