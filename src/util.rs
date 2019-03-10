@@ -1,9 +1,25 @@
 use enums::*;
-use libc::c_uint;
+use libc::{c_char, c_uint};
 use raw;
 use std::fmt;
-use std::ffi::CString;
-use ptr_to_str;
+use std::ffi::{CStr, CString};
+
+pub(crate) fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
+    let slice : Option<&CStr> = unsafe {
+        if ptr.is_null() {
+            return None
+        }
+        Some(CStr::from_ptr(ptr))
+    };
+
+    match slice {
+        None => None,
+        Some(s) => {
+            let buf : &[u8] = s.to_bytes();
+            Some(std::str::from_utf8(buf).unwrap())
+        }
+    }
+}
 
 pub struct EventTypeIterator {
     current: EventType
@@ -177,7 +193,7 @@ impl EventType {
         let result = unsafe {
             raw::libevdev_event_type_get_max(ev_type.clone() as c_uint)
         };
-    
+
         match result {
             -1 => None,
              k => Some(k),
@@ -199,7 +215,7 @@ impl EventCode {
         let result = unsafe {
             raw::libevdev_event_code_from_name(ev_type.clone() as c_uint, name.as_ptr())
         };
-    
+
         match result {
             -1 => None,
              k => int_to_event_code(ev_type.clone() as u32, k as u32),
@@ -221,7 +237,7 @@ impl InputProp {
         let result = unsafe {
             raw::libevdev_property_from_name(name.as_ptr())
         };
-    
+
         match result {
             -1 => None,
              k => int_to_input_prop(k as u32),

@@ -48,21 +48,25 @@ extern crate bitflags;
 #[macro_use]
 extern crate log;
 
-pub mod enums;
-pub mod logging;
-pub mod util;
 #[macro_use]
 mod macros;
+pub mod enums;
+pub mod logging;
+pub mod uinput;
+pub mod util;
 
-use libc::{c_char, c_int, c_long, c_uint, c_void};
+use libc::{c_int, c_long, c_uint, c_void};
 use nix::errno::Errno;
 use std::any::Any;
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use std::fs::File;
 use std::os::unix::io::{AsRawFd, FromRawFd};
 
 use enums::*;
 use util::*;
+
+#[doc(no_inline)]
+pub use uinput::UInputDevice;
 
 pub enum GrabMode {
     /// Grab the device if not currently grabbed
@@ -149,24 +153,6 @@ pub struct InputEvent {
     pub event_code: EventCode,
     pub value: i32,
 }
-
-fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
-    let slice : Option<&CStr> = unsafe {
-        if ptr.is_null() {
-            return None
-        }
-        Some(CStr::from_ptr(ptr))
-    };
-
-    match slice {
-        None => None,
-        Some(s) => {
-            let buf : &[u8] = s.to_bytes();
-            Some(std::str::from_utf8(buf).unwrap())
-        }
-    }
-}
-
 
 impl Device {
     /// Initialize a new libevdev device.
