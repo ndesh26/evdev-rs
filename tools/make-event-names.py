@@ -39,8 +39,6 @@ blacklist = [
     "BTN_DIGI",
     "BTN_WHEEL",
     "BTN_TRIGGER_HAPPY",
-    "SW_MAX",
-    "REP_MAX",
 ]
 
 btn_additional = [
@@ -50,7 +48,7 @@ btn_additional = [
     [0, "BTN_Y"],
 ]
 
-names = [
+event_names = [
     "REL_",
     "ABS_",
     "KEY_",
@@ -81,16 +79,30 @@ def print_enums(bits, prefix):
         if not hasattr(bits, prefix):
                 return
 
+        associated_names = []
+
         print("#[allow(non_camel_case_types)]")
         print("#[derive(Clone, Debug, PartialEq, Eq, Hash)]")
         print("pub enum %s {" % enum_name)
-        for val, name in list(getattr(bits, prefix).items()):
-                print("    %s = %s," % (name, val))
+        for val, names in list(getattr(bits, prefix).items()):
+            print("    %s = %s," % (names[0], val))
+            if len(names) > 1:
+                associated_names.extend([(names[0], names[1:])])
         if prefix == "key":
-                for val, name in list(getattr(bits, "btn").items()):
-                        print("    %s = %s," % (name, val))
+            for val, names in list(getattr(bits, "btn").items()):
+                print("    %s = %s," % (names[0], val))
+                if len(names) > 1:
+                    associated_names.extend([(names[0], names[1:])])
         print("}");
         print("");
+
+        if len(associated_names) > 0:
+            print("impl %s {" % enum_name)
+            for orig, names in associated_names:
+                for name in names:
+                    print("    pub const %s: %s = %s::%s;" % (name, enum_name, enum_name, orig))
+            print("}")
+            print("")
 
 def print_enums_convert_fn(bits, prefix):
         if prefix == "ev":
@@ -107,11 +119,11 @@ def print_enums_convert_fn(bits, prefix):
 
         print("pub fn %s(code: u32) -> Option<%s> {" %("int_to_" + convert(fn_name), fn_name))
         print("    match code {")
-        for val, name in list(getattr(bits, prefix).items()):
-                print("        %s => Some(%s::%s)," % (val, fn_name, name))
+        for val, names in list(getattr(bits, prefix).items()):
+            print("        %s => Some(%s::%s)," % (val, fn_name, names[0]))
         if prefix == "key":
-                for val, name in list(getattr(bits, "btn").items()):
-                        print("        %s => Some(%s::%s)," % (val, fn_name, name))
+                for val, names in list(getattr(bits, "btn").items()):
+                    print("        %s => Some(%s::%s)," % (val, fn_name, names[0]))
         print("        _ => None")
         print("    }");
         print("}");
@@ -124,16 +136,17 @@ def print_event_code(bits, prefix):
         print("#[allow(non_camel_case_types)]")
         print("#[derive(Clone, Debug, PartialEq)]")
         print("pub enum EventCode {")
-        for val, name in list(getattr(bits, prefix).items()):
-            if name[3:]+"_" in names:
+        for val, [name] in list(getattr(bits, prefix).items()):
+            if name[3:]+"_" in event_names:
                     print("    %s(%s)," % (name, name))
             elif name == "EV_FF_STATUS":
                     print("    EV_FF_STATUS(EV_FF),")
             else:
                     print("    %s," % (name))
         if prefix == "key":
-                for val, name in list(getattr(bits, "btn").items()):
-                        print("    %s = %s," % (name, val))
+            for val, names in list(getattr(bits, "btn").items()):
+                for name in names:
+                    print("    %s = %s," % (name, val))
         print("}");
         print("");
 
@@ -202,7 +215,10 @@ def parse_define(bits, line):
         if not hasattr(bits, attrname):
             setattr(bits, attrname, {})
         b = getattr(bits, attrname)
-        b[value] = name
+        if value in b:
+            b[value].append(name)
+        else:
+            b[value] = [name]
 
 def parse(fp):
     bits = Bits()

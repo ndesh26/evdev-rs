@@ -1381,7 +1381,11 @@ pub enum EV_SW {
     SW_ROTATE_LOCK = 12,
     SW_LINEIN_INSERT = 13,
     SW_MUTE_DEVICE = 14,
-    SW_MAX = 15,
+    SW_PEN_INSERTED = 15,
+}
+
+impl EV_SW {
+    pub const SW_MAX: EV_SW = EV_SW::SW_PEN_INSERTED;
 }
 
 pub fn int_to_ev_sw(code: u32) -> Option<EV_SW> {
@@ -1401,7 +1405,7 @@ pub fn int_to_ev_sw(code: u32) -> Option<EV_SW> {
         12 => Some(EV_SW::SW_ROTATE_LOCK),
         13 => Some(EV_SW::SW_LINEIN_INSERT),
         14 => Some(EV_SW::SW_MUTE_DEVICE),
-        15 => Some(EV_SW::SW_MAX),
+        15 => Some(EV_SW::SW_PEN_INSERTED),
         _ => None
     }
 }
@@ -1431,13 +1435,17 @@ pub fn int_to_ev_syn(code: u32) -> Option<EV_SYN> {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum EV_REP {
     REP_DELAY = 0,
-    REP_MAX = 1,
+    REP_PERIOD = 1,
+}
+
+impl EV_REP {
+    pub const REP_MAX: EV_REP = EV_REP::REP_PERIOD;
 }
 
 pub fn int_to_ev_rep(code: u32) -> Option<EV_REP> {
     match code {
         0 => Some(EV_REP::REP_DELAY),
-        1 => Some(EV_REP::REP_MAX),
+        1 => Some(EV_REP::REP_PERIOD),
         _ => None
     }
 }
@@ -1473,7 +1481,7 @@ pub fn int_to_input_prop(code: u32) -> Option<InputProp> {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum EV_FF {
     FF_STATUS_STOPPED = 0,
-    FF_STATUS_MAX = 1,
+    FF_STATUS_PLAYING = 1,
     FF_AUTOCENTER = 97,
     FF_GAIN = 96,
     FF_RUMBLE = 80,
@@ -1493,10 +1501,14 @@ pub enum EV_FF {
     FF_MAX = 127,
 }
 
+impl EV_FF {
+    pub const FF_STATUS_MAX: EV_FF = EV_FF::FF_STATUS_PLAYING;
+}
+
 pub fn int_to_ev_ff(code: u32) -> Option<EV_FF> {
     match code {
         0 => Some(EV_FF::FF_STATUS_STOPPED),
-        1 => Some(EV_FF::FF_STATUS_MAX),
+        1 => Some(EV_FF::FF_STATUS_PLAYING),
         97 => Some(EV_FF::FF_AUTOCENTER),
         96 => Some(EV_FF::FF_GAIN),
         80 => Some(EV_FF::FF_RUMBLE),
