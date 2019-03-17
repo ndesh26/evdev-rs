@@ -29,7 +29,7 @@
 //! d.set_fd(f).unwrap();
 //!
 //! loop {
-//!     let a = d.next_event(evdev_rs::NORMAL | evdev_rs::BLOCKING);
+//!     let a = d.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING);
 //!     match a {
 //!         Ok(k) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
 //!				              k.1.time.tv_sec,
@@ -74,16 +74,16 @@ pub enum GrabMode {
 }
 
 bitflags! {
-    pub flags ReadFlag: u32 {
+    pub struct ReadFlag: u32 {
         /// Process data in sync mode
-        const SYNC = 1,
+        const SYNC = 1;
         /// Process data in normal mode
-        const NORMAL = 2,
+        const NORMAL = 2;
         /// Pretend the next event is a SYN_DROPPED and require the
         /// caller to sync
-        const FORCE_SYNC = 4,
+        const FORCE_SYNC = 4;
         /// The fd is not in O_NONBLOCK and a read may block
-        const BLOCKING = 8,
+        const BLOCKING = 8;
     }
 }
 
