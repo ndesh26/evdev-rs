@@ -12,6 +12,8 @@ use util::*;
 
 /// Opaque struct representing an evdev device
 pub struct Device {
+    // The file descriptor of the device must live as long as the device itself.
+    _file: Option<File>,
     pub(crate) raw: *mut raw::libevdev,
 }
 
@@ -29,6 +31,7 @@ impl Device {
             None
         } else {
             Some(Device {
+                _file: None,
                 raw: libevdev,
             })
         }
@@ -44,16 +47,16 @@ impl Device {
     ///
     /// let mut device = Device::new().unwrap();
     /// # let fd = File::open("/dev/input/event0").unwrap();
-    /// device.set_fd(&fd);
+    /// device.set_fd(fd);
     /// ```
-    pub fn new_from_fd(fd: &File) -> Result<Device, Errno> {
+    pub fn new_from_fd(file: File) -> Result<Device, Errno> {
         let mut libevdev = 0 as *mut _;
         let result = unsafe {
-            raw::libevdev_new_from_fd(fd.as_raw_fd(), &mut libevdev)
+            raw::libevdev_new_from_fd(file.as_raw_fd(), &mut libevdev)
         };
 
         match result {
-            0 => Ok(Device { raw: libevdev }),
+            0 => Ok(Device { _file: Some(file), raw: libevdev }),
             error => Err(Errno::from_i32(-error)),
         }
     }
@@ -91,13 +94,16 @@ impl Device {
     ///
     /// Unless otherwise specified, evdev function behavior is undefined until
     /// a successfull call to `set_fd`.
-    pub fn set_fd(&mut self, f: &File) -> Result<(), Errno> {
+    pub fn set_fd(&mut self, file: File) -> Result<(), Errno> {
         let result = unsafe {
-            raw::libevdev_set_fd(self.raw, f.as_raw_fd())
+            raw::libevdev_set_fd(self.raw, file.as_raw_fd())
         };
 
         match result {
-            0 => Ok(()),
+            0 => {
+                self._file = Some(file);
+                Ok(())
+            },
             error => Err(Errno::from_i32(-error))
         }
     }
@@ -124,13 +130,16 @@ impl Device {
     /// call libevdev_grab() again.
     ///
     /// It is an error to call this function before calling set_fd().
-    pub fn change_fd(&mut self, f: &File) -> Result<(), Errno>  {
+    pub fn change_fd(&mut self, file: File) -> Result<(), Errno>  {
         let result = unsafe {
-            raw::libevdev_change_fd(self.raw, f.as_raw_fd())
+            raw::libevdev_change_fd(self.raw, file.as_raw_fd())
         };
 
         match result {
-            0 => Ok(()),
+            0 => {
+                self._file = Some(file);
+                Ok(())
+            },
             error => Err(Errno::from_i32(-error))
         }
     }

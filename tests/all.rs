@@ -14,7 +14,7 @@ fn context_create() {
 #[test]
 fn context_create_with_fd() {
     let f = File::open("/dev/input/event0").unwrap();
-    let _d = Device::new_from_fd(&f).unwrap();
+    let _d = Device::new_from_fd(f).unwrap();
 }
 
 #[test]
@@ -22,7 +22,7 @@ fn context_set_fd() {
     let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
-    match d.set_fd(&f) {
+    match d.set_fd(f) {
         Ok(()) => ..,
         Err(result) => panic!("Error {}", result.desc()),
     };
@@ -33,14 +33,15 @@ fn context_change_fd() {
     let mut d = Device::new().unwrap();
     let f1 = File::open("/dev/input/event0").unwrap();
     let f2 = File::open("/dev/input/event0").unwrap();
+    let f2_fd = f2.as_raw_fd();
 
-    d.set_fd(&f1).unwrap();
-    match d.change_fd(&f2) {
+    d.set_fd(f1).unwrap();
+    match d.change_fd(f2) {
         Ok(()) => ..,
         Err(result) => panic!("Error {}", result),
     };
 
-    assert_eq!(d.fd().unwrap().as_raw_fd(), f2.as_raw_fd());
+    assert_eq!(d.fd().unwrap().as_raw_fd(), f2_fd);
 }
 
 #[test]
@@ -48,7 +49,7 @@ fn context_grab() {
     let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(&f).unwrap();
+    d.set_fd(f).unwrap();
     d.grab(GrabMode::Grab).unwrap();
     d.grab(GrabMode::Ungrab).unwrap();
 }
@@ -114,7 +115,7 @@ fn device_get_absinfo() {
     let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(&f).unwrap();
+    d.set_fd(f).unwrap();
     for code in EventCode::EV_SYN(EV_SYN::SYN_REPORT).iter() {
         let absinfo: Option<AbsInfo> = d.abs_info(&code);
 
@@ -130,7 +131,7 @@ fn device_has_property() {
     let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(&f).unwrap();
+    d.set_fd(f).unwrap();
     for prop in InputProp::INPUT_PROP_POINTER.iter() {
         if d.has(&prop) {
             panic!("Prop {} is set, shouldn't be", prop);
@@ -143,7 +144,7 @@ fn device_has_syn() {
     let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(&f).unwrap();
+    d.set_fd(f).unwrap();
 
     assert!(d.has(&EventType::EV_SYN)); // EV_SYN
     assert!(d.has(&EventCode::EV_SYN(EV_SYN::SYN_REPORT))); // SYN_REPORT
@@ -154,7 +155,7 @@ fn device_get_value() {
     let mut d = Device::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
 
-    d.set_fd(&f).unwrap();
+    d.set_fd(f).unwrap();
 
     let v2 = d.event_value(&EventCode::EV_SYN(EV_SYN::SYN_REPORT)); // SYN_REPORT
     assert_eq!(v2, Some(0));
