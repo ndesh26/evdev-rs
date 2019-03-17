@@ -14,7 +14,7 @@
 //! let f = File::open("/dev/input/event0").unwrap();
 //!
 //! let mut d = Device::new().unwrap();
-//! d.set_fd(&f).unwrap();
+//! d.set_fd(f).unwrap();
 //! ```
 //!
 //! ## Getting the next event
@@ -26,7 +26,7 @@
 //! let f = File::open("/dev/input/event0").unwrap();
 //!
 //! let mut d = Device::new().unwrap();
-//! d.set_fd(&f).unwrap();
+//! d.set_fd(f).unwrap();
 //!
 //! loop {
 //!     let a = d.next_event(evdev_rs::NORMAL | evdev_rs::BLOCKING);

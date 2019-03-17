@@ -117,7 +117,7 @@ fn main() {
     let f = File::open(path).unwrap();
 
     let mut d = Device::new().unwrap();
-    d.set_fd(&f).unwrap();
+    d.set_fd(f).unwrap();
 
     println!("Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
 			d.bustype(),
