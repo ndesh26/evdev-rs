@@ -14,7 +14,7 @@ fn context_create() {
 #[test]
 fn context_create_with_fd() {
     let f = File::open("/dev/input/event0").unwrap();
-    let d = Device::new_from_fd(&f).unwrap();
+    let _d = Device::new_from_fd(&f).unwrap();
 }
 
 #[test]
@@ -120,7 +120,7 @@ fn device_get_absinfo() {
 
         match absinfo {
             None => ..,
-            Some(a) => ..,
+            Some(_a) => ..,
         };
     }
 }
