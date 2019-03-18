@@ -9,7 +9,7 @@ A Rust wrapper for libevdev
 ```toml
 # Cargo.toml
 [dependencies]
-evdev-rs = "0.1.0"
+evdev-rs = "0.2.0"
 ```
 
 Why a libevdev wrapper?

@@ -1,6 +1,6 @@
 [package]
 name = "evdev-rs"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Nayan Deshmukh <nayan26deshmukh@gmail.com>"]
 license = "MIT/Apache-2.0"
 keywords = ["evdev"]
@@ -15,7 +15,7 @@ a library interface to the callers, thus avoiding erroneous ioctls, etc.
 """
 
 [dependencies]
-evdev-sys = { path = "evdev-sys", version = "0.1.0" }
+evdev-sys = { path = "evdev-sys", version = "0.2.0" }
 nix = "0.13.0"
 libc = "0.2.48"
 bitflags = "1.0.4"
