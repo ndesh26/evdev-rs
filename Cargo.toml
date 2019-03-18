@@ -16,7 +16,7 @@ a library interface to the callers, thus avoiding erroneous ioctls, etc.
 
 [dependencies]
 evdev-sys = { path = "evdev-sys", version = "0.1.0" }
-nix = "0.7"
-libc = "0.2"
+nix = "0.13.0"
+libc = "0.2.48"
 bitflags = "1.0.4"
-log = "0.3"
+log = "0.4.6"
