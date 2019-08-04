@@ -237,14 +237,20 @@ impl Device {
     }
 
     /// Returns `true` if device support the property and false otherwise
-    fn has_property(&self, prop: &InputProp) -> bool {
+    ///
+    /// Note: Please use the `has` function instead. This function is only
+    /// available for the sake of maintaining compatibility with libevdev.
+    pub fn has_property(&self, prop: &InputProp) -> bool {
         unsafe {
             raw::libevdev_has_property(self.raw, prop.clone() as c_uint) != 0
         }
     }
 
     /// Enables this property, a call to `set_fd` will overwrite any previously set values
-    fn enable_property(&self, prop: &InputProp) -> Result<(), Errno> {
+    ///
+    /// Note: Please use the `enable` function instead. This function is only
+    /// available for the sake of maintaining compatibility with libevdev.
+    pub fn enable_property(&self, prop: &InputProp) -> Result<(), Errno> {
         let result = unsafe {
             raw::libevdev_enable_property(self.raw, prop.clone() as c_uint) as i32
         };
@@ -255,14 +261,20 @@ impl Device {
         }
     }
     /// Returns `true` is the device support this event type and `false` otherwise
-    fn has_event_type(&self, ev_type: &EventType) -> bool {
+    ///
+    /// Note: Please use the `has` function instead. This function is only
+    /// available for the sake of maintaining compatibility with libevdev.
+    pub fn has_event_type(&self, ev_type: &EventType) -> bool {
         unsafe {
             raw::libevdev_has_event_type(self.raw, ev_type.clone() as c_uint) != 0
         }
     }
 
     /// Return `true` is the device support this event type and code and `false` otherwise
-    fn has_event_code(&self, code: &EventCode) -> bool {
+    ///
+    /// Note: Please use the `has` function instead. This function is only
+    /// available for the sake of maintaining compatibility with libevdev.
+    pub fn has_event_code(&self, code: &EventCode) -> bool {
         unsafe {
             let (ev_type, ev_code) = event_code_to_int(code);
             raw::libevdev_has_event_code(self.raw,
@@ -458,7 +470,10 @@ impl Device {
     ///
     /// This is a local modification only affecting only this representation of
     /// this device.
-    fn enable_event_type(&self, ev_type: &EventType) -> Result<(), Errno> {
+    ///
+    /// Note: Please use the `enable` function instead. This function is only
+    /// available for the sake of maintaining compatibility with libevdev.
+    pub fn enable_event_type(&self, ev_type: &EventType) -> Result<(), Errno> {
          let result = unsafe {
             raw::libevdev_enable_event_type(self.raw,
                                             ev_type.clone() as c_uint)
@@ -480,6 +495,9 @@ impl Device {
     /// If type is EV_REP, data must be a pointer to a int containing the data
     /// for this axis.
     /// For all other types, the argument must be NULL.
+    ///
+    /// Note: Please use the `enable` function instead. This function is only
+    /// available for the sake of maintaining compatibility with libevdev.
     pub fn enable_event_code(&self, ev_code: &EventCode, blob: Option<&Any>)
                              -> Result<(), Errno> {
         let (ev_type, ev_code) = event_code_to_int(ev_code);
@@ -541,7 +559,10 @@ impl Device {
     ///
     /// This is a local modification only affecting only this representation of
     /// this device.
-    fn disable_event_type(&self, ev_type: &EventType) -> Result<(), Errno> {
+    ///
+    /// Note: Please use the `disable` function instead. This function is only
+    /// available for the sake of maintaining compatibility with libevdev.
+    pub fn disable_event_type(&self, ev_type: &EventType) -> Result<(), Errno> {
          let result = unsafe {
             raw::libevdev_disable_event_type(self.raw,
                                              ev_type.clone() as c_uint)
@@ -566,7 +587,10 @@ impl Device {
     ///
     /// Disabling codes of type EV_SYN will not work. Don't shoot yourself in the
     /// foot. It hurts.
-    fn disable_event_code(&self, code: &EventCode)
+    ///
+    /// Note: Please use the `disable` function instead. This function is only
+    /// available for the sake of maintaining compatibility with libevdev.
+    pub fn disable_event_code(&self, code: &EventCode)
                               -> Result<(), Errno> {
         let (ev_type, ev_code) = event_code_to_int(code);
         let result = unsafe {
