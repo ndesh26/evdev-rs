@@ -26,9 +26,9 @@ macro_rules! string_setter {
 macro_rules! product_getter {
     ( $( $func_name:ident, $c_func: ident ),* ) => {
         $(
-            pub fn $func_name (&self) -> i32 {
+            pub fn $func_name (&self) -> u16 {
                 unsafe {
-                    raw::$c_func(self.raw) as i32
+                    raw::$c_func(self.raw) as u16
                 }
             }
         )*
@@ -38,7 +38,7 @@ macro_rules! product_getter {
 macro_rules! product_setter {
     ( $( $func_name:ident, $c_func: ident ),* ) => {
         $(
-            pub fn $func_name (&self, field: i32) {
+            pub fn $func_name (&self, field: u16) {
                 unsafe {
                     raw::$c_func(self.raw, field as c_int);
                 }
