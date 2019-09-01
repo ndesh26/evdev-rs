@@ -85,6 +85,9 @@ def print_enums(bits, prefix):
         print("#[derive(Clone, Debug, PartialEq, Eq, Hash)]")
         print("pub enum %s {" % enum_name)
         for val, names in list(getattr(bits, prefix).items()):
+            # Note(ndesh): We use EV_MAX as proxy to write the UNKnown event
+            if names[0] == "EV_MAX":
+                print("    EV_UNK,")
             print("    %s = %s," % (names[0], val))
             if len(names) > 1:
                 associated_names.extend([(names[0], names[1:])])
@@ -120,6 +123,9 @@ def print_enums_convert_fn(bits, prefix):
         print("pub fn %s(code: u32) -> Option<%s> {" %("int_to_" + convert(fn_name), fn_name))
         print("    match code {")
         for val, names in list(getattr(bits, prefix).items()):
+            # Note(ndesh): We use EV_MAX as proxy to write the UNKnown event
+            if names[0] == "EV_MAX":
+                print("        c if c < 31 => Some(EventType::EV_UNK),")
             print("        %s => Some(%s::%s)," % (val, fn_name, names[0]))
         if prefix == "key":
                 for val, names in list(getattr(bits, "btn").items()):
@@ -142,6 +148,9 @@ def print_event_code(bits, prefix):
             elif name == "EV_FF_STATUS":
                     print("    EV_FF_STATUS(EV_FF),")
             else:
+                    # Note(ndesh): We use EV_MAX as proxy to write the UNKnown event
+                    if name == "EV_MAX":
+                        print("    EV_UNK { event_type: u32, event_code: u32 },")
                     print("    %s," % (name))
         if prefix == "key":
             for val, names in list(getattr(bits, "btn").items()):

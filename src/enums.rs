@@ -15,6 +15,7 @@ pub enum EventType {
     EV_FF = 21,
     EV_PWR = 22,
     EV_FF_STATUS = 23,
+    EV_UNK,
     EV_MAX = 31,
 }
 
@@ -32,6 +33,7 @@ pub fn int_to_event_type(code: u32) -> Option<EventType> {
         21 => Some(EventType::EV_FF),
         22 => Some(EventType::EV_PWR),
         23 => Some(EventType::EV_FF_STATUS),
+        c if c < 31 => Some(EventType::EV_UNK),
         31 => Some(EventType::EV_MAX),
         _ => None
     }
@@ -52,6 +54,7 @@ pub enum EventCode {
     EV_FF(EV_FF),
     EV_PWR,
     EV_FF_STATUS(EV_FF),
+    EV_UNK { event_type: u32, event_code: u32 },
     EV_MAX,
 }
 
