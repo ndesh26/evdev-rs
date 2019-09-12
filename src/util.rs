@@ -251,7 +251,7 @@ impl Iterator for EventTypeIterator {
 
     fn next(&mut self) -> Option<EventType> {
         match self.current {
-            EventType::EV_FF_STATUS => {
+            EventType::EV_MAX => {
                 return None;
             }
             _ => {
@@ -504,7 +504,7 @@ impl Iterator for InputPropIterator {
 
     fn next(&mut self) -> Option<InputProp> {
         match self.current {
-            InputProp::INPUT_PROP_ACCELEROMETER => {
+            InputProp::INPUT_PROP_MAX => {
                 return None;
             }
             _ => {
