@@ -94,7 +94,7 @@ pub fn event_code_to_int(event_code: &EventCode) -> (c_uint, c_uint) {
 
 }
 
-pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> Option<EventCode> {
+pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> EventCode {
     let ev_type: EventType = int_to_event_type(event_type as u32).unwrap();
 
     let ev_code = match ev_type {
@@ -149,11 +149,11 @@ pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> Option<Event
     };
 
     match ev_code {
-        Some(_) => ev_code,
-        None => Some(EventCode::EV_UNK {
+        Some(c) => c,
+        None => EventCode::EV_UNK {
             event_type: event_type as u32,
             event_code: event_code as u32,
-        }),
+        },
     }
 }
 
@@ -231,7 +231,7 @@ impl EventCode {
 
         match result {
             -1 => None,
-             k => int_to_event_code(ev_type.clone() as u32, k as u32),
+             k => Some(int_to_event_code(ev_type.clone() as u32, k as u32)),
         }
     }
 }
