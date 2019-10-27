@@ -205,7 +205,7 @@ impl InputEvent {
     pub fn from_raw(event: &libc::input_event) -> InputEvent {
         let ev_type = event.type_ as u32;
         let event_type = int_to_event_type(ev_type).unwrap();
-        let event_code = int_to_event_code(ev_type, event.code as u32).unwrap();
+        let event_code = int_to_event_code(ev_type, event.code as u32);
         InputEvent {
             time: TimeVal::from_raw(&event.time),
             event_type,
