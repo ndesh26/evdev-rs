@@ -206,7 +206,7 @@ impl Device {
     }
 
     /// Returns `true` if device support the InputProp/EventType/EventCode and false otherwise
-    pub fn has(&self, blob: &Any) -> bool {
+    pub fn has(&self, blob: &dyn Any) -> bool {
         if let Some(ev_type) = blob.downcast_ref::<EventType>() {
             self.has_event_type(ev_type)
         } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
@@ -224,7 +224,7 @@ impl Device {
     ///
     /// This is a local modification only affecting only this representation of
     /// this device.
-    pub fn enable(&self, blob: &Any) -> Result<(),Errno> {
+    pub fn enable(&self, blob: &dyn Any) -> Result<(),Errno> {
         if let Some(ev_type) = blob.downcast_ref::<EventType>() {
             self.enable_event_type(ev_type)
         } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
@@ -498,7 +498,7 @@ impl Device {
     ///
     /// Note: Please use the `enable` function instead. This function is only
     /// available for the sake of maintaining compatibility with libevdev.
-    pub fn enable_event_code(&self, ev_code: &EventCode, blob: Option<&Any>)
+    pub fn enable_event_code(&self, ev_code: &EventCode, blob: Option<&dyn Any>)
                              -> Result<(), Errno> {
         let (ev_type, ev_code) = event_code_to_int(ev_code);
 
@@ -535,7 +535,7 @@ impl Device {
     ///
     /// This is a local modification only affecting only this representation of
     /// this device.
-    pub fn disable(&self, blob: &Any) -> Result<(),Errno> {
+    pub fn disable(&self, blob: &dyn Any) -> Result<(),Errno> {
         if let Some(ev_type) = blob.downcast_ref::<EventType>() {
             self.disable_event_type(ev_type)
         } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
