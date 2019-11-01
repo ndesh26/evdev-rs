@@ -162,7 +162,7 @@ pub struct TimeVal {
 }
 
 impl TimeVal {
-    pub fn new(tv_sec: i64, tv_usec: i64) -> TimeVal {
+    pub fn new(tv_sec: c_long, tv_usec: c_long) -> TimeVal {
         TimeVal { tv_sec, tv_usec }
     }
 
