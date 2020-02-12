@@ -57,6 +57,8 @@ pub mod uinput;
 pub mod util;
 
 use libc::{c_long, c_uint};
+use std::convert::TryFrom;
+use std::time::{SystemTime, SystemTimeError, UNIX_EPOCH};
 
 use enums::*;
 use util::*;
@@ -157,8 +159,19 @@ impl AbsInfo {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct TimeVal {
-   pub tv_sec: c_long,
-   pub tv_usec: c_long,
+    pub tv_sec: c_long,
+    pub tv_usec: c_long,
+}
+
+impl TryFrom<SystemTime> for TimeVal {
+    type Error = SystemTimeError;
+    fn try_from(system_time: SystemTime) -> Result<Self, Self::Error> {
+        let d = system_time.duration_since(UNIX_EPOCH)?;
+        Ok(TimeVal {
+            tv_sec: d.as_secs() as i64,
+            tv_usec: d.subsec_micros() as i64,
+        })
+    }
 }
 
 impl TimeVal {
