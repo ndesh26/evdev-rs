@@ -56,7 +56,7 @@ pub mod logging;
 pub mod uinput;
 pub mod util;
 
-use libc::{c_long, c_uint};
+use libc::{c_long, c_uint, time_t, suseconds_t};
 use std::convert::TryFrom;
 use std::time::{SystemTime, SystemTimeError, UNIX_EPOCH};
 
@@ -168,8 +168,8 @@ impl TryFrom<SystemTime> for TimeVal {
     fn try_from(system_time: SystemTime) -> Result<Self, Self::Error> {
         let d = system_time.duration_since(UNIX_EPOCH)?;
         Ok(TimeVal {
-            tv_sec: d.as_secs() as i64,
-            tv_usec: d.subsec_micros() as i64,
+            tv_sec: d.as_secs() as time_t,
+            tv_usec: d.subsec_micros() as suseconds_t,
         })
     }
 }
