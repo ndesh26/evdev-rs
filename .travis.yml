@@ -7,6 +7,20 @@ rust:
   - nightly
 
 matrix:
+  include:
+    - env: TARGET=x86_64-unknown-linux-gnu
+    - env: TARGET=arm-unknown-linux-gnueabi
+      addons:
+        apt:
+          packages:
+            - gcc-arm-linux-gnueabi
+    - env: TARGET=arm-unknown-linux-gnueabihf
+      addons:
+        apt:
+          packages:
+            - gcc-arm-linux-gnueabihf
+            - libc6-armhf-cross
+            - libc6-dev-armhf-cross
   allow_failures:
     - rust: nightly
 
