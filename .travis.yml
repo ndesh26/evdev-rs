@@ -1,19 +1,23 @@
-sudo: required
-
+os: linux
+dist: xenial
 language: rust
 rust:
   - stable
   - beta
   - nightly
 
-matrix:
+env:
+  - TARGET=x86_64-unknown-linux-gnu
+
+jobs:
   include:
-    - env: TARGET=x86_64-unknown-linux-gnu
     - env: TARGET=arm-unknown-linux-gnueabi
       addons:
         apt:
           packages:
             - gcc-arm-linux-gnueabi
+            - libc6-armel-cross
+            - libc6-dev-armel-cross
     - env: TARGET=arm-unknown-linux-gnueabihf
       addons:
         apt:
@@ -31,10 +35,15 @@ addons:
 
 before_script:
   - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
+  - rustup target add $TARGET
 
 script:
-  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH travis_retry cargo build --verbose
-  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH sudo -E env "PATH=$PATH" cargo test --verbose
+  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH travis_retry cargo build --target $TARGET --verbose
+  - |
+      if [ $TARGET == "x86_64-unknown-linux-gnu" ]
+        then
+          PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH sudo -E env "PATH=$PATH" cargo test --verbose
+      fi
   - cargo doc --no-deps -p evdev-sys -p evdev-rs
 
 after_success:
