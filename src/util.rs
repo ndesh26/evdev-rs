@@ -271,6 +271,8 @@ impl Iterator for EventTypeIterator {
                 let mut raw_code = (self.current.clone() as u32) + 1;
                 loop {
                     match int_to_event_type(raw_code) {
+                        // TODO: Find a way to iterate over Unknown types
+                        Some(EventType::EV_UNK) => raw_code += 1,
                         Some(x) => {
                             let code = self.current.clone();
                             self.current = x;
