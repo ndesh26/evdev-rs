@@ -41,7 +41,6 @@
 //! ```
 
 extern crate evdev_sys as raw;
-extern crate nix;
 extern crate libc;
 #[macro_use]
 extern crate bitflags;

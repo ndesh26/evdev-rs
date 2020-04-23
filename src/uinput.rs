@@ -1,9 +1,9 @@
 use InputEvent;
 use libc::c_int;
 use device::Device;
+use std::io;
 use std::fs::File;
 use std::os::unix::io::FromRawFd;
-use nix::errno::Errno;
 
 use util::*;
 
@@ -17,7 +17,7 @@ impl UInputDevice {
     ///
     /// The uinput device will be an exact copy of the libevdev device, minus
     /// the bits that uinput doesn't allow to be set.
-    pub fn create_from_device(device: &Device) -> Result<UInputDevice, Errno> {
+    pub fn create_from_device(device: &Device) -> io::Result<UInputDevice> {
         let mut libevdev_uinput = 0 as *mut _;
         let result = unsafe {
             raw::libevdev_uinput_create_from_device(device.raw, raw::LIBEVDEV_UINPUT_OPEN_MANAGED, &mut libevdev_uinput)
@@ -25,7 +25,7 @@ impl UInputDevice {
 
         match result {
             0 => Ok(UInputDevice { raw: libevdev_uinput }),
-            error => Err(Errno::from_i32(-error))
+            error => Err(io::Error::from_raw_os_error(-error))
         }
     }
 
@@ -69,7 +69,7 @@ impl UInputDevice {
     /// It is the caller's responsibility that any event sequence is terminated
     /// with an EV_SYN/SYN_REPORT/0 event. Otherwise, listeners on the device
     /// node will not see the events until the next EV_SYN event is posted.
-    pub fn write_event(&self, event: &InputEvent) -> Result<(), Errno> {
+    pub fn write_event(&self, event: &InputEvent) -> io::Result<()> {
         let (ev_type, ev_code) = event_code_to_int(&event.event_code);
         let ev_value = event.value as c_int;
 
@@ -79,7 +79,7 @@ impl UInputDevice {
 
         match result {
             0 => Ok(()),
-            error => Err(Errno::from_i32(-error))
+            error => Err(io::Error::from_raw_os_error(-error))
         }
     }
 }

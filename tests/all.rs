@@ -24,7 +24,7 @@ fn context_set_fd() {
 
     match d.set_fd(f) {
         Ok(()) => ..,
-        Err(result) => panic!("Error {}", result.desc()),
+        Err(result) => panic!("Error {}", result),
     };
 }
 
