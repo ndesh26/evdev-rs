@@ -1,9 +1,8 @@
 extern crate evdev_rs as evdev;
-extern crate nix;
 
 use evdev::*;
 use evdev::enums::*;
-use nix::errno::Errno;
+use std::io;
 use std::fs::File;
 
 fn usage() {
@@ -131,7 +130,7 @@ fn main() {
     print_bits(&d);
     print_props(&d);
 
-    let mut a: Result<(ReadStatus, InputEvent), Errno>;
+    let mut a: io::Result<(ReadStatus, InputEvent)>;
     loop {
         a = d.next_event(evdev::ReadFlag::NORMAL | evdev::ReadFlag::BLOCKING);
         if a.is_ok() {
@@ -153,9 +152,10 @@ fn main() {
                 ReadStatus::Success => print_event(&result.1),
             }
         } else {
-            match a.err().unwrap() {
-                Errno::EAGAIN => continue,
-                err => {
+            let err = a.err().unwrap();
+            match err.raw_os_error() {
+                Some(libc::EAGAIN) => continue,
+                _ => {
                     println!("{}", err);
                     break;
                 }

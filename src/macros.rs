@@ -51,13 +51,13 @@ macro_rules! abs_getter {
     ( $( $func_name:ident, $c_func: ident ),* ) => {
         $(
             pub fn $func_name (&self,
-                               code: u32) -> Result<i32, nix::errno::Errno> {
+                               code: u32) -> std::io::Result<i32> {
                 let result = unsafe {
                     raw::$c_func(self.raw, code as c_uint) as i32
                 };
 
                 match result {
-                    0 => Err(nix::errno::from_i32(0)),
+                    0 => Err(std::io::Error::from_raw_os_error(0)),
                     k => Ok(k)
                 }
             }
