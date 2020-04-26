@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Parses linux/input.h scanning for #define KEY_FOO 134
 # Prints Rust source header files that can be used for
 # mapping and lookup tables.
@@ -6,7 +6,6 @@
 # The original version of this file is in libevdev
 #
 
-from __future__ import print_function
 import re
 import sys
 
