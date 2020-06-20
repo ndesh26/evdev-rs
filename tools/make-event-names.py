@@ -81,6 +81,7 @@ def print_enums(bits, prefix):
         associated_names = []
 
         print("#[allow(non_camel_case_types)]")
+        print('#[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]')
         print("#[derive(Clone, Debug, PartialEq, Eq, Hash)]")
         print("pub enum %s {" % enum_name)
         for val, names in list(getattr(bits, prefix).items()):
@@ -139,6 +140,7 @@ def print_event_code(bits, prefix):
                 return
 
         print("#[allow(non_camel_case_types)]")
+        print('#[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]')
         print("#[derive(Clone, Debug, PartialEq)]")
         print("pub enum EventCode {")
         for val, [name] in list(getattr(bits, prefix).items()):

@@ -7,7 +7,10 @@ rust:
   - nightly
 
 env:
-  - TARGET=x86_64-unknown-linux-gnu
+  - |
+    TARGET=x86_64-unknown-linux-gnu
+    PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig
+    LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH
 
 jobs:
   include:
@@ -38,13 +41,14 @@ before_script:
   - rustup target add $TARGET
 
 script:
-  - PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH travis_retry cargo build --target $TARGET --verbose
+  - cargo build --target $TARGET --verbose
+  - cargo build --all-features --target $TARGET --verbose
   - |
       if [ $TARGET == "x86_64-unknown-linux-gnu" ]
-        then
-          PKG_CONFIG_PATH=$HOME/local/lib/pkgconfig LD_LIBRARY_PATH=$HOME/local/lib:$LD_LIBRARY_PATH sudo -E env "PATH=$PATH" cargo test --verbose
+      then
+        sudo -E env "PATH=$PATH" cargo test --verbose
       fi
-  - cargo doc --no-deps -p evdev-sys -p evdev-rs
+  - cargo doc --no-deps --all-features -p evdev-sys -p evdev-rs
 
 after_success:
   - travis-cargo --only stable doc-upload
