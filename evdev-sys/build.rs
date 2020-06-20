@@ -6,12 +6,21 @@ use std::process::Command;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
 
-    if let Ok(lib) = pkg_config::find_library("libevdev") {
-        for path in &lib.include_paths {
-            println!("cargo:include={}", path.display());
+    match pkg_config::find_library("libevdev") {
+        Ok(lib) => {
+            for path in &lib.include_paths {
+                println!("cargo:include={}", path.display());
+            }
+            return Ok(());
+        },
+        Err(e) => {
+            eprintln!(
+                "Couldn't find libevdev from pkgconfig ({:?}), \
+                 compiling it from source...",
+                e
+            );
         }
-        return Ok(());
-    }
+    };
 
     if !Path::new("libevdev/.git").exists() {
         let mut download = Command::new("git");
