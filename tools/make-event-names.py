@@ -203,7 +203,7 @@ def print_mapping_table(bits):
 
 def parse_define(bits, line):
     m = re.match(r"^#define\s+(\w+)\s+(\w+)", line)
-    if m == None:
+    if m is None:
         return
 
     name = m.group(1)
