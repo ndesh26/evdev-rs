@@ -7,7 +7,7 @@
 //!
 //! ## Intializing a evdev device
 //!
-//! ```
+//! ```rust,no_run
 //! use evdev_rs::Device;
 //! use std::fs::File;
 //!
@@ -38,6 +38,14 @@
 //!         Err(e) => (),
 //!     }
 //! }
+//! ```
+//!
+//! ## Serialization
+//! to use serialization, you muse enable the `serde` feature.
+//! ```toml
+//! # Cargo.toml
+//! [dependencies]
+//! evdev-rs = { version = "0.4.0", features = ["serde"] }
 //! ```
 
 extern crate evdev_sys as raw;
