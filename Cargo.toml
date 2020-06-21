@@ -14,8 +14,15 @@ common tasks when dealing with evdev devices into a library and provides
 a library interface to the callers, thus avoiding erroneous ioctls, etc.
 """
 
+[features]
+default = []
+
 [dependencies]
+serde = { version = "1.0", default-features = false, features=["derive"], optional = true }
 evdev-sys = { path = "evdev-sys", version = "0.2.1" }
 libc = "0.2.67"
 bitflags = "1.2.1"
 log = "0.4.8"
+
+[package.metadata.docs.rs]
+features = ["serde"]

@@ -7,7 +7,7 @@
 //!
 //! ## Intializing a evdev device
 //!
-//! ```
+//! ```rust,no_run
 //! use evdev_rs::Device;
 //! use std::fs::File;
 //!
@@ -39,6 +39,14 @@
 //!     }
 //! }
 //! ```
+//!
+//! ## Serialization
+//! to use serialization, you muse enable the `serde` feature.
+//! ```toml
+//! # Cargo.toml
+//! [dependencies]
+//! evdev-rs = { version = "0.4.0", features = ["serde"] }
+//! ```
 
 extern crate evdev_sys as raw;
 extern crate libc;
@@ -46,6 +54,9 @@ extern crate libc;
 extern crate bitflags;
 #[macro_use]
 extern crate log;
+#[cfg(feature = "serde")]
+#[macro_use]
+extern crate serde;
 
 #[macro_use]
 mod macros;
@@ -66,6 +77,9 @@ use util::*;
 pub use device::Device;
 #[doc(inline)]
 pub use uinput::UInputDevice;
+
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
 
 pub enum GrabMode {
     /// Grab the device if not currently grabbed
@@ -156,6 +170,7 @@ impl AbsInfo {
     }
 }
 
+#[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct TimeVal {
     pub tv_sec: c_long,
@@ -194,6 +209,7 @@ impl TimeVal {
 }
 
 /// The event structure itself
+#[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct InputEvent {
     /// The time at which event occured

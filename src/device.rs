@@ -41,7 +41,7 @@ impl Device {
     ///
     /// This is a shortcut for
     ///
-    /// ```
+    /// ```rust,no_run
     /// use evdev_rs::Device;
     /// # use std::fs::File;
     ///
