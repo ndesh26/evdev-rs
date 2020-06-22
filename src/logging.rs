@@ -1,5 +1,3 @@
-use raw;
-
 pub enum LogPriority {
     /// critical errors and application bugs
     Error = raw::LIBEVDEV_LOG_ERROR as isize,

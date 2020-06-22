@@ -32,9 +32,9 @@
 //!     let a = d.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING);
 //!     match a {
 //!         Ok(k) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
-//!				              k.1.time.tv_sec,
-//!				              k.1.time.tv_usec,
-//!				              k.1.event_type),
+//!                           k.1.time.tv_sec,
+//!                           k.1.time.tv_usec,
+//!                           k.1.event_type),
 //!         Err(e) => (),
 //!     }
 //! }
@@ -49,14 +49,6 @@
 //! ```
 
 extern crate evdev_sys as raw;
-extern crate libc;
-#[macro_use]
-extern crate bitflags;
-#[macro_use]
-extern crate log;
-#[cfg(feature = "serde")]
-#[macro_use]
-extern crate serde;
 
 #[macro_use]
 mod macros;
@@ -69,6 +61,7 @@ pub mod util;
 use libc::{c_long, c_uint, time_t, suseconds_t};
 use std::convert::TryFrom;
 use std::time::{SystemTime, SystemTimeError, UNIX_EPOCH};
+use bitflags::bitflags;
 
 use enums::*;
 use util::*;
@@ -108,8 +101,8 @@ pub enum ReadStatus {
     /// for processing.
     Success = raw::LIBEVDEV_READ_STATUS_SUCCESS as isize,
     /// Depending on the `next_event` read flag:
-	/// libevdev received a SYN_DROPPED from the device, and the caller should
-	/// now resync the device, or, an event has been read in sync mode.
+    /// libevdev received a SYN_DROPPED from the device, and the caller should
+    /// now resync the device, or, an event has been read in sync mode.
     Sync = raw::LIBEVDEV_READ_STATUS_SYNC as isize,
 }
 
@@ -171,7 +164,7 @@ impl AbsInfo {
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Eq, Hash, PartialOrd, Ord, Debug, PartialEq)]
 pub struct TimeVal {
     pub tv_sec: c_long,
     pub tv_usec: c_long,
@@ -210,7 +203,7 @@ impl TimeVal {
 
 /// The event structure itself
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct InputEvent {
     /// The time at which event occured
     pub time: TimeVal,
@@ -221,11 +214,11 @@ pub struct InputEvent {
 
 impl InputEvent {
     pub fn new(timeval: &TimeVal, code: &EventCode, value: i32) -> InputEvent {
-        let (ev_type, _) = event_code_to_int(&code);
+        let (ev_type, _) = event_code_to_int(code);
         InputEvent {
-            time: timeval.clone(),
+            time: *timeval,
             event_type: int_to_event_type(ev_type).unwrap(),
-            event_code: code.clone(),
+            event_code: *code,
             value
         }
     }
@@ -254,7 +247,7 @@ impl InputEvent {
 
     pub fn is_type(&self, ev_type: &EventType) -> bool {
         unsafe {
-            raw::libevdev_event_is_type(&self.as_raw(), ev_type.clone() as c_uint) == 1
+            raw::libevdev_event_is_type(&self.as_raw(), *ev_type as c_uint) == 1
         }
     }
 

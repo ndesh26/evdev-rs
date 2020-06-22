@@ -1,35 +1,26 @@
-extern crate pkg_config;
-extern crate cc;
-
 use std::env;
 use std::ffi::OsString;
 use std::fs;
 use std::path::{PathBuf, Path};
 use std::process::Command;
 
-macro_rules! t {
-    ($e:expr) => (match $e {
-        Ok(t) => t,
-        Err(e) => panic!("{} return the error {}", stringify!($e), e),
-    })
-}
-
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if let Ok(lib) = pkg_config::find_library("libevdev") {
         for path in &lib.include_paths {
             println!("cargo:include={}", path.display());
         }
-        return
+        return Ok(());
     }
 
     if !Path::new("libevdev/.git").exists() {
-        let _ = Command::new("git").args(&["submodule", "update", "--init"])
-                                   .status();
+        let mut download = Command::new("git");
+        download.args(&["submodule", "update", "--init", "--depth", "1"]);
+        run(&mut download)?;
     }
 
     let dst = PathBuf::from(env::var_os("OUT_DIR").unwrap());
-    let src = t!(env::current_dir());
+    let src = env::current_dir()?;
 
     println!("cargo:rustc-link-search={}/lib", dst.display());
     println!("cargo:root={}", dst.display());
@@ -40,39 +31,41 @@ fn main() {
     let cfg = cc::Build::new();
     let compiler = cfg.get_compiler();
 
-    let _ = fs::create_dir(&dst.join("build"));
+    fs::create_dir(&dst.join("build"))?;
 
-    let mut cmd = Command::new("sh");
+    let mut autogen = Command::new("sh");
     let mut cflags = OsString::new();
     for arg in compiler.args() {
         cflags.push(arg);
         cflags.push(" ");
     }
-    cmd.env("CC", compiler.path())
+    autogen.env("CC", compiler.path())
        .env("CFLAGS", cflags)
        .current_dir(&dst.join("build"))
        .arg(src.join("libevdev/autogen.sh").to_str().unwrap()
                .replace("C:\\", "/c/")
                .replace("\\", "/"));
-    match env::var("HOST") {
-        Ok(h) => { cmd.arg(format!("--host={}", h)); },
-        Err(_) => {}
+    if let Ok(h) = env::var("HOST") {
+        autogen.arg(format!("--host={}", h));
     }
+    autogen.arg(format!("--prefix={}", sanitize_sh(&dst)));
+    run(&mut autogen)?;
 
-    cmd.arg(format!("--prefix={}", sanitize_sh(&dst)));
+    let mut make = Command::new("make");
+    make.arg(&format!("-j{}", env::var("NUM_JOBS").unwrap()))
+        .current_dir(&dst.join("build"));
+    run(&mut make)?;
 
-    run(&mut cmd);
-    run(Command::new("make")
-                .arg(&format!("-j{}", env::var("NUM_JOBS").unwrap()))
-                .current_dir(&dst.join("build")));
-    run(Command::new("make")
-                .arg("install")
-                .current_dir(&dst.join("build")));
+    let mut install = Command::new("make");
+    install.arg("install").current_dir(&dst.join("build"));
+    run(&mut install)?;
+    Ok(())
 }
 
-fn run(cmd: &mut Command) {
+fn run(cmd: &mut Command) -> std::io::Result<()> {
     println!("running: {:?}", cmd);
-    assert!(t!(cmd.status()).success());
+    assert!(cmd.status()?.success());
+    Ok(())
 }
 
 fn sanitize_sh(path: &Path) -> String {

@@ -2,8 +2,6 @@
 #![allow(dead_code)]
 #![allow(improper_ctypes)]
 
-extern crate libc;
-
 use libc::{c_int, c_uint, c_char, c_void, size_t};
 pub use libc::{timeval, input_event, input_absinfo};
 

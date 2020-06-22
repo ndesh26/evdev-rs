@@ -1,7 +1,5 @@
-extern crate evdev_rs as evdev;
-
-use evdev::*;
-use evdev::enums::*;
+use evdev_rs::*;
+use evdev_rs::enums::*;
 use std::fs::File;
 use std::os::unix::io::AsRawFd;
 
