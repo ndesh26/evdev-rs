@@ -1,4 +1,4 @@
-use {TimeVal, ReadStatus, InputEvent, LedState, ReadFlag, GrabMode, AbsInfo};
+use crate::{TimeVal, ReadStatus, InputEvent, LedState, ReadFlag, GrabMode, AbsInfo};
 use libc::{c_int, c_uint, c_void};
 use std::any::Any;
 use std::ffi::CString;
@@ -7,8 +7,8 @@ use std::io;
 use std::os::unix::io::{AsRawFd, FromRawFd};
 use std::ptr;
 
-use enums::*;
-use util::*;
+use crate::enums::*;
+use crate::util::*;
 
 /// Opaque struct representing an evdev device
 pub struct Device {
@@ -50,7 +50,7 @@ impl Device {
     /// device.set_fd(fd);
     /// ```
     pub fn new_from_fd(file: File) -> io::Result<Device> {
-        let mut libevdev = 0 as *mut _;
+        let mut libevdev = std::ptr::null_mut();
         let result = unsafe {
             raw::libevdev_new_from_fd(file.as_raw_fd(), &mut libevdev)
         };
@@ -242,7 +242,7 @@ impl Device {
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn has_property(&self, prop: &InputProp) -> bool {
         unsafe {
-            raw::libevdev_has_property(self.raw, prop.clone() as c_uint) != 0
+            raw::libevdev_has_property(self.raw, *prop as c_uint) != 0
         }
     }
 
@@ -252,7 +252,7 @@ impl Device {
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn enable_property(&self, prop: &InputProp) -> io::Result<()> {
         let result = unsafe {
-            raw::libevdev_enable_property(self.raw, prop.clone() as c_uint) as i32
+            raw::libevdev_enable_property(self.raw, *prop as c_uint) as i32
         };
 
         match result {
@@ -266,7 +266,7 @@ impl Device {
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn has_event_type(&self, ev_type: &EventType) -> bool {
         unsafe {
-            raw::libevdev_has_event_type(self.raw, ev_type.clone() as c_uint) != 0
+            raw::libevdev_has_event_type(self.raw, *ev_type as c_uint) != 0
         }
     }
 
@@ -476,7 +476,7 @@ impl Device {
     pub fn enable_event_type(&self, ev_type: &EventType) -> io::Result<()> {
          let result = unsafe {
             raw::libevdev_enable_event_type(self.raw,
-                                            ev_type.clone() as c_uint)
+                                            *ev_type as c_uint)
         };
 
         match result {
@@ -565,7 +565,7 @@ impl Device {
     pub fn disable_event_type(&self, ev_type: &EventType) -> io::Result<()> {
          let result = unsafe {
             raw::libevdev_disable_event_type(self.raw,
-                                             ev_type.clone() as c_uint)
+                                             *ev_type as c_uint)
         };
 
         match result {

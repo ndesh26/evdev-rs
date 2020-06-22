@@ -1,7 +1,5 @@
-extern crate evdev_rs as evdev;
-
-use evdev::*;
-use evdev::enums::*;
+use evdev_rs::*;
+use evdev_rs::enums::*;
 use std::io;
 use std::fs::File;
 
@@ -13,21 +11,21 @@ fn print_abs_bits(dev: &Device, axis: &EV_ABS) {
 
     let code = EventCode::EV_ABS(axis.clone());
 
-	if !dev.has(&code) { return; }
+    if !dev.has(&code) { return; }
 
-	let abs = dev.abs_info(&code).unwrap();
+    let abs = dev.abs_info(&code).unwrap();
 
-	println!("	Value	{}", abs.value);
-	println!("	Min	{}", abs.minimum);
-	println!("	Max	{}", abs.maximum);
-	if abs.fuzz != 0 {
-		println!("	Fuzz	{}", abs.fuzz);
+    println!("\tValue\t{}", abs.value);
+    println!("\tMin\t{}", abs.minimum);
+    println!("\tMax\t{}", abs.maximum);
+    if abs.fuzz != 0 {
+    println!("\tFuzz\t{}", abs.fuzz);
     }
-	if abs.flat != 0 {
-		println!("	Flat	{}", abs.flat);
+    if abs.flat != 0 {
+    println!("\tFlat\t{}", abs.flat);
     }
-	if abs.resolution != 0 {
-		println!("	Resolution	{}", abs.resolution);
+    if abs.resolution != 0 {
+        println!("\tResolution\t{}", abs.resolution);
     }
 }
 
@@ -40,7 +38,7 @@ fn print_code_bits(dev: &Device, ev_code: &EventCode, max: &EventCode) {
             continue;
         }
 
-		println!("    Event code: {}", code);
+        println!("    Event code: {}", code);
         match code {
             EventCode::EV_ABS(k) => print_abs_bits(dev, &k),
             _ => ()
@@ -52,8 +50,8 @@ fn print_bits(dev: &Device) {
     println!("Supported events:");
 
     for ev_type in  EventType::EV_SYN.iter() {
-		if dev.has(&ev_type) {
-			println!("  Event type: {} ", ev_type);
+        if dev.has(&ev_type) {
+            println!("  Event type: {} ", ev_type);
         }
 
         match ev_type {
@@ -66,16 +64,16 @@ fn print_bits(dev: &Device) {
             EventType::EV_LED => print_code_bits(dev, &EventCode::EV_LED(EV_LED::LED_NUML),
                                                  &EventCode::EV_LED(EV_LED::LED_MAX)),
             _ => (),
-		}
-	}
+        }
+    }
 }
 
 fn print_props(dev: &Device) {
-	println!("Properties:");
+    println!("Properties:");
 
-	for input_prop in InputProp::INPUT_PROP_POINTER.iter() {
-		if dev.has(&input_prop) {
-			println!("  Property type: {}", input_prop);
+    for input_prop in InputProp::INPUT_PROP_POINTER.iter() {
+        if dev.has(&input_prop) {
+            println!("  Property type: {}", input_prop);
         }
     }
 }
@@ -83,25 +81,25 @@ fn print_props(dev: &Device) {
 fn print_event(ev: &InputEvent) {
     match ev.event_type {
         EventType::EV_SYN => {
-		    println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
-				     ev.time.tv_sec,
-				     ev.time.tv_usec,
-				     ev.event_type);
+            println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
+                     ev.time.tv_sec,
+                     ev.time.tv_usec,
+                     ev.event_type);
         }
-	    _ =>  {
-		    println!("Event: time {}.{}, type {} , code {} , value {}",
-			         ev.time.tv_sec,
-			         ev.time.tv_usec,
-			         ev.event_type,
-			         ev.event_code,
-			         ev.value);
+        _ =>  {
+            println!("Event: time {}.{}, type {} , code {} , value {}",
+                     ev.time.tv_sec,
+                     ev.time.tv_usec,
+                     ev.event_type,
+                     ev.event_code,
+                     ev.value);
         }
     }
 }
 
 fn print_sync_dropped_event(ev: &InputEvent) {
-	print!("SYNC DROPPED: ");
-	print_event(ev);
+    print!("SYNC DROPPED: ");
+    print_event(ev);
 }
 
 fn main() {
@@ -119,9 +117,9 @@ fn main() {
     d.set_fd(f).unwrap();
 
     println!("Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
-			d.bustype(),
-			d.vendor_id(),
-			d.product_id());
+            d.bustype(),
+            d.vendor_id(),
+            d.product_id());
     println!("Evdev version: {:x}", d.driver_version());
     println!("Input device name: \"{}\"", d.name().unwrap_or(""));
     println!("Phys location: {}", d.phys().unwrap_or(""));
@@ -132,7 +130,7 @@ fn main() {
 
     let mut a: io::Result<(ReadStatus, InputEvent)>;
     loop {
-        a = d.next_event(evdev::ReadFlag::NORMAL | evdev::ReadFlag::BLOCKING);
+        a = d.next_event(ReadFlag::NORMAL | ReadFlag::BLOCKING);
         if a.is_ok() {
             let mut result = a.ok().unwrap();
             match result.0 {
@@ -140,7 +138,7 @@ fn main() {
                     println!("::::::::::::::::::::: dropped ::::::::::::::::::::::");
                     while result.0 == ReadStatus::Sync {
                         print_sync_dropped_event(&result.1);
-                        a = d.next_event(evdev::ReadFlag::SYNC);
+                        a = d.next_event(ReadFlag::SYNC);
                         if a.is_ok() {
                             result = a.ok().unwrap();
                         } else {

@@ -1,11 +1,11 @@
-use InputEvent;
+use crate::InputEvent;
 use libc::c_int;
-use device::Device;
+use crate::device::Device;
 use std::io;
 use std::fs::File;
 use std::os::unix::io::FromRawFd;
 
-use util::*;
+use crate::util::*;
 
 /// Opaque struct representing an evdev uinput device
 pub struct UInputDevice {
@@ -18,7 +18,7 @@ impl UInputDevice {
     /// The uinput device will be an exact copy of the libevdev device, minus
     /// the bits that uinput doesn't allow to be set.
     pub fn create_from_device(device: &Device) -> io::Result<UInputDevice> {
-        let mut libevdev_uinput = 0 as *mut _;
+        let mut libevdev_uinput = std::ptr::null_mut();
         let result = unsafe {
             raw::libevdev_uinput_create_from_device(device.raw, raw::LIBEVDEV_UINPUT_OPEN_MANAGED, &mut libevdev_uinput)
         };

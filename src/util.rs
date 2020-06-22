@@ -1,24 +1,16 @@
-use enums::*;
+use crate::enums::*;
 use libc::{c_char, c_uint};
-use raw;
+use log::warn;
 use std::fmt;
 use std::ffi::{CStr, CString};
 
-pub(crate) fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
-    let slice : Option<&CStr> = unsafe {
-        if ptr.is_null() {
-            return None
-        }
-        Some(CStr::from_ptr(ptr))
-    };
-
-    match slice {
-        None => None,
-        Some(s) => {
-            let buf : &[u8] = s.to_bytes();
-            Some(std::str::from_utf8(buf).unwrap())
-        }
+pub(crate) unsafe fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
+    if ptr.is_null() {
+        return None;
     }
+    let slice: &CStr = CStr::from_ptr(ptr);
+    let buf: &[u8] = slice.to_bytes();
+    std::str::from_utf8(buf).ok()
 }
 
 pub struct EventTypeIterator {
@@ -34,64 +26,26 @@ pub struct InputPropIterator {
 }
 
 pub fn event_code_to_int(event_code: &EventCode) -> (c_uint, c_uint) {
-    let mut ev_type: c_uint = 0;
-    let mut ev_code: c_uint = 0;
-    match event_code.clone() {
-        EventCode::EV_SYN(code) => {
-            ev_type = EventType::EV_SYN as c_uint;
-            ev_code = code as c_uint;
-        },
-        EventCode::EV_KEY(code) => {
-            ev_type = EventType::EV_KEY as c_uint;
-            ev_code = code as c_uint;
-        },
-        EventCode::EV_REL(code) => {
-            ev_type = EventType::EV_REL as c_uint;
-            ev_code = code as c_uint;
-        },
-        EventCode::EV_ABS(code) => {
-            ev_type = EventType::EV_ABS as c_uint;
-            ev_code = code as c_uint;
-        },
-        EventCode::EV_MSC(code) => {
-            ev_type = EventType::EV_MSC as c_uint;
-            ev_code = code as c_uint;
-        },
-        EventCode::EV_SW(code) => {
-            ev_type = EventType::EV_SW as c_uint;
-            ev_code = code as c_uint;
-        },
-        EventCode::EV_LED(code) => {
-            ev_type = EventType::EV_LED as c_uint;
-            ev_code = code as c_uint;
-        },
-        EventCode::EV_SND(code) => {
-            ev_type = EventType::EV_SND as c_uint;
-            ev_code = code as c_uint;
-        },
-        EventCode::EV_REP(code) => {
-            ev_type = EventType::EV_REP as c_uint;
-            ev_code = code as c_uint;
-        },
-        EventCode::EV_FF(code) => {
-            ev_type = EventType::EV_FF as c_uint;
-            ev_code = code as c_uint;
-        },
-        EventCode::EV_FF_STATUS(code) => {
-            ev_type = EventType::EV_FF_STATUS as c_uint;
-            ev_code = code as c_uint;
-        },
+    match *event_code {
+        EventCode::EV_SYN(code) => (EventType::EV_SYN as c_uint, code as c_uint),
+        EventCode::EV_KEY(code) => (EventType::EV_KEY as c_uint, code as c_uint),
+        EventCode::EV_REL(code) => (EventType::EV_REL as c_uint, code as c_uint),
+        EventCode::EV_ABS(code) => (EventType::EV_ABS as c_uint, code as c_uint),
+        EventCode::EV_MSC(code) => (EventType::EV_MSC as c_uint, code as c_uint),
+        EventCode::EV_SW(code) => (EventType::EV_SW as c_uint, code as c_uint),
+        EventCode::EV_LED(code) => (EventType::EV_LED as c_uint, code as c_uint),
+        EventCode::EV_SND(code) => (EventType::EV_SND as c_uint, code as c_uint),
+        EventCode::EV_REP(code) => (EventType::EV_REP as c_uint, code as c_uint),
+        EventCode::EV_FF(code) => (EventType::EV_FF as c_uint, code as c_uint),
+        EventCode::EV_FF_STATUS(code) => (EventType::EV_FF_STATUS as c_uint, code as c_uint),
         EventCode::EV_UNK { event_type, event_code } => {
-            ev_type = event_type as c_uint;
-            ev_code = event_code as c_uint;
-        },
+            (event_type as c_uint, event_code as c_uint)
+        }
         _ => {
             warn!("Event code not found");
+            (0, 0)
         }
     }
-
-    (ev_type, ev_code)
-
 }
 
 pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> EventCode {
@@ -148,43 +102,37 @@ pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> EventCode {
         EventType::EV_MAX =>    Some(EventCode::EV_MAX),
     };
 
-    match ev_code {
-        Some(c) => c,
-        None => EventCode::EV_UNK {
-            event_type: event_type as u32,
-            event_code: event_code as u32,
-        },
-    }
+    ev_code.unwrap_or(EventCode::EV_UNK {event_type, event_code})
 }
 
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ptr_to_str(unsafe {
-            raw::libevdev_event_type_get_name(self.clone() as c_uint)
-        }).unwrap_or(""))
+        write!(f, "{:?}", unsafe {
+            raw::libevdev_event_type_get_name(*self as c_uint)
+        })
     }
 }
 
 impl fmt::Display for EventCode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let (ev_type, ev_code) = event_code_to_int(self);
-        write!(f, "{}", ptr_to_str(unsafe {
+        write!(f, "{:?}", unsafe {
             raw::libevdev_event_code_get_name(ev_type, ev_code)
-        }).unwrap_or(""))
+        })
     }
 }
 
 impl fmt::Display for InputProp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ptr_to_str(unsafe {
-            raw::libevdev_property_get_name(self.clone() as c_uint)
-        }).unwrap_or(""))
+        write!(f, "{:?}", unsafe {
+            raw::libevdev_property_get_name(*self as c_uint)
+        })
     }
 }
 
 impl EventType {
     pub fn iter(&self) -> EventTypeIterator {
-        EventTypeIterator { current: self.clone() }
+        EventTypeIterator { current: *self }
     }
 
     /// The given type constant for the passed name or Errno if not found.
@@ -204,7 +152,7 @@ impl EventType {
     /// of EV_ABS, or Errno for an invalid type.
     pub fn get_max(ev_type: &EventType) -> Option<i32> {
         let result = unsafe {
-            raw::libevdev_event_type_get_max(ev_type.clone() as c_uint)
+            raw::libevdev_event_type_get_max(*ev_type as c_uint)
         };
 
         match result {
@@ -216,7 +164,7 @@ impl EventType {
 
 impl EventCode {
     pub fn iter(&self) -> EventCodeIterator {
-        EventCodeIterator { current: self.clone() }
+        EventCodeIterator { current: *self }
     }
 
     /// Look up an event code by its type and name. Event codes start with a fixed
@@ -226,19 +174,19 @@ impl EventCode {
     pub fn from_str(ev_type: &EventType, name: &str) -> Option<EventCode> {
         let name = CString::new(name).unwrap();
         let result = unsafe {
-            raw::libevdev_event_code_from_name(ev_type.clone() as c_uint, name.as_ptr())
+            raw::libevdev_event_code_from_name(*ev_type as c_uint, name.as_ptr())
         };
 
         match result {
             -1 => None,
-             k => Some(int_to_event_code(ev_type.clone() as u32, k as u32)),
+             k => Some(int_to_event_code(*ev_type as u32, k as u32)),
         }
     }
 }
 
 impl InputProp {
     pub fn iter(&self) -> InputPropIterator {
-        InputPropIterator { current: self.clone() }
+        InputPropIterator { current: *self }
     }
 
     /// Look up an input property by its name. Properties start with the fixed
@@ -264,17 +212,15 @@ impl Iterator for EventTypeIterator {
 
     fn next(&mut self) -> Option<EventType> {
         match self.current {
-            EventType::EV_MAX => {
-                return None;
-            }
+            EventType::EV_MAX => None,
             _ => {
-                let mut raw_code = (self.current.clone() as u32) + 1;
+                let mut raw_code = (self.current as u32) + 1;
                 loop {
                     match int_to_event_type(raw_code) {
                         // TODO: Find a way to iterate over Unknown types
                         Some(EventType::EV_UNK) => raw_code += 1,
                         Some(x) => {
-                            let code = self.current.clone();
+                            let code = self.current;
                             self.current = x;
                             return Some(code);
                         }
@@ -290,225 +236,203 @@ impl Iterator for EventCodeIterator {
     type Item = EventCode;
 
     fn next(&mut self) -> Option<EventCode> {
-        match self.current.clone() {
-            EventCode::EV_SYN(code) => {
-                match code {
-                    EV_SYN::SYN_MAX => {
-                        let ev_code = self.current.clone();
-                        self.current = EventCode::EV_KEY(EV_KEY::KEY_RESERVED);
-                        return Some(ev_code);
-                    }
-                    _ => {
-                        let mut raw_code = (code as u32) + 1;
-                        loop {
-                            match int_to_ev_syn(raw_code) {
-                                Some(x) => {
-                                    let ev_code = self.current.clone();
-                                    self.current = EventCode::EV_SYN(x);
-                                    return Some(ev_code);
-                                }
-                                None => raw_code += 1,
+        match self.current {
+            EventCode::EV_SYN(code) => match code {
+                EV_SYN::SYN_MAX => {
+                    let ev_code = self.current;
+                    self.current = EventCode::EV_KEY(EV_KEY::KEY_RESERVED);
+                    Some(ev_code)
+                }
+                _ => {
+                    let mut raw_code = (code as u32) + 1;
+                    loop {
+                        match int_to_ev_syn(raw_code) {
+                            Some(x) => {
+                                let ev_code = self.current;
+                                self.current = EventCode::EV_SYN(x);
+                                return Some(ev_code);
                             }
+                            None => raw_code += 1,
                         }
                     }
                 }
             }
-            EventCode::EV_KEY(code) => {
-                match code {
-                    EV_KEY::KEY_MAX => {
-                        let ev_code = self.current.clone();
-                        self.current = EventCode::EV_REL(EV_REL::REL_X);
-                        return Some(ev_code);
-                    }
-                    _ => {
-                        let mut raw_code = (code as u32) + 1;
-                        loop {
-                            match int_to_ev_key(raw_code) {
-                                Some(x) => {
-                                    let ev_code = self.current.clone();
-                                    self.current = EventCode::EV_KEY(x);
-                                    return Some(ev_code);
-                                }
-                                None => raw_code += 1,
+            EventCode::EV_KEY(code) => match code {
+                EV_KEY::KEY_MAX => {
+                    let ev_code = self.current;
+                    self.current = EventCode::EV_REL(EV_REL::REL_X);
+                    Some(ev_code)
+                }
+                _ => {
+                    let mut raw_code = (code as u32) + 1;
+                    loop {
+                        match int_to_ev_key(raw_code) {
+                            Some(x) => {
+                                let ev_code = self.current;
+                                self.current = EventCode::EV_KEY(x);
+                                return Some(ev_code);
                             }
+                            None => raw_code += 1,
                         }
                     }
                 }
             }
-            EventCode::EV_REL(code) => {
-                match code {
-                    EV_REL::REL_MAX=> {
-                        let ev_code = self.current.clone();
-                        self.current = EventCode::EV_ABS(EV_ABS::ABS_X);
-                        return Some(ev_code);
-                    }
-                    _ => {
-                        let mut raw_code = (code as u32) + 1;
-                        loop {
-                            match int_to_ev_rel(raw_code) {
-                                Some(x) => {
-                                    let ev_code = self.current.clone();
-                                    self.current = EventCode::EV_REL(x);
-                                    return Some(ev_code);
-                                }
-                                None => raw_code += 1,
+            EventCode::EV_REL(code) => match code {
+                EV_REL::REL_MAX => {
+                    let ev_code = self.current;
+                    self.current = EventCode::EV_ABS(EV_ABS::ABS_X);
+                    Some(ev_code)
+                }
+                _ => {
+                    let mut raw_code = (code as u32) + 1;
+                    loop {
+                        match int_to_ev_rel(raw_code) {
+                            Some(x) => {
+                                let ev_code = self.current;
+                                self.current = EventCode::EV_REL(x);
+                                return Some(ev_code);
                             }
+                            None => raw_code += 1,
                         }
                     }
                 }
             }
-            EventCode::EV_ABS(code) => {
-                match code {
-                    EV_ABS::ABS_MAX => {
-                        let ev_code = self.current.clone();
-                        self.current = EventCode::EV_MSC(EV_MSC::MSC_SERIAL);
-                        return Some(ev_code);
-                    }
-                    _ => {
-                        let mut raw_code = (code as u32) + 1;
-                        loop {
-                            match int_to_ev_abs(raw_code) {
-                                Some(x) => {
-                                    let ev_code = self.current.clone();
-                                    self.current = EventCode::EV_ABS(x);
-                                    return Some(ev_code);
-                                }
-                                None => raw_code += 1,
+            EventCode::EV_ABS(code) => match code {
+                EV_ABS::ABS_MAX => {
+                    let ev_code = self.current;
+                    self.current = EventCode::EV_MSC(EV_MSC::MSC_SERIAL);
+                    Some(ev_code)
+                }
+                _ => {
+                    let mut raw_code = (code as u32) + 1;
+                    loop {
+                        match int_to_ev_abs(raw_code) {
+                            Some(x) => {
+                                let ev_code = self.current;
+                                self.current = EventCode::EV_ABS(x);
+                                return Some(ev_code);
                             }
+                            None => raw_code += 1,
                         }
                     }
                 }
             }
-            EventCode::EV_MSC(code) => {
-                match code {
-                    EV_MSC::MSC_MAX => {
-                        let ev_code = self.current.clone();
-                        self.current = EventCode::EV_SW(EV_SW::SW_LID);
-                        return Some(ev_code);
-                    }
-                    _ => {
-                        let mut raw_code = (code as u32) + 1;
-                        loop {
-                            match int_to_ev_msc(raw_code) {
-                                Some(x) => {
-                                    let ev_code = self.current.clone();
-                                    self.current = EventCode::EV_MSC(x);
-                                    return Some(ev_code);
-                                }
-                                None => raw_code += 1,
+            EventCode::EV_MSC(code) => match code {
+                EV_MSC::MSC_MAX => {
+                    let ev_code = self.current;
+                    self.current = EventCode::EV_SW(EV_SW::SW_LID);
+                    Some(ev_code)
+                }
+                _ => {
+                    let mut raw_code = (code as u32) + 1;
+                    loop {
+                        match int_to_ev_msc(raw_code) {
+                            Some(x) => {
+                                let ev_code = self.current;
+                                self.current = EventCode::EV_MSC(x);
+                                return Some(ev_code);
                             }
+                            None => raw_code += 1,
                         }
                     }
                 }
             }
-            EventCode::EV_SW(code) => {
-                match code {
-                    EV_SW::SW_MAX => {
-                        let ev_code = self.current.clone();
-                        self.current = EventCode::EV_LED(EV_LED::LED_NUML);
-                        return Some(ev_code);
-                    }
-                    _ => {
-                        let mut raw_code = (code as u32) + 1;
-                        loop {
-                            match int_to_ev_sw(raw_code) {
-                                Some(x) => {
-                                    let ev_code = self.current.clone();
-                                    self.current = EventCode::EV_SW(x);
-                                    return Some(ev_code);
-                                }
-                                None => raw_code += 1,
+            EventCode::EV_SW(code) => match code {
+                EV_SW::SW_MAX => {
+                    let ev_code = self.current;
+                    self.current = EventCode::EV_LED(EV_LED::LED_NUML);
+                    Some(ev_code)
+                }
+                _ => {
+                    let mut raw_code = (code as u32) + 1;
+                    loop {
+                        match int_to_ev_sw(raw_code) {
+                            Some(x) => {
+                                let ev_code = self.current;
+                                self.current = EventCode::EV_SW(x);
+                                return Some(ev_code);
                             }
+                            None => raw_code += 1,
                         }
                     }
                 }
             }
-            EventCode::EV_LED(code) => {
-                match code {
-                    EV_LED::LED_MAX => {
-                        let ev_code = self.current.clone();
-                        self.current = EventCode::EV_SND(EV_SND::SND_CLICK);
-                        return Some(ev_code);
-                    }
-                    _ => {
-                        let mut raw_code = (code as u32) + 1;
-                        loop {
-                            match int_to_ev_led(raw_code) {
-                                Some(x) => {
-                                    let ev_code = self.current.clone();
-                                    self.current = EventCode::EV_LED(x);
-                                    return Some(ev_code);
-                                }
-                                None => raw_code += 1,
+            EventCode::EV_LED(code) => match code {
+                EV_LED::LED_MAX => {
+                    let ev_code = self.current;
+                    self.current = EventCode::EV_SND(EV_SND::SND_CLICK);
+                    Some(ev_code)
+                }
+                _ => {
+                    let mut raw_code = (code as u32) + 1;
+                    loop {
+                        match int_to_ev_led(raw_code) {
+                            Some(x) => {
+                                let ev_code = self.current;
+                                self.current = EventCode::EV_LED(x);
+                                return Some(ev_code);
                             }
+                            None => raw_code += 1,
                         }
                     }
                 }
             }
-            EventCode::EV_SND(code) => {
-                match code {
-                    EV_SND::SND_MAX => {
-                        let ev_code = self.current.clone();
-                        self.current = EventCode::EV_REP(EV_REP::REP_DELAY);
-                        return Some(ev_code);
-                    }
-                    _ => {
-                        let mut raw_code = (code as u32) + 1;
-                        loop {
-                            match int_to_ev_snd(raw_code) {
-                                Some(x) => {
-                                    let ev_code = self.current.clone();
-                                    self.current = EventCode::EV_SND(x);
-                                    return Some(ev_code);
-                                }
-                                None => raw_code += 1,
+            EventCode::EV_SND(code) => match code {
+                EV_SND::SND_MAX => {
+                    let ev_code = self.current;
+                    self.current = EventCode::EV_REP(EV_REP::REP_DELAY);
+                    Some(ev_code)
+                }
+                _ => {
+                    let mut raw_code = (code as u32) + 1;
+                    loop {
+                        match int_to_ev_snd(raw_code) {
+                            Some(x) => {
+                                let ev_code = self.current;
+                                self.current = EventCode::EV_SND(x);
+                                return Some(ev_code);
                             }
+                            None => raw_code += 1,
                         }
                     }
                 }
             }
-            EventCode::EV_REP(code) => {
-                match code {
-                    EV_REP::REP_MAX => {
-                        let ev_code = self.current.clone();
-                        self.current = EventCode::EV_FF(EV_FF::FF_STATUS_STOPPED);
-                        return Some(ev_code);
-                    }
-                    _ => {
-                        let mut raw_code = (code as u32) + 1;
-                        loop {
-                            match int_to_ev_rep(raw_code) {
-                                Some(x) => {
-                                    let ev_code = self.current.clone();
-                                    self.current = EventCode::EV_REP(x);
-                                    return Some(ev_code);
-                                }
-                                None => raw_code += 1,
+            EventCode::EV_REP(code) => match code {
+                EV_REP::REP_MAX => {
+                    let ev_code = self.current;
+                    self.current = EventCode::EV_FF(EV_FF::FF_STATUS_STOPPED);
+                    Some(ev_code)
+                }
+                _ => {
+                    let mut raw_code = (code as u32) + 1;
+                    loop {
+                        match int_to_ev_rep(raw_code) {
+                            Some(x) => {
+                                let ev_code = self.current;
+                                self.current = EventCode::EV_REP(x);
+                                return Some(ev_code);
                             }
+                            None => raw_code += 1,
                         }
                     }
                 }
             }
-            EventCode::EV_FF(code) => {
-                match code {
-                    EV_FF::FF_MAX => {
-                        return None
-                    }
-                    _ => {
-                        let mut raw_code = (code as u32) + 1;
-                        loop {
-                            match int_to_ev_ff(raw_code) {
-                                Some(x) => {
-                                    let ev_code = self.current.clone();
-                                    self.current = EventCode::EV_FF(x);
-                                    return Some(ev_code);
-                                }
-                                None => raw_code += 1,
+            EventCode::EV_FF(code) => match code {
+                EV_FF::FF_MAX => None,
+                _ => {
+                    let mut raw_code = (code as u32) + 1;
+                    loop {
+                        match int_to_ev_ff(raw_code) {
+                            Some(x) => {
+                                let ev_code = self.current;
+                                self.current = EventCode::EV_FF(x);
+                                return Some(ev_code);
                             }
+                            None => raw_code += 1,
                         }
                     }
                 }
-            }
+            },
             _ => None,
         }
     }
@@ -519,15 +443,13 @@ impl Iterator for InputPropIterator {
 
     fn next(&mut self) -> Option<InputProp> {
         match self.current {
-            InputProp::INPUT_PROP_MAX => {
-                return None;
-            }
+            InputProp::INPUT_PROP_MAX => None,
             _ => {
-                let mut raw_enum = (self.current.clone() as u32) + 1;
+                let mut raw_enum = (self.current as u32) + 1;
                 loop {
                     match int_to_input_prop(raw_enum) {
                         Some(x) => {
-                            let prop = self.current.clone();
+                            let prop = self.current;
                             self.current = x;
                             return Some(prop);
                         }
@@ -538,4 +460,3 @@ impl Iterator for InputPropIterator {
         }
     }
 }
-
