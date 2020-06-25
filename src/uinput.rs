@@ -29,20 +29,23 @@ impl UInputDevice {
         }
     }
 
-    /// Return the device node representing this uinput device.
-    ///
-    /// This relies on libevdev_uinput_get_syspath() to provide a valid syspath.
-    string_getter!(devnode, libevdev_uinput_get_devnode);
+    
+    string_getter!(
+        #[doc = "Return the device node representing this uinput device.
 
-    /// Return the syspath representing this uinput device.
-    ///
-    /// If the UI_GET_SYSNAME ioctl not available, libevdev makes an educated
-    /// guess. The UI_GET_SYSNAME ioctl is available since Linux 3.15.
-    ///
-    /// The syspath returned is the one of the input node itself
-    /// (e.g. /sys/devices/virtual/input/input123), not the syspath of the
-    /// device node returned with libevdev_uinput_get_devnode().
-    string_getter!(syspath, libevdev_uinput_get_syspath);
+This relies on `libevdev_uinput_get_syspath()` to provide a valid syspath."],
+        devnode, libevdev_uinput_get_devnode
+    );
+
+    string_getter!(#[doc = "Return the syspath representing this uinput device.
+
+If the UI_GET_SYSNAME ioctl not available, libevdev makes an educated
+guess. The UI_GET_SYSNAME ioctl is available since Linux 3.15.
+
+The syspath returned is the one of the input node itself
+(e.g. /sys/devices/virtual/input/input123), not the syspath of the
+device node returned with libevdev_uinput_get_devnode()."],
+        syspath, libevdev_uinput_get_syspath);
 
     /// Return the file descriptor used to create this uinput device.
     ///

@@ -61,9 +61,12 @@ impl Device {
         }
     }
 
-    string_getter!(name, libevdev_get_name,
-                   phys, libevdev_get_phys,
-                   uniq, libevdev_get_uniq);
+    string_getter!(
+        #[doc = "Get device's name, as set by the kernel, or overridden by a call to `set_name`"], name, libevdev_get_name,
+        #[doc = "Get device's physical location, as set by the kernel, or overridden by a call to `set_phys`"], phys, libevdev_get_phys,
+        #[doc = "Get device's unique identifier, as set by the kernel, or overridden by a call to `set_uniq`"], uniq, libevdev_get_uniq
+    );
+    
     string_setter!(set_name, libevdev_set_name,
                    set_phys, libevdev_set_phys,
                    set_uniq, libevdev_set_uniq);
