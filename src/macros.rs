@@ -4,7 +4,7 @@ macro_rules! string_getter {
             #[$doc]
             pub fn $func_name (&self) -> Option<&str> {
                 unsafe {
-                    ptr_to_str(raw::$c_func(self.raw))
+                    ptr_to_str(evdev_sys::$c_func(self.raw))
                 }
             }
         )*
@@ -17,7 +17,7 @@ macro_rules! string_setter {
             pub fn $func_name (&self, field: &str) {
                 let field = CString::new(field).unwrap();
                 unsafe {
-                    raw::$c_func(self.raw, field.as_ptr())
+                    evdev_sys::$c_func(self.raw, field.as_ptr())
                 }
             }
         )*
@@ -29,7 +29,7 @@ macro_rules! product_getter {
         $(
             pub fn $func_name (&self) -> u16 {
                 unsafe {
-                    raw::$c_func(self.raw) as u16
+                    evdev_sys::$c_func(self.raw) as u16
                 }
             }
         )*
@@ -41,7 +41,7 @@ macro_rules! product_setter {
         $(
             pub fn $func_name (&self, field: u16) {
                 unsafe {
-                    raw::$c_func(self.raw, field as c_int);
+                    evdev_sys::$c_func(self.raw, field as c_int);
                 }
             }
         )*
@@ -54,7 +54,7 @@ macro_rules! abs_getter {
             pub fn $func_name (&self,
                                code: u32) -> std::io::Result<i32> {
                 let result = unsafe {
-                    raw::$c_func(self.raw, code as c_uint) as i32
+                    evdev_sys::$c_func(self.raw, code as c_uint) as i32
                 };
 
                 match result {
@@ -73,7 +73,7 @@ macro_rules! abs_setter {
                                code: u32,
                                val: i32) {
                 unsafe {
-                    raw::$c_func(self.raw, code as c_uint, val as c_int);
+                    evdev_sys::$c_func(self.raw, code as c_uint, val as c_int);
                 }
             }
         )*

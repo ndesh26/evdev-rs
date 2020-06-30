@@ -108,7 +108,7 @@ pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> EventCode {
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", unsafe { ptr_to_str(
-            raw::libevdev_event_type_get_name(*self as c_uint)
+            evdev_sys::libevdev_event_type_get_name(*self as c_uint)
         )}.unwrap_or(""))
     }
 }
@@ -117,7 +117,7 @@ impl fmt::Display for EventCode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let (ev_type, ev_code) = event_code_to_int(self);
         write!(f, "{}", unsafe { ptr_to_str(
-            raw::libevdev_event_code_get_name(ev_type, ev_code)
+            evdev_sys::libevdev_event_code_get_name(ev_type, ev_code)
         )}.unwrap_or(""))
     }
 }
@@ -125,7 +125,7 @@ impl fmt::Display for EventCode {
 impl fmt::Display for InputProp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", unsafe { ptr_to_str(
-            raw::libevdev_property_get_name(*self as c_uint)
+            evdev_sys::libevdev_property_get_name(*self as c_uint)
         )}.unwrap_or(""))
     }
 }
@@ -139,7 +139,7 @@ impl EventType {
     pub fn from_str(name: &str) -> Option<EventType> {
         let name = CString::new(name).unwrap();
         let result = unsafe {
-            raw::libevdev_event_type_from_name(name.as_ptr())
+            evdev_sys::libevdev_event_type_from_name(name.as_ptr())
         };
 
         match result {
@@ -152,7 +152,7 @@ impl EventType {
     /// of EV_ABS, or Errno for an invalid type.
     pub fn get_max(ev_type: &EventType) -> Option<i32> {
         let result = unsafe {
-            raw::libevdev_event_type_get_max(*ev_type as c_uint)
+            evdev_sys::libevdev_event_type_get_max(*ev_type as c_uint)
         };
 
         match result {
@@ -174,7 +174,7 @@ impl EventCode {
     pub fn from_str(ev_type: &EventType, name: &str) -> Option<EventCode> {
         let name = CString::new(name).unwrap();
         let result = unsafe {
-            raw::libevdev_event_code_from_name(*ev_type as c_uint, name.as_ptr())
+            evdev_sys::libevdev_event_code_from_name(*ev_type as c_uint, name.as_ptr())
         };
 
         match result {
@@ -196,7 +196,7 @@ impl InputProp {
     pub fn from_str(name: &str) -> Option<InputProp> {
         let name = CString::new(name).unwrap();
         let result = unsafe {
-            raw::libevdev_property_from_name(name.as_ptr())
+            evdev_sys::libevdev_property_from_name(name.as_ptr())
         };
 
         match result {

@@ -1,10 +1,10 @@
 pub enum LogPriority {
     /// critical errors and application bugs
-    Error = raw::LIBEVDEV_LOG_ERROR as isize,
+    Error = evdev_sys::LIBEVDEV_LOG_ERROR as isize,
     /// informational messages
-    Info = raw::LIBEVDEV_LOG_INFO as isize,
+    Info = evdev_sys::LIBEVDEV_LOG_INFO as isize,
     /// debug information
-    Debug = raw::LIBEVDEV_LOG_DEBUG as isize,
+    Debug = evdev_sys::LIBEVDEV_LOG_DEBUG as isize,
 }
 
 
@@ -13,7 +13,7 @@ pub enum LogPriority {
 /// is a global setting and applies to any future logging messages.
 pub fn set_log_priority(priority: LogPriority) {
     unsafe {
-        raw::libevdev_set_log_priority(priority as i32);
+        evdev_sys::libevdev_set_log_priority(priority as i32);
     }
 }
 
@@ -21,11 +21,11 @@ pub fn set_log_priority(priority: LogPriority) {
 /// are printed, others are discarded. This is a global setting.
 pub fn get_log_priority() -> LogPriority {
     unsafe {
-        let priority = raw::libevdev_get_log_priority();
+        let priority = evdev_sys::libevdev_get_log_priority();
         match priority {
-            raw::LIBEVDEV_LOG_ERROR => LogPriority::Error,
-            raw::LIBEVDEV_LOG_INFO => LogPriority::Info,
-            raw::LIBEVDEV_LOG_DEBUG => LogPriority::Debug,
+            evdev_sys::LIBEVDEV_LOG_ERROR => LogPriority::Error,
+            evdev_sys::LIBEVDEV_LOG_INFO => LogPriority::Info,
+            evdev_sys::LIBEVDEV_LOG_DEBUG => LogPriority::Debug,
             c => panic!("unknown log priority: {}", c),
         }
     }

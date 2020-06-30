@@ -9,7 +9,7 @@ use crate::util::*;
 
 /// Opaque struct representing an evdev uinput device
 pub struct UInputDevice {
-    raw: *mut raw::libevdev_uinput
+    raw: *mut evdev_sys::libevdev_uinput
 }
 
 impl UInputDevice {
@@ -20,7 +20,11 @@ impl UInputDevice {
     pub fn create_from_device(device: &Device) -> io::Result<UInputDevice> {
         let mut libevdev_uinput = std::ptr::null_mut();
         let result = unsafe {
-            raw::libevdev_uinput_create_from_device(device.raw, raw::LIBEVDEV_UINPUT_OPEN_MANAGED, &mut libevdev_uinput)
+            evdev_sys::libevdev_uinput_create_from_device(
+                device.raw,
+                evdev_sys::LIBEVDEV_UINPUT_OPEN_MANAGED,
+                &mut libevdev_uinput
+            )
         };
 
         match result {
@@ -54,7 +58,7 @@ device node returned with libevdev_uinput_get_devnode()."],
     ///  descriptor will destroy the uinput device.
     pub fn fd(&self) -> Option<File> {
         let result = unsafe {
-            raw::libevdev_uinput_get_fd(self.raw)
+            evdev_sys::libevdev_uinput_get_fd(self.raw)
         };
 
         if result == 0 {
@@ -77,7 +81,7 @@ device node returned with libevdev_uinput_get_devnode()."],
         let ev_value = event.value as c_int;
 
         let result = unsafe {
-            raw::libevdev_uinput_write_event(self.raw, ev_type, ev_code, ev_value)
+            evdev_sys::libevdev_uinput_write_event(self.raw, ev_type, ev_code, ev_value)
         };
 
         match result {
@@ -90,7 +94,7 @@ device node returned with libevdev_uinput_get_devnode()."],
 impl Drop for UInputDevice {
     fn drop(&mut self) {
         unsafe {
-            raw::libevdev_uinput_destroy(self.raw);
+            evdev_sys::libevdev_uinput_destroy(self.raw);
         }
     }
 }
