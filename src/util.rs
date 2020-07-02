@@ -50,56 +50,23 @@ pub fn event_code_to_int(event_code: &EventCode) -> (c_uint, c_uint) {
 
 pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> EventCode {
     let ev_type: EventType = int_to_event_type(event_type as u32).unwrap();
+    let code = event_code as u32;
 
     let ev_code = match ev_type {
-        EventType::EV_SYN =>    match int_to_ev_syn(event_code as u32) {
-                                    None => None,
-                                    Some(k) => Some(EventCode::EV_SYN(k)),
-                                },
-        EventType::EV_KEY =>    match int_to_ev_key(event_code as u32) {
-                                    None => None,
-                                    Some(k) => Some(EventCode::EV_KEY(k)),
-
-                                },
-        EventType::EV_ABS =>    match int_to_ev_abs(event_code as u32) {
-                                    None => None,
-                                    Some(k) => Some(EventCode::EV_ABS(k)),
-                                },
-        EventType::EV_REL =>    match int_to_ev_rel(event_code as u32) {
-                                    None => None,
-                                    Some(k) => Some(EventCode::EV_REL(k)),
-                                },
-        EventType::EV_MSC =>    match int_to_ev_msc(event_code as u32) {
-                                    None => None,
-                                    Some(k) => Some(EventCode::EV_MSC(k)),
-                                },
-        EventType::EV_SW =>     match int_to_ev_sw(event_code as u32) {
-                                    None => None,
-                                    Some(k) => Some(EventCode::EV_SW(k)),
-                                },
-        EventType::EV_LED =>    match int_to_ev_led(event_code as u32) {
-                                    None => None,
-                                    Some(k) => Some(EventCode::EV_LED(k)),
-                                },
-        EventType::EV_SND =>    match int_to_ev_snd(event_code as u32) {
-                                    None => None,
-                                    Some(k) => Some(EventCode::EV_SND(k)),
-                                },
-        EventType::EV_REP =>    match int_to_ev_rep(event_code as u32) {
-                                    None => None,
-                                    Some(k) => Some(EventCode::EV_REP(k)),
-                                },
-        EventType::EV_FF =>     match int_to_ev_ff(event_code as u32) {
-                                    None => None,
-                                    Some(k) => Some(EventCode::EV_FF(k)),
-                                },
-        EventType::EV_PWR =>    Some(EventCode::EV_PWR),
-        EventType::EV_FF_STATUS => match int_to_ev_ff(event_code as u32) {
-                                    None => None,
-                                    Some(k) => Some(EventCode::EV_FF_STATUS(k)),
-                                },
-        EventType::EV_UNK =>    None,
-        EventType::EV_MAX =>    Some(EventCode::EV_MAX),
+        EventType::EV_SYN => int_to_ev_syn(code).map(EventCode::EV_SYN),
+        EventType::EV_KEY => int_to_ev_key(code).map(EventCode::EV_KEY),
+        EventType::EV_ABS => int_to_ev_abs(code).map(EventCode::EV_ABS),
+        EventType::EV_REL => int_to_ev_rel(code).map(EventCode::EV_REL),
+        EventType::EV_MSC => int_to_ev_msc(code).map(EventCode::EV_MSC),
+        EventType::EV_SW => int_to_ev_sw(code).map(EventCode::EV_SW),
+        EventType::EV_LED => int_to_ev_led(code).map(EventCode::EV_LED),
+        EventType::EV_SND => int_to_ev_snd(code).map(EventCode::EV_SND),
+        EventType::EV_REP => int_to_ev_rep(code).map(EventCode::EV_REP),
+        EventType::EV_FF => int_to_ev_ff(code).map(EventCode::EV_FF),
+        EventType::EV_PWR => Some(EventCode::EV_PWR),
+        EventType::EV_FF_STATUS => int_to_ev_ff(code).map(EventCode::EV_FF_STATUS),
+        EventType::EV_UNK => None,
+        EventType::EV_MAX => Some(EventCode::EV_MAX),
     };
 
     ev_code.unwrap_or(EventCode::EV_UNK {event_type, event_code})
