@@ -64,6 +64,8 @@ use bitflags::bitflags;
 use enums::*;
 use util::*;
 
+use evdev_sys as raw;
+
 #[doc(inline)]
 pub use device::Device;
 #[doc(inline)]
@@ -74,9 +76,9 @@ use serde::{Serialize, Deserialize};
 
 pub enum GrabMode {
     /// Grab the device if not currently grabbed
-    Grab = evdev_sys::LIBEVDEV_GRAB as isize,
+    Grab = raw::LIBEVDEV_GRAB as isize,
     /// Ungrab the device if currently grabbed
-    Ungrab = evdev_sys::LIBEVDEV_UNGRAB as isize,
+    Ungrab = raw::LIBEVDEV_UNGRAB as isize,
 }
 
 bitflags! {
@@ -97,18 +99,18 @@ bitflags! {
 pub enum ReadStatus {
     /// `next_event` has finished without an error and an event is available
     /// for processing.
-    Success = evdev_sys::LIBEVDEV_READ_STATUS_SUCCESS as isize,
+    Success = raw::LIBEVDEV_READ_STATUS_SUCCESS as isize,
     /// Depending on the `next_event` read flag:
     /// libevdev received a SYN_DROPPED from the device, and the caller should
     /// now resync the device, or, an event has been read in sync mode.
-    Sync = evdev_sys::LIBEVDEV_READ_STATUS_SYNC as isize,
+    Sync = raw::LIBEVDEV_READ_STATUS_SYNC as isize,
 }
 
 pub enum LedState {
     /// Turn the LED on
-    On = evdev_sys::LIBEVDEV_LED_ON as isize,
+    On = raw::LIBEVDEV_LED_ON as isize,
     /// Turn the LED off
-    Off = evdev_sys::LIBEVDEV_LED_OFF as isize,
+    Off = raw::LIBEVDEV_LED_OFF as isize,
 }
 
 pub struct DeviceId {
@@ -245,7 +247,7 @@ impl InputEvent {
 
     pub fn is_type(&self, ev_type: &EventType) -> bool {
         unsafe {
-            evdev_sys::libevdev_event_is_type(&self.as_raw(), *ev_type as c_uint) == 1
+            raw::libevdev_event_is_type(&self.as_raw(), *ev_type as c_uint) == 1
         }
     }
 
@@ -253,7 +255,7 @@ impl InputEvent {
         let (ev_type, ev_code) = event_code_to_int(code);
 
         unsafe {
-            evdev_sys::libevdev_event_is_code(&self.as_raw(), ev_type, ev_code) == 1
+            raw::libevdev_event_is_code(&self.as_raw(), ev_type, ev_code) == 1
         }
     }
 }

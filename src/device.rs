@@ -10,11 +10,13 @@ use std::ptr;
 use crate::enums::*;
 use crate::util::*;
 
+use evdev_sys as raw;
+
 /// Opaque struct representing an evdev device
 pub struct Device {
     // The file descriptor of the device must live as long as the device itself.
     _file: Option<File>,
-    pub(crate) raw: *mut evdev_sys::libevdev,
+    pub(crate) raw: *mut raw::libevdev,
 }
 
 impl Device {
@@ -24,7 +26,7 @@ impl Device {
     /// To actually hook up the device to a kernel device, use `set_fd`.
     pub fn new() -> Option<Device> {
         let libevdev = unsafe {
-            evdev_sys::libevdev_new()
+            raw::libevdev_new()
         };
 
         if libevdev.is_null() {
@@ -52,7 +54,7 @@ impl Device {
     pub fn new_from_fd(file: File) -> io::Result<Device> {
         let mut libevdev = std::ptr::null_mut();
         let result = unsafe {
-            evdev_sys::libevdev_new_from_fd(file.as_raw_fd(), &mut libevdev)
+            raw::libevdev_new_from_fd(file.as_raw_fd(), &mut libevdev)
         };
 
         match result {
@@ -76,7 +78,7 @@ impl Device {
     /// if the `set_fd` hasn't been called yet then it return `None`
     pub fn fd(&self) -> Option<File> {
         let result = unsafe {
-            evdev_sys::libevdev_get_fd(self.raw)
+            raw::libevdev_get_fd(self.raw)
         };
 
         if result == 0 {
@@ -99,7 +101,7 @@ impl Device {
     /// a successfull call to `set_fd`.
     pub fn set_fd(&mut self, file: File) -> io::Result<()> {
         let result = unsafe {
-            evdev_sys::libevdev_set_fd(self.raw, file.as_raw_fd())
+            raw::libevdev_set_fd(self.raw, file.as_raw_fd())
         };
 
         match result {
@@ -135,7 +137,7 @@ impl Device {
     /// It is an error to call this function before calling set_fd().
     pub fn change_fd(&mut self, file: File) -> io::Result<()>  {
         let result = unsafe {
-            evdev_sys::libevdev_change_fd(self.raw, file.as_raw_fd())
+            raw::libevdev_change_fd(self.raw, file.as_raw_fd())
         };
 
         match result {
@@ -159,7 +161,7 @@ impl Device {
     /// also re-issue a grab with libevdev_grab().
     pub fn grab(&mut self, grab: GrabMode) -> io::Result<()> {
         let result = unsafe {
-            evdev_sys::libevdev_grab(self.raw, grab as c_int)
+            raw::libevdev_grab(self.raw, grab as c_int)
         };
 
         match result {
@@ -175,7 +177,7 @@ impl Device {
     pub fn abs_info(&self, code: &EventCode) -> Option<AbsInfo> {
         let (_, ev_code) = event_code_to_int(code);
         let a = unsafe {
-            evdev_sys::libevdev_get_abs_info(self.raw, ev_code)
+            raw::libevdev_get_abs_info(self.raw, ev_code)
         };
 
         if a.is_null() {
@@ -203,7 +205,7 @@ impl Device {
         let (_, ev_code) = event_code_to_int(code);
 
         unsafe {
-            evdev_sys::libevdev_set_abs_info(self.raw, ev_code,
+            raw::libevdev_set_abs_info(self.raw, ev_code,
                                        &absinfo.as_raw() as *const _);
         }
     }
@@ -245,7 +247,7 @@ impl Device {
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn has_property(&self, prop: &InputProp) -> bool {
         unsafe {
-            evdev_sys::libevdev_has_property(self.raw, *prop as c_uint) != 0
+            raw::libevdev_has_property(self.raw, *prop as c_uint) != 0
         }
     }
 
@@ -255,7 +257,7 @@ impl Device {
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn enable_property(&self, prop: &InputProp) -> io::Result<()> {
         let result = unsafe {
-            evdev_sys::libevdev_enable_property(self.raw, *prop as c_uint) as i32
+            raw::libevdev_enable_property(self.raw, *prop as c_uint) as i32
         };
 
         match result {
@@ -269,7 +271,7 @@ impl Device {
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn has_event_type(&self, ev_type: &EventType) -> bool {
         unsafe {
-            evdev_sys::libevdev_has_event_type(self.raw, *ev_type as c_uint) != 0
+            raw::libevdev_has_event_type(self.raw, *ev_type as c_uint) != 0
         }
     }
 
@@ -280,7 +282,7 @@ impl Device {
     pub fn has_event_code(&self, code: &EventCode) -> bool {
         unsafe {
             let (ev_type, ev_code) = event_code_to_int(code);
-            evdev_sys::libevdev_has_event_code(self.raw,
+            raw::libevdev_has_event_code(self.raw,
                                          ev_type,
                                          ev_code) != 0
         }
@@ -294,7 +296,7 @@ impl Device {
         let mut value: i32 = 0;
         let (ev_type, ev_code) = event_code_to_int(code);
         let valid = unsafe {
-            evdev_sys::libevdev_fetch_event_value(self.raw,
+            raw::libevdev_fetch_event_value(self.raw,
                                             ev_type,
                                             ev_code ,
                                             &mut value)
@@ -326,7 +328,7 @@ impl Device {
                            -> io::Result<()> {
             let (ev_type, ev_code) = event_code_to_int(code);
             let result = unsafe {
-                evdev_sys::libevdev_set_event_value(self.raw,
+                raw::libevdev_set_event_value(self.raw,
                                               ev_type,
                                               ev_code,
                                               val as c_int)
@@ -353,7 +355,7 @@ impl Device {
     /// you're using select(2) or poll(2).
     pub fn has_event_pending(&self) -> bool {
         unsafe {
-            evdev_sys::libevdev_has_event_pending(self.raw) > 0
+            raw::libevdev_has_event_pending(self.raw) > 0
         }
     }
 
@@ -370,7 +372,7 @@ impl Device {
     /// Return the driver version of a device already intialize with `set_fd`
     pub fn driver_version(&self) -> i32 {
         unsafe {
-            evdev_sys::libevdev_get_driver_version(self.raw) as i32
+            raw::libevdev_get_driver_version(self.raw) as i32
         }
     }
 
@@ -395,7 +397,7 @@ impl Device {
         let (_, ev_code) = event_code_to_int(code);
         let mut value: i32 = 0;
         let valid = unsafe {
-            evdev_sys::libevdev_fetch_slot_value(self.raw,
+            raw::libevdev_fetch_slot_value(self.raw,
                                            slot as c_uint,
                                            ev_code,
                                            &mut value)
@@ -419,7 +421,7 @@ impl Device {
                           -> io::Result<()> {
         let (_, ev_code) = event_code_to_int(code);
         let result = unsafe {
-            evdev_sys::libevdev_set_slot_value(self.raw,
+            raw::libevdev_set_slot_value(self.raw,
                                          slot as c_uint,
                                          ev_code,
                                          val as c_int)
@@ -440,7 +442,7 @@ impl Device {
     /// the return value of `None` for "device does not provide slots at all"
     pub fn num_slots(&self) -> Option<i32> {
         let result = unsafe {
-            evdev_sys::libevdev_get_num_slots(self.raw)
+            raw::libevdev_get_num_slots(self.raw)
         };
 
         match result  {
@@ -458,7 +460,7 @@ impl Device {
     /// process events manually one-by-one.
     pub fn current_slot(&self) -> Option<i32> {
         let result = unsafe {
-            evdev_sys::libevdev_get_current_slot(self.raw)
+            raw::libevdev_get_current_slot(self.raw)
         };
 
         match result {
@@ -478,7 +480,7 @@ impl Device {
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn enable_event_type(&self, ev_type: &EventType) -> io::Result<()> {
          let result = unsafe {
-            evdev_sys::libevdev_enable_event_type(self.raw,
+            raw::libevdev_enable_event_type(self.raw,
                                             *ev_type as c_uint)
         };
 
@@ -514,7 +516,7 @@ impl Device {
             .unwrap_or_else(|| ptr::null() as *const _ as *const c_void);
 
         let result = unsafe {
-            evdev_sys::libevdev_enable_event_code(self.raw,
+            raw::libevdev_enable_event_code(self.raw,
                                             ev_type as c_uint,
                                             ev_code as c_uint,
                                             data)
@@ -567,7 +569,7 @@ impl Device {
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn disable_event_type(&self, ev_type: &EventType) -> io::Result<()> {
          let result = unsafe {
-            evdev_sys::libevdev_disable_event_type(self.raw,
+            raw::libevdev_disable_event_type(self.raw,
                                              *ev_type as c_uint)
         };
 
@@ -597,7 +599,7 @@ impl Device {
                               -> io::Result<()> {
         let (ev_type, ev_code) = event_code_to_int(code);
         let result = unsafe {
-            evdev_sys::libevdev_disable_event_code(self.raw,
+            raw::libevdev_disable_event_code(self.raw,
                                             ev_type,
                                             ev_code)
         };
@@ -614,7 +616,7 @@ impl Device {
         let (_, ev_code) = event_code_to_int(code);
 
         unsafe {
-            evdev_sys::libevdev_kernel_set_abs_info(self.raw, ev_code,
+            raw::libevdev_kernel_set_abs_info(self.raw, ev_code,
                                               &absinfo.as_raw() as *const _);
         }
     }
@@ -626,7 +628,7 @@ impl Device {
                                  -> io::Result<()> {
         let (_, ev_code) = event_code_to_int(code);
         let result = unsafe {
-            evdev_sys::libevdev_kernel_set_led_value(self.raw,
+            raw::libevdev_kernel_set_led_value(self.raw,
                                                ev_code,
                                                value as c_int)
         };
@@ -644,7 +646,7 @@ impl Device {
     /// this device.
     pub fn set_clock_id(&self, clockid: i32) -> io::Result<()> {
          let result = unsafe {
-            evdev_sys::libevdev_set_clock_id(self.raw,
+            raw::libevdev_set_clock_id(self.raw,
                                        clockid as c_int)
         };
 
@@ -682,8 +684,8 @@ impl Device {
     /// `ReadStatus::Sync`.
     pub fn next_event(&self, flags: ReadFlag)
                       -> io::Result<(ReadStatus, InputEvent)> {
-        let mut ev = evdev_sys::input_event {
-            time: evdev_sys::timeval {
+        let mut ev = raw::input_event {
+            time: raw::timeval {
                 tv_sec: 0,
                 tv_usec: 0,
             },
@@ -693,7 +695,7 @@ impl Device {
         };
 
         let result = unsafe {
-            evdev_sys::libevdev_next_event(self.raw, flags.bits as c_uint, &mut ev)
+            raw::libevdev_next_event(self.raw, flags.bits as c_uint, &mut ev)
         };
 
         let event = InputEvent {
@@ -707,8 +709,8 @@ impl Device {
         };
 
         match result {
-            evdev_sys::LIBEVDEV_READ_STATUS_SUCCESS => Ok((ReadStatus::Success, event)),
-            evdev_sys::LIBEVDEV_READ_STATUS_SYNC => Ok((ReadStatus::Sync, event)),
+            raw::LIBEVDEV_READ_STATUS_SUCCESS => Ok((ReadStatus::Success, event)),
+            raw::LIBEVDEV_READ_STATUS_SYNC => Ok((ReadStatus::Sync, event)),
             error => Err(io::Error::from_raw_os_error(-error)),
         }
     }
@@ -717,7 +719,7 @@ impl Device {
 impl Drop for Device {
     fn drop(&mut self) {
         unsafe {
-            evdev_sys::libevdev_free(self.raw);
+            raw::libevdev_free(self.raw);
         }
     }
 }
