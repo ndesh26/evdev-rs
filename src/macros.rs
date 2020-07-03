@@ -1,10 +1,11 @@
 macro_rules! string_getter {
-    ( $( $func_name:ident, $c_func: ident ),* ) => {
+    ( $( #[$doc:meta], $func_name:ident, $c_func: ident ),* ) => {
         $(
+            #[$doc]
             pub fn $func_name (&self) -> Option<&str> {
-                ptr_to_str(unsafe {
-                    raw::$c_func(self.raw)
-                })
+                unsafe {
+                    ptr_to_str(raw::$c_func(self.raw))
+                }
             }
         )*
     };

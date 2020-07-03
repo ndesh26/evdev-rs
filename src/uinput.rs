@@ -1,11 +1,13 @@
-use InputEvent;
+use crate::InputEvent;
 use libc::c_int;
-use device::Device;
+use crate::device::Device;
 use std::io;
 use std::fs::File;
 use std::os::unix::io::FromRawFd;
 
-use util::*;
+use crate::util::*;
+
+use evdev_sys as raw;
 
 /// Opaque struct representing an evdev uinput device
 pub struct UInputDevice {
@@ -18,9 +20,13 @@ impl UInputDevice {
     /// The uinput device will be an exact copy of the libevdev device, minus
     /// the bits that uinput doesn't allow to be set.
     pub fn create_from_device(device: &Device) -> io::Result<UInputDevice> {
-        let mut libevdev_uinput = 0 as *mut _;
+        let mut libevdev_uinput = std::ptr::null_mut();
         let result = unsafe {
-            raw::libevdev_uinput_create_from_device(device.raw, raw::LIBEVDEV_UINPUT_OPEN_MANAGED, &mut libevdev_uinput)
+            raw::libevdev_uinput_create_from_device(
+                device.raw,
+                raw::LIBEVDEV_UINPUT_OPEN_MANAGED,
+                &mut libevdev_uinput
+            )
         };
 
         match result {
@@ -29,20 +35,23 @@ impl UInputDevice {
         }
     }
 
-    /// Return the device node representing this uinput device.
-    ///
-    /// This relies on libevdev_uinput_get_syspath() to provide a valid syspath.
-    string_getter!(devnode, libevdev_uinput_get_devnode);
+    
+    string_getter!(
+        #[doc = "Return the device node representing this uinput device.
 
-    /// Return the syspath representing this uinput device.
-    ///
-    /// If the UI_GET_SYSNAME ioctl not available, libevdev makes an educated
-    /// guess. The UI_GET_SYSNAME ioctl is available since Linux 3.15.
-    ///
-    /// The syspath returned is the one of the input node itself
-    /// (e.g. /sys/devices/virtual/input/input123), not the syspath of the
-    /// device node returned with libevdev_uinput_get_devnode().
-    string_getter!(syspath, libevdev_uinput_get_syspath);
+This relies on `libevdev_uinput_get_syspath()` to provide a valid syspath."],
+        devnode, libevdev_uinput_get_devnode
+    );
+
+    string_getter!(#[doc = "Return the syspath representing this uinput device.
+
+If the UI_GET_SYSNAME ioctl not available, libevdev makes an educated
+guess. The UI_GET_SYSNAME ioctl is available since Linux 3.15.
+
+The syspath returned is the one of the input node itself
+(e.g. /sys/devices/virtual/input/input123), not the syspath of the
+device node returned with libevdev_uinput_get_devnode()."],
+        syspath, libevdev_uinput_get_syspath);
 
     /// Return the file descriptor used to create this uinput device.
     ///

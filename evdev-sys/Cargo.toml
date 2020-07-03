@@ -7,6 +7,7 @@ license = "MIT/Apache-2.0"
 keywords = ["evdev"]
 links = "evdev"
 repository = "https://github.com/ndesh26/evdev-rs"
+edition = "2018"
 description = """
 Raw bindings to libevdev
 

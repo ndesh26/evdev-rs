@@ -1,4 +1,4 @@
-use raw;
+use evdev_sys as raw;
 
 pub enum LogPriority {
     /// critical errors and application bugs
