@@ -1,5 +1,5 @@
-use evdev_rs::*;
 use evdev_rs::enums::*;
+use evdev_rs::*;
 use std::fs::File;
 use std::os::unix::io::AsRawFd;
 
@@ -161,5 +161,5 @@ fn device_get_value() {
 
 #[test]
 fn check_event_name() {
-   assert_eq!("EV_ABS", EventType::EV_ABS.to_string());
+    assert_eq!("EV_ABS", EventType::EV_ABS.to_string());
 }

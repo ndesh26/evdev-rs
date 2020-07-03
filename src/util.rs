@@ -1,8 +1,8 @@
 use crate::enums::*;
 use libc::{c_char, c_uint};
 use log::warn;
-use std::fmt;
 use std::ffi::{CStr, CString};
+use std::fmt;
 
 use evdev_sys as raw;
 
@@ -16,15 +16,15 @@ pub(crate) unsafe fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
 }
 
 pub struct EventTypeIterator {
-    current: EventType
+    current: EventType,
 }
 
 pub struct EventCodeIterator {
-    current: EventCode
+    current: EventCode,
 }
 
 pub struct InputPropIterator {
-    current: InputProp
+    current: InputProp,
 }
 
 pub fn event_code_to_int(event_code: &EventCode) -> (c_uint, c_uint) {
@@ -40,9 +40,10 @@ pub fn event_code_to_int(event_code: &EventCode) -> (c_uint, c_uint) {
         EventCode::EV_REP(code) => (EventType::EV_REP as c_uint, code as c_uint),
         EventCode::EV_FF(code) => (EventType::EV_FF as c_uint, code as c_uint),
         EventCode::EV_FF_STATUS(code) => (EventType::EV_FF_STATUS as c_uint, code as c_uint),
-        EventCode::EV_UNK { event_type, event_code } => {
-            (event_type as c_uint, event_code as c_uint)
-        }
+        EventCode::EV_UNK {
+            event_type,
+            event_code,
+        } => (event_type as c_uint, event_code as c_uint),
         _ => {
             warn!("Event code not found");
             (0, 0)
@@ -71,31 +72,41 @@ pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> EventCode {
         EventType::EV_MAX => Some(EventCode::EV_MAX),
     };
 
-    ev_code.unwrap_or(EventCode::EV_UNK {event_type, event_code})
+    ev_code.unwrap_or(EventCode::EV_UNK {
+        event_type,
+        event_code,
+    })
 }
 
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", unsafe { ptr_to_str(
-            raw::libevdev_event_type_get_name(*self as c_uint)
-        )}.unwrap_or(""))
+        write!(
+            f,
+            "{}",
+            unsafe { ptr_to_str(raw::libevdev_event_type_get_name(*self as c_uint)) }.unwrap_or("")
+        )
     }
 }
 
 impl fmt::Display for EventCode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let (ev_type, ev_code) = event_code_to_int(self);
-        write!(f, "{}", unsafe { ptr_to_str(
-            raw::libevdev_event_code_get_name(ev_type, ev_code)
-        )}.unwrap_or(""))
+        write!(
+            f,
+            "{}",
+            unsafe { ptr_to_str(raw::libevdev_event_code_get_name(ev_type, ev_code)) }
+                .unwrap_or("")
+        )
     }
 }
 
 impl fmt::Display for InputProp {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", unsafe { ptr_to_str(
-            raw::libevdev_property_get_name(*self as c_uint)
-        )}.unwrap_or(""))
+        write!(
+            f,
+            "{}",
+            unsafe { ptr_to_str(raw::libevdev_property_get_name(*self as c_uint)) }.unwrap_or("")
+        )
     }
 }
 
@@ -107,26 +118,22 @@ impl EventType {
     /// The given type constant for the passed name or Errno if not found.
     pub fn from_str(name: &str) -> Option<EventType> {
         let name = CString::new(name).unwrap();
-        let result = unsafe {
-            raw::libevdev_event_type_from_name(name.as_ptr())
-        };
+        let result = unsafe { raw::libevdev_event_type_from_name(name.as_ptr()) };
 
         match result {
             -1 => None,
-             k => int_to_event_type(k as u32),
+            k => int_to_event_type(k as u32),
         }
     }
 
     /// The max value defined for the given event type, e.g. ABS_MAX for a type
     /// of EV_ABS, or Errno for an invalid type.
     pub fn get_max(ev_type: &EventType) -> Option<i32> {
-        let result = unsafe {
-            raw::libevdev_event_type_get_max(*ev_type as c_uint)
-        };
+        let result = unsafe { raw::libevdev_event_type_get_max(*ev_type as c_uint) };
 
         match result {
             -1 => None,
-             k => Some(k),
+            k => Some(k),
         }
     }
 }
@@ -142,13 +149,12 @@ impl EventCode {
     /// found.
     pub fn from_str(ev_type: &EventType, name: &str) -> Option<EventCode> {
         let name = CString::new(name).unwrap();
-        let result = unsafe {
-            raw::libevdev_event_code_from_name(*ev_type as c_uint, name.as_ptr())
-        };
+        let result =
+            unsafe { raw::libevdev_event_code_from_name(*ev_type as c_uint, name.as_ptr()) };
 
         match result {
             -1 => None,
-             k => Some(int_to_event_code(*ev_type as u32, k as u32)),
+            k => Some(int_to_event_code(*ev_type as u32, k as u32)),
         }
     }
 }
@@ -164,13 +170,11 @@ impl InputProp {
     /// to the property or Errno if not found.
     pub fn from_str(name: &str) -> Option<InputProp> {
         let name = CString::new(name).unwrap();
-        let result = unsafe {
-            raw::libevdev_property_from_name(name.as_ptr())
-        };
+        let result = unsafe { raw::libevdev_property_from_name(name.as_ptr()) };
 
         match result {
             -1 => None,
-             k => int_to_input_prop(k as u32),
+            k => int_to_input_prop(k as u32),
         }
     }
 }
@@ -225,7 +229,7 @@ impl Iterator for EventCodeIterator {
                         }
                     }
                 }
-            }
+            },
             EventCode::EV_KEY(code) => match code {
                 EV_KEY::KEY_MAX => {
                     let ev_code = self.current;
@@ -245,7 +249,7 @@ impl Iterator for EventCodeIterator {
                         }
                     }
                 }
-            }
+            },
             EventCode::EV_REL(code) => match code {
                 EV_REL::REL_MAX => {
                     let ev_code = self.current;
@@ -265,7 +269,7 @@ impl Iterator for EventCodeIterator {
                         }
                     }
                 }
-            }
+            },
             EventCode::EV_ABS(code) => match code {
                 EV_ABS::ABS_MAX => {
                     let ev_code = self.current;
@@ -285,7 +289,7 @@ impl Iterator for EventCodeIterator {
                         }
                     }
                 }
-            }
+            },
             EventCode::EV_MSC(code) => match code {
                 EV_MSC::MSC_MAX => {
                     let ev_code = self.current;
@@ -305,7 +309,7 @@ impl Iterator for EventCodeIterator {
                         }
                     }
                 }
-            }
+            },
             EventCode::EV_SW(code) => match code {
                 EV_SW::SW_MAX => {
                     let ev_code = self.current;
@@ -325,7 +329,7 @@ impl Iterator for EventCodeIterator {
                         }
                     }
                 }
-            }
+            },
             EventCode::EV_LED(code) => match code {
                 EV_LED::LED_MAX => {
                     let ev_code = self.current;
@@ -345,7 +349,7 @@ impl Iterator for EventCodeIterator {
                         }
                     }
                 }
-            }
+            },
             EventCode::EV_SND(code) => match code {
                 EV_SND::SND_MAX => {
                     let ev_code = self.current;
@@ -365,7 +369,7 @@ impl Iterator for EventCodeIterator {
                         }
                     }
                 }
-            }
+            },
             EventCode::EV_REP(code) => match code {
                 EV_REP::REP_MAX => {
                     let ev_code = self.current;
@@ -385,7 +389,7 @@ impl Iterator for EventCodeIterator {
                         }
                     }
                 }
-            }
+            },
             EventCode::EV_FF(code) => match code {
                 EV_FF::FF_MAX => None,
                 _ => {

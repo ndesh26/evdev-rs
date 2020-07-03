@@ -9,7 +9,6 @@ pub enum LogPriority {
     Debug = raw::LIBEVDEV_LOG_DEBUG as isize,
 }
 
-
 /// Define the minimum level to be printed to the log handler.
 /// Messages higher than this level are printed, others are discarded. This
 /// is a global setting and applies to any future logging messages.

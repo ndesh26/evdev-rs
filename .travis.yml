@@ -41,6 +41,7 @@ before_script:
   - rustup target add $TARGET
 
 script:
+  - cargo fmt -- --check
   - travis_retry cargo build --target $TARGET --verbose
   - travis_retry cargo build --target $TARGET --all-features --verbose
   - |

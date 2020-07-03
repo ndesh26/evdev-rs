@@ -1,7 +1,7 @@
 /* THIS FILE IS GENERATED, DO NOT EDIT */
 
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -38,7 +38,7 @@ pub fn int_to_event_type(code: u32) -> Option<EventType> {
         23 => Some(EventType::EV_FF_STATUS),
         c if c < 31 => Some(EventType::EV_UNK),
         31 => Some(EventType::EV_MAX),
-        _ => None
+        _ => None,
     }
 }
 
@@ -98,7 +98,7 @@ pub fn int_to_ev_rel(code: u32) -> Option<EV_REL> {
         11 => Some(EV_REL::REL_WHEEL_HI_RES),
         12 => Some(EV_REL::REL_HWHEEL_HI_RES),
         15 => Some(EV_REL::REL_MAX),
-        _ => None
+        _ => None,
     }
 }
 
@@ -196,7 +196,7 @@ pub fn int_to_ev_abs(code: u32) -> Option<EV_ABS> {
         60 => Some(EV_ABS::ABS_MT_TOOL_X),
         61 => Some(EV_ABS::ABS_MT_TOOL_Y),
         63 => Some(EV_ABS::ABS_MAX),
-        _ => None
+        _ => None,
     }
 }
 
@@ -1302,7 +1302,7 @@ pub fn int_to_ev_key(code: u32) -> Option<EV_KEY> {
         741 => Some(EV_KEY::BTN_TRIGGER_HAPPY38),
         742 => Some(EV_KEY::BTN_TRIGGER_HAPPY39),
         743 => Some(EV_KEY::BTN_TRIGGER_HAPPY40),
-        _ => None
+        _ => None,
     }
 }
 
@@ -1338,7 +1338,7 @@ pub fn int_to_ev_led(code: u32) -> Option<EV_LED> {
         9 => Some(EV_LED::LED_MAIL),
         10 => Some(EV_LED::LED_CHARGING),
         15 => Some(EV_LED::LED_MAX),
-        _ => None
+        _ => None,
     }
 }
 
@@ -1358,7 +1358,7 @@ pub fn int_to_ev_snd(code: u32) -> Option<EV_SND> {
         1 => Some(EV_SND::SND_BELL),
         2 => Some(EV_SND::SND_TONE),
         7 => Some(EV_SND::SND_MAX),
-        _ => None
+        _ => None,
     }
 }
 
@@ -1384,7 +1384,7 @@ pub fn int_to_ev_msc(code: u32) -> Option<EV_MSC> {
         4 => Some(EV_MSC::MSC_SCAN),
         5 => Some(EV_MSC::MSC_TIMESTAMP),
         7 => Some(EV_MSC::MSC_MAX),
-        _ => None
+        _ => None,
     }
 }
 
@@ -1432,7 +1432,7 @@ pub fn int_to_ev_sw(code: u32) -> Option<EV_SW> {
         13 => Some(EV_SW::SW_LINEIN_INSERT),
         14 => Some(EV_SW::SW_MUTE_DEVICE),
         15 => Some(EV_SW::SW_PEN_INSERTED),
-        _ => None
+        _ => None,
     }
 }
 
@@ -1454,7 +1454,7 @@ pub fn int_to_ev_syn(code: u32) -> Option<EV_SYN> {
         2 => Some(EV_SYN::SYN_MT_REPORT),
         3 => Some(EV_SYN::SYN_DROPPED),
         15 => Some(EV_SYN::SYN_MAX),
-        _ => None
+        _ => None,
     }
 }
 
@@ -1474,7 +1474,7 @@ pub fn int_to_ev_rep(code: u32) -> Option<EV_REP> {
     match code {
         0 => Some(EV_REP::REP_DELAY),
         1 => Some(EV_REP::REP_PERIOD),
-        _ => None
+        _ => None,
     }
 }
 
@@ -1502,7 +1502,7 @@ pub fn int_to_input_prop(code: u32) -> Option<InputProp> {
         5 => Some(InputProp::INPUT_PROP_POINTING_STICK),
         6 => Some(InputProp::INPUT_PROP_ACCELEROMETER),
         31 => Some(InputProp::INPUT_PROP_MAX),
-        _ => None
+        _ => None,
     }
 }
 
@@ -1556,7 +1556,7 @@ pub fn int_to_ev_ff(code: u32) -> Option<EV_FF> {
         96 => Some(EV_FF::FF_GAIN),
         97 => Some(EV_FF::FF_AUTOCENTER),
         127 => Some(EV_FF::FF_MAX),
-        _ => None
+        _ => None,
     }
 }
 
@@ -1612,7 +1612,6 @@ pub fn int_to_bus_type(code: u32) -> Option<BusType> {
         29 => Some(BusType::BUS_RMI),
         30 => Some(BusType::BUS_CEC),
         31 => Some(BusType::BUS_INTEL_ISHTP),
-        _ => None
+        _ => None,
     }
 }
-

@@ -1,17 +1,18 @@
-use evdev_rs::*;
 use evdev_rs::enums::*;
-use std::io;
+use evdev_rs::*;
 use std::fs::File;
+use std::io;
 
 fn usage() {
     println!("Usage: evtest /path/to/device");
 }
 
 fn print_abs_bits(dev: &Device, axis: &EV_ABS) {
-
     let code = EventCode::EV_ABS(axis.clone());
 
-    if !dev.has(&code) { return; }
+    if !dev.has(&code) {
+        return;
+    }
 
     let abs = dev.abs_info(&code).unwrap();
 
@@ -19,10 +20,10 @@ fn print_abs_bits(dev: &Device, axis: &EV_ABS) {
     println!("\tMin\t{}", abs.minimum);
     println!("\tMax\t{}", abs.maximum);
     if abs.fuzz != 0 {
-    println!("\tFuzz\t{}", abs.fuzz);
+        println!("\tFuzz\t{}", abs.fuzz);
     }
     if abs.flat != 0 {
-    println!("\tFlat\t{}", abs.flat);
+        println!("\tFlat\t{}", abs.flat);
     }
     if abs.resolution != 0 {
         println!("\tResolution\t{}", abs.resolution);
@@ -41,7 +42,7 @@ fn print_code_bits(dev: &Device, ev_code: &EventCode, max: &EventCode) {
         println!("    Event code: {}", code);
         match code {
             EventCode::EV_ABS(k) => print_abs_bits(dev, &k),
-            _ => ()
+            _ => (),
         }
     }
 }
@@ -49,20 +50,32 @@ fn print_code_bits(dev: &Device, ev_code: &EventCode, max: &EventCode) {
 fn print_bits(dev: &Device) {
     println!("Supported events:");
 
-    for ev_type in  EventType::EV_SYN.iter() {
+    for ev_type in EventType::EV_SYN.iter() {
         if dev.has(&ev_type) {
             println!("  Event type: {} ", ev_type);
         }
 
         match ev_type {
-            EventType::EV_KEY => print_code_bits(dev, &EventCode::EV_KEY(EV_KEY::KEY_RESERVED),
-                                                 &EventCode::EV_KEY(EV_KEY::KEY_MAX)),
-            EventType::EV_REL => print_code_bits(dev, &EventCode::EV_REL(EV_REL::REL_X),
-                                                 &EventCode::EV_REL(EV_REL::REL_MAX)),
-            EventType::EV_ABS => print_code_bits(dev, &EventCode::EV_ABS(EV_ABS::ABS_X),
-                                                 &EventCode::EV_ABS(EV_ABS::ABS_MAX)),
-            EventType::EV_LED => print_code_bits(dev, &EventCode::EV_LED(EV_LED::LED_NUML),
-                                                 &EventCode::EV_LED(EV_LED::LED_MAX)),
+            EventType::EV_KEY => print_code_bits(
+                dev,
+                &EventCode::EV_KEY(EV_KEY::KEY_RESERVED),
+                &EventCode::EV_KEY(EV_KEY::KEY_MAX),
+            ),
+            EventType::EV_REL => print_code_bits(
+                dev,
+                &EventCode::EV_REL(EV_REL::REL_X),
+                &EventCode::EV_REL(EV_REL::REL_MAX),
+            ),
+            EventType::EV_ABS => print_code_bits(
+                dev,
+                &EventCode::EV_ABS(EV_ABS::ABS_X),
+                &EventCode::EV_ABS(EV_ABS::ABS_MAX),
+            ),
+            EventType::EV_LED => print_code_bits(
+                dev,
+                &EventCode::EV_LED(EV_LED::LED_NUML),
+                &EventCode::EV_LED(EV_LED::LED_MAX),
+            ),
             _ => (),
         }
     }
@@ -81,18 +94,16 @@ fn print_props(dev: &Device) {
 fn print_event(ev: &InputEvent) {
     match ev.event_type {
         EventType::EV_SYN => {
-            println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
-                     ev.time.tv_sec,
-                     ev.time.tv_usec,
-                     ev.event_type);
+            println!(
+                "Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
+                ev.time.tv_sec, ev.time.tv_usec, ev.event_type
+            );
         }
-        _ =>  {
-            println!("Event: time {}.{}, type {} , code {} , value {}",
-                     ev.time.tv_sec,
-                     ev.time.tv_usec,
-                     ev.event_type,
-                     ev.event_code,
-                     ev.value);
+        _ => {
+            println!(
+                "Event: time {}.{}, type {} , code {} , value {}",
+                ev.time.tv_sec, ev.time.tv_usec, ev.event_type, ev.event_code, ev.value
+            );
         }
     }
 }
@@ -116,10 +127,12 @@ fn main() {
     let mut d = Device::new().unwrap();
     d.set_fd(f).unwrap();
 
-    println!("Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
-            d.bustype(),
-            d.vendor_id(),
-            d.product_id());
+    println!(
+        "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
+        d.bustype(),
+        d.vendor_id(),
+        d.product_id()
+    );
     println!("Evdev version: {:x}", d.driver_version());
     println!("Input device name: \"{}\"", d.name().unwrap_or(""));
     println!("Phys location: {}", d.phys().unwrap_or(""));
@@ -146,7 +159,7 @@ fn main() {
                         }
                     }
                     println!("::::::::::::::::::::: re-synced ::::::::::::::::::::");
-                },
+                }
                 ReadStatus::Success => print_event(&result.1),
             }
         } else {
