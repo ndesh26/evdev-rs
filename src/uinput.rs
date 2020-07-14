@@ -81,8 +81,9 @@ device node returned with libevdev_uinput_get_devnode()."],
         let (ev_type, ev_code) = event_code_to_int(&event.event_code);
         let ev_value = event.value as c_int;
 
-        let result =
-            unsafe { raw::libevdev_uinput_write_event(self.raw, ev_type, ev_code, ev_value) };
+        let result = unsafe {
+            raw::libevdev_uinput_write_event(self.raw, ev_type, ev_code, ev_value)
+        };
 
         match result {
             0 => Ok(()),

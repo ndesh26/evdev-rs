@@ -51,7 +51,8 @@ impl Device {
     /// ```
     pub fn new_from_fd(file: File) -> io::Result<Device> {
         let mut libevdev = std::ptr::null_mut();
-        let result = unsafe { raw::libevdev_new_from_fd(file.as_raw_fd(), &mut libevdev) };
+        let result =
+            unsafe { raw::libevdev_new_from_fd(file.as_raw_fd(), &mut libevdev) };
 
         match result {
             0 => Ok(Device {
@@ -250,7 +251,8 @@ impl Device {
     /// Note: Please use the `enable` function instead. This function is only
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn enable_property(&self, prop: &InputProp) -> io::Result<()> {
-        let result = unsafe { raw::libevdev_enable_property(self.raw, *prop as c_uint) as i32 };
+        let result =
+            unsafe { raw::libevdev_enable_property(self.raw, *prop as c_uint) as i32 };
 
         match result {
             0 => Ok(()),
@@ -283,8 +285,9 @@ impl Device {
     pub fn event_value(&self, code: &EventCode) -> Option<i32> {
         let mut value: i32 = 0;
         let (ev_type, ev_code) = event_code_to_int(code);
-        let valid =
-            unsafe { raw::libevdev_fetch_event_value(self.raw, ev_type, ev_code, &mut value) };
+        let valid = unsafe {
+            raw::libevdev_fetch_event_value(self.raw, ev_type, ev_code, &mut value)
+        };
 
         match valid {
             0 => None,
@@ -310,8 +313,9 @@ impl Device {
     /// slots on the device. Otherwise, `set_event_value` returns Err.
     pub fn set_event_value(&self, code: &EventCode, val: i32) -> io::Result<()> {
         let (ev_type, ev_code) = event_code_to_int(code);
-        let result =
-            unsafe { raw::libevdev_set_event_value(self.raw, ev_type, ev_code, val as c_int) };
+        let result = unsafe {
+            raw::libevdev_set_event_value(self.raw, ev_type, ev_code, val as c_int)
+        };
 
         match result {
             0 => Ok(()),
@@ -415,7 +419,12 @@ impl Device {
     ///
     /// This function does not set event values for axes outside the ABS_MT range,
     /// use `set_event_value` instead.
-    pub fn set_slot_value(&self, slot: u32, code: &EventCode, val: i32) -> io::Result<()> {
+    pub fn set_slot_value(
+        &self,
+        slot: u32,
+        code: &EventCode,
+        val: i32,
+    ) -> io::Result<()> {
         let (_, ev_code) = event_code_to_int(code);
         let result = unsafe {
             raw::libevdev_set_slot_value(self.raw, slot as c_uint, ev_code, val as c_int)
@@ -469,7 +478,8 @@ impl Device {
     /// Note: Please use the `enable` function instead. This function is only
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn enable_event_type(&self, ev_type: &EventType) -> io::Result<()> {
-        let result = unsafe { raw::libevdev_enable_event_type(self.raw, *ev_type as c_uint) };
+        let result =
+            unsafe { raw::libevdev_enable_event_type(self.raw, *ev_type as c_uint) };
 
         match result {
             0 => Ok(()),
@@ -490,7 +500,11 @@ impl Device {
     ///
     /// Note: Please use the `enable` function instead. This function is only
     /// available for the sake of maintaining compatibility with libevdev.
-    pub fn enable_event_code(&self, ev_code: &EventCode, blob: Option<&dyn Any>) -> io::Result<()> {
+    pub fn enable_event_code(
+        &self,
+        ev_code: &EventCode,
+        blob: Option<&dyn Any>,
+    ) -> io::Result<()> {
         let (ev_type, ev_code) = event_code_to_int(ev_code);
 
         let data = blob
@@ -502,7 +516,12 @@ impl Device {
             .unwrap_or_else(|| ptr::null() as *const _ as *const c_void);
 
         let result = unsafe {
-            raw::libevdev_enable_event_code(self.raw, ev_type as c_uint, ev_code as c_uint, data)
+            raw::libevdev_enable_event_code(
+                self.raw,
+                ev_type as c_uint,
+                ev_code as c_uint,
+                data,
+            )
         };
 
         match result {
@@ -551,7 +570,8 @@ impl Device {
     /// Note: Please use the `disable` function instead. This function is only
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn disable_event_type(&self, ev_type: &EventType) -> io::Result<()> {
-        let result = unsafe { raw::libevdev_disable_event_type(self.raw, *ev_type as c_uint) };
+        let result =
+            unsafe { raw::libevdev_disable_event_type(self.raw, *ev_type as c_uint) };
 
         match result {
             0 => Ok(()),
@@ -577,7 +597,8 @@ impl Device {
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn disable_event_code(&self, code: &EventCode) -> io::Result<()> {
         let (ev_type, ev_code) = event_code_to_int(code);
-        let result = unsafe { raw::libevdev_disable_event_code(self.raw, ev_type, ev_code) };
+        let result =
+            unsafe { raw::libevdev_disable_event_code(self.raw, ev_type, ev_code) };
 
         match result {
             0 => Ok(()),
@@ -591,17 +612,26 @@ impl Device {
         let (_, ev_code) = event_code_to_int(code);
 
         unsafe {
-            raw::libevdev_kernel_set_abs_info(self.raw, ev_code, &absinfo.as_raw() as *const _);
+            raw::libevdev_kernel_set_abs_info(
+                self.raw,
+                ev_code,
+                &absinfo.as_raw() as *const _,
+            );
         }
     }
 
     /// Turn an LED on or off.
     ///
     /// enabling an LED requires write permissions on the device's file descriptor.
-    pub fn kernel_set_led_value(&self, code: &EventCode, value: LedState) -> io::Result<()> {
+    pub fn kernel_set_led_value(
+        &self,
+        code: &EventCode,
+        value: LedState,
+    ) -> io::Result<()> {
         let (_, ev_code) = event_code_to_int(code);
-        let result =
-            unsafe { raw::libevdev_kernel_set_led_value(self.raw, ev_code, value as c_int) };
+        let result = unsafe {
+            raw::libevdev_kernel_set_led_value(self.raw, ev_code, value as c_int)
+        };
 
         match result {
             0 => Ok(()),
@@ -660,7 +690,8 @@ impl Device {
             value: 0,
         };
 
-        let result = unsafe { raw::libevdev_next_event(self.raw, flags.bits as c_uint, &mut ev) };
+        let result =
+            unsafe { raw::libevdev_next_event(self.raw, flags.bits as c_uint, &mut ev) };
 
         let event = InputEvent {
             time: TimeVal {

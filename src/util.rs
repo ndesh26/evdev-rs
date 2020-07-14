@@ -39,7 +39,9 @@ pub fn event_code_to_int(event_code: &EventCode) -> (c_uint, c_uint) {
         EventCode::EV_SND(code) => (EventType::EV_SND as c_uint, code as c_uint),
         EventCode::EV_REP(code) => (EventType::EV_REP as c_uint, code as c_uint),
         EventCode::EV_FF(code) => (EventType::EV_FF as c_uint, code as c_uint),
-        EventCode::EV_FF_STATUS(code) => (EventType::EV_FF_STATUS as c_uint, code as c_uint),
+        EventCode::EV_FF_STATUS(code) => {
+            (EventType::EV_FF_STATUS as c_uint, code as c_uint)
+        }
         EventCode::EV_UNK {
             event_type,
             event_code,
@@ -83,7 +85,8 @@ impl fmt::Display for EventType {
         write!(
             f,
             "{}",
-            unsafe { ptr_to_str(raw::libevdev_event_type_get_name(*self as c_uint)) }.unwrap_or("")
+            unsafe { ptr_to_str(raw::libevdev_event_type_get_name(*self as c_uint)) }
+                .unwrap_or("")
         )
     }
 }
@@ -105,7 +108,8 @@ impl fmt::Display for InputProp {
         write!(
             f,
             "{}",
-            unsafe { ptr_to_str(raw::libevdev_property_get_name(*self as c_uint)) }.unwrap_or("")
+            unsafe { ptr_to_str(raw::libevdev_property_get_name(*self as c_uint)) }
+                .unwrap_or("")
         )
     }
 }
@@ -149,8 +153,9 @@ impl EventCode {
     /// found.
     pub fn from_str(ev_type: &EventType, name: &str) -> Option<EventCode> {
         let name = CString::new(name).unwrap();
-        let result =
-            unsafe { raw::libevdev_event_code_from_name(*ev_type as c_uint, name.as_ptr()) };
+        let result = unsafe {
+            raw::libevdev_event_code_from_name(*ev_type as c_uint, name.as_ptr())
+        };
 
         match result {
             -1 => None,
