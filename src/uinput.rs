@@ -1,8 +1,8 @@
+use crate::device::Device;
 use crate::InputEvent;
 use libc::c_int;
-use crate::device::Device;
-use std::io;
 use std::fs::File;
+use std::io;
 use std::os::unix::io::FromRawFd;
 
 use crate::util::*;
@@ -11,7 +11,7 @@ use evdev_sys as raw;
 
 /// Opaque struct representing an evdev uinput device
 pub struct UInputDevice {
-    raw: *mut raw::libevdev_uinput
+    raw: *mut raw::libevdev_uinput,
 }
 
 impl UInputDevice {
@@ -25,17 +25,18 @@ impl UInputDevice {
             raw::libevdev_uinput_create_from_device(
                 device.raw,
                 raw::LIBEVDEV_UINPUT_OPEN_MANAGED,
-                &mut libevdev_uinput
+                &mut libevdev_uinput,
             )
         };
 
         match result {
-            0 => Ok(UInputDevice { raw: libevdev_uinput }),
-            error => Err(io::Error::from_raw_os_error(-error))
+            0 => Ok(UInputDevice {
+                raw: libevdev_uinput,
+            }),
+            error => Err(io::Error::from_raw_os_error(-error)),
         }
     }
 
-    
     string_getter!(
         #[doc = "Return the device node representing this uinput device.
 
@@ -59,9 +60,7 @@ device node returned with libevdev_uinput_get_devnode()."],
     /// to write events that are emitted by the uinput device. Closing this file
     ///  descriptor will destroy the uinput device.
     pub fn fd(&self) -> Option<File> {
-        let result = unsafe {
-            raw::libevdev_uinput_get_fd(self.raw)
-        };
+        let result = unsafe { raw::libevdev_uinput_get_fd(self.raw) };
 
         if result == 0 {
             None
@@ -88,7 +87,7 @@ device node returned with libevdev_uinput_get_devnode()."],
 
         match result {
             0 => Ok(()),
-            error => Err(io::Error::from_raw_os_error(-error))
+            error => Err(io::Error::from_raw_os_error(-error)),
         }
     }
 }

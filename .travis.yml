@@ -39,8 +39,10 @@ addons:
 before_script:
   - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
   - rustup target add $TARGET
+  - rustup component add rustfmt
 
 script:
+  - cargo fmt -- --check
   - travis_retry cargo build --target $TARGET --verbose
   - travis_retry cargo build --target $TARGET --all-features --verbose
   - |

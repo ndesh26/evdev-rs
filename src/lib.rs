@@ -56,10 +56,10 @@ pub mod logging;
 pub mod uinput;
 pub mod util;
 
-use libc::{c_long, c_uint, time_t, suseconds_t};
+use bitflags::bitflags;
+use libc::{c_long, c_uint, suseconds_t, time_t};
 use std::convert::TryFrom;
 use std::time::{SystemTime, SystemTimeError, UNIX_EPOCH};
-use bitflags::bitflags;
 
 use enums::*;
 use util::*;
@@ -72,7 +72,7 @@ pub use device::Device;
 pub use uinput::UInputDevice;
 
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 pub enum GrabMode {
     /// Grab the device if not currently grabbed
@@ -196,7 +196,7 @@ impl TimeVal {
     pub fn as_raw(&self) -> libc::timeval {
         libc::timeval {
             tv_sec: self.tv_sec,
-            tv_usec: self.tv_usec
+            tv_usec: self.tv_usec,
         }
     }
 }
@@ -219,7 +219,7 @@ impl InputEvent {
             time: *timeval,
             event_type: int_to_event_type(ev_type).unwrap(),
             event_code: *code,
-            value
+            value,
         }
     }
 
@@ -231,7 +231,7 @@ impl InputEvent {
             time: TimeVal::from_raw(&event.time),
             event_type,
             event_code,
-            value: event.value
+            value: event.value,
         }
     }
 
@@ -241,21 +241,17 @@ impl InputEvent {
             time: self.time.as_raw(),
             type_: ev_type as u16,
             code: ev_code as u16,
-            value: self.value
+            value: self.value,
         }
     }
 
     pub fn is_type(&self, ev_type: &EventType) -> bool {
-        unsafe {
-            raw::libevdev_event_is_type(&self.as_raw(), *ev_type as c_uint) == 1
-        }
+        unsafe { raw::libevdev_event_is_type(&self.as_raw(), *ev_type as c_uint) == 1 }
     }
 
     pub fn is_code(&self, code: &EventCode) -> bool {
         let (ev_type, ev_code) = event_code_to_int(code);
 
-        unsafe {
-            raw::libevdev_event_is_code(&self.as_raw(), ev_type, ev_code) == 1
-        }
+        unsafe { raw::libevdev_event_is_code(&self.as_raw(), ev_type, ev_code) == 1 }
     }
 }
