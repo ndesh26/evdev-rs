@@ -14,27 +14,6 @@ env:
 
 jobs:
   include:
-    - stage: check formatting
-      script: cargo fmt -- --check
-    - stage: build (default features)
-      script: travis_retry cargo build --target $TARGET --verbose
-    - stage: build (all features)
-      script: travis_retry cargo build --target $TARGET --all-features --verbose
-    - stage: test (default features)
-      script: |
-                if [ $TARGET == "x86_64-unknown-linux-gnu" ]
-                then
-                  sudo --preserve-env env "PATH=$PATH" cargo test --verbose
-                fi
-    - stage: test (all features)
-      script: |
-                if [ $TARGET == "x86_64-unknown-linux-gnu" ]
-                then
-                  sudo --preserve-env env "PATH=$PATH" cargo test --all-features --verbose
-                fi
-    - stage: document
-      script: - cargo doc --no-deps --all-features -p evdev-sys -p evdev-rs
-
     - env: TARGET=arm-unknown-linux-gnueabi
       addons:
         apt:
@@ -61,6 +40,18 @@ before_script:
   - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
   - rustup target add $TARGET
   - rustup component add rustfmt
+
+script:
+  - cargo fmt -- --check
+  - travis_retry cargo build --target $TARGET --verbose
+  - travis_retry cargo build --target $TARGET --all-features --verbose
+  - |
+      if [ $TARGET == "x86_64-unknown-linux-gnu" ]
+      then
+        sudo --preserve-env env "PATH=$PATH" cargo test --verbose
+        sudo --preserve-env env "PATH=$PATH" cargo test --all-features --verbose
+      fi
+  - cargo doc --no-deps --all-features -p evdev-sys -p evdev-rs
 
 after_success:
   - travis-cargo --only stable doc-upload
