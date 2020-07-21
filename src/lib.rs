@@ -58,8 +58,8 @@ pub mod util;
 
 use bitflags::bitflags;
 use libc::{c_long, c_uint, suseconds_t, time_t};
-use std::convert::TryFrom;
-use std::time::{SystemTime, SystemTimeError, UNIX_EPOCH};
+use std::convert::{TryFrom, TryInto};
+use std::time::{Duration, SystemTime, SystemTimeError, UNIX_EPOCH};
 
 use enums::*;
 use util::*;
@@ -178,6 +178,18 @@ impl TryFrom<SystemTime> for TimeVal {
             tv_sec: d.as_secs() as time_t,
             tv_usec: d.subsec_micros() as suseconds_t,
         })
+    }
+}
+
+impl TryInto<SystemTime> for TimeVal {
+    type Error = ();
+    /// Fails if TimeVal.tv_usec is >= 10^6 or if the TimeVal is outside
+    /// the range of SystemTime
+    fn try_into(self) -> Result<SystemTime, Self::Error> {
+        let secs = self.tv_sec.try_into().map_err(|_| ())?;
+        let nanos = (self.tv_usec * 1000).try_into().map_err(|_| ())?;
+        let duration = Duration::new(secs, nanos);
+        UNIX_EPOCH.checked_add(duration).ok_or(())
     }
 }
 
