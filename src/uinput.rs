@@ -1,9 +1,8 @@
 use crate::device::Device;
 use crate::InputEvent;
 use libc::c_int;
-use std::fs::File;
 use std::io;
-use std::os::unix::io::FromRawFd;
+use std::os::unix::io::{RawFd};
 
 use crate::util::*;
 
@@ -58,17 +57,11 @@ device node returned with libevdev_uinput_get_devnode()."],
     ///
     /// This is the fd pointing to /dev/uinput. This file descriptor may be used
     /// to write events that are emitted by the uinput device. Closing this file
-    ///  descriptor will destroy the uinput device.
-    pub fn fd(&self) -> Option<File> {
-        let result = unsafe { raw::libevdev_uinput_get_fd(self.raw) };
-
-        if result == 0 {
-            None
-        } else {
-            unsafe {
-                let f = File::from_raw_fd(result);
-                Some(f)
-            }
+    /// descriptor will destroy the uinput device.
+    pub fn fd(&self) -> Option<RawFd> {
+        match unsafe { raw::libevdev_uinput_get_fd(self.raw) } {
+            0 => None,
+            result => Some(result)
         }
     }
 

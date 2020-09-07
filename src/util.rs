@@ -7,10 +7,7 @@ use std::fmt;
 use evdev_sys as raw;
 
 pub(crate) unsafe fn ptr_to_str(ptr: *const c_char) -> Option<&'static str> {
-    if ptr.is_null() {
-        return None;
-    }
-    let slice: &CStr = CStr::from_ptr(ptr);
+    let slice: &CStr = CStr::from_ptr(ptr.as_ref()?);
     let buf: &[u8] = slice.to_bytes();
     std::str::from_utf8(buf).ok()
 }

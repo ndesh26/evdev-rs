@@ -124,8 +124,8 @@ fn main() {
     let path = &args.nth(1).unwrap();
     let f = File::open(path).unwrap();
 
-    let mut d = Device::new().unwrap();
-    d.set_fd(f).unwrap();
+    let u_d = UninitDevice::new().unwrap();
+    let d = u_d.set_file(f).unwrap();
 
     println!(
         "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
