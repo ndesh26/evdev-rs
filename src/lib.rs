@@ -11,10 +11,8 @@
 //! use evdev_rs::Device;
 //! use std::fs::File;
 //!
-//! let f = File::open("/dev/input/event0").unwrap();
-//!
-//! let mut d = Device::new().unwrap();
-//! d.set_fd(f).unwrap();
+//! let file = File::open("/dev/input/event0").unwrap();
+//! let mut d = Device::new_from_file(file).unwrap();
 //! ```
 //!
 //! ## Getting the next event
@@ -23,10 +21,8 @@
 //! use evdev_rs::Device;
 //! use std::fs::File;
 //!
-//! let f = File::open("/dev/input/event0").unwrap();
-//!
-//! let mut d = Device::new().unwrap();
-//! d.set_fd(f).unwrap();
+//! let file = File::open("/dev/input/event0").unwrap();
+//! let mut d = Device::new_from_file(file).unwrap();
 //!
 //! loop {
 //!     let a = d.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING);
@@ -68,6 +64,8 @@ use evdev_sys as raw;
 
 #[doc(inline)]
 pub use device::Device;
+#[doc(inline)]
+pub use device::UninitDevice;
 #[doc(inline)]
 pub use uinput::UInputDevice;
 

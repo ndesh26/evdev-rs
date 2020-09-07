@@ -4,7 +4,7 @@ use std::any::Any;
 use std::ffi::CString;
 use std::fs::File;
 use std::io;
-use std::os::unix::io::{AsRawFd, FromRawFd};
+use std::os::unix::io::AsRawFd;
 use std::ptr;
 
 use crate::enums::*;
@@ -12,53 +12,36 @@ use crate::util::*;
 
 use evdev_sys as raw;
 
-/// Opaque struct representing an evdev device
-pub struct Device {
-    // The file descriptor of the device must live as long as the device itself.
-    _file: Option<File>,
+pub struct UninitDevice {
     pub(crate) raw: *mut raw::libevdev,
 }
 
-impl Device {
+impl UninitDevice {
     /// Initialize a new libevdev device.
     ///
-    /// This function only initializesthe struct to sane default values.
-    /// To actually hook up the device to a kernel device, use `set_fd`.
-    pub fn new() -> Option<Device> {
+    /// Generally you should use Device::new_from_file instead of this method.
+    /// This function only initializes the struct to sane default values.
+    /// To actually hook up the device to a kernel device, use `set_file`.
+    pub fn new() -> Option<UninitDevice> {
         let libevdev = unsafe { raw::libevdev_new() };
 
         if libevdev.is_null() {
             None
         } else {
-            Some(Device {
-                _file: None,
-                raw: libevdev,
-            })
+            Some(UninitDevice {raw: libevdev})
         }
     }
 
-    /// Initialize a new libevdev device from the given fd.
+    /// Set the file for this struct and initialize internal data.
     ///
-    /// This is a shortcut for
-    ///
-    /// ```rust,no_run
-    /// use evdev_rs::Device;
-    /// # use std::fs::File;
-    ///
-    /// let mut device = Device::new().unwrap();
-    /// # let fd = File::open("/dev/input/event0").unwrap();
-    /// device.set_fd(fd);
-    /// ```
-    pub fn new_from_fd(file: File) -> io::Result<Device> {
-        let mut libevdev = std::ptr::null_mut();
-        let result =
-            unsafe { raw::libevdev_new_from_fd(file.as_raw_fd(), &mut libevdev) };
+    /// If the device changed and you need to re-read a device, use `Device::new_from_file` method.
+    /// If you need to change the file after
+    /// closing and re-opening the same device, use `change_file`.
+    pub fn set_file(self, file: File) -> io::Result<Device> {
+        let result = unsafe { raw::libevdev_set_fd(self.raw, file.as_raw_fd()) };
 
         match result {
-            0 => Ok(Device {
-                _file: Some(file),
-                raw: libevdev,
-            }),
+            0 => Ok(Device {file, raw: self.raw}),
             error => Err(io::Error::from_raw_os_error(-error)),
         }
     }
@@ -81,71 +64,144 @@ impl Device {
         libevdev_set_uniq
     );
 
-    /// Returns the file associated with the device
-    ///
-    /// if the `set_fd` hasn't been called yet then it return `None`
-    pub fn fd(&self) -> Option<File> {
-        let result = unsafe { raw::libevdev_get_fd(self.raw) };
+    product_getter!(
+        product_id,
+        libevdev_get_id_product,
+        vendor_id,
+        libevdev_get_id_vendor,
+        bustype,
+        libevdev_get_id_bustype,
+        version,
+        libevdev_get_id_version
+    );
 
-        if result == 0 {
-            None
-        } else {
-            unsafe {
-                let f = File::from_raw_fd(result);
-                Some(f)
-            }
-        }
-    }
+    product_setter!(
+        set_product_id,
+        libevdev_set_id_product,
+        set_vendor_id,
+        libevdev_set_id_vendor,
+        set_bustype,
+        libevdev_set_id_bustype,
+        set_version,
+        libevdev_set_id_version
+    );
+}
 
-    /// Set the file for this struct and initialize internal data.
+/// Opaque struct representing an evdev device
+///
+/// Unlike libevdev, this `Device` mantains an associated file as an invariant
+pub struct Device {
+    file: File,
+    pub(crate) raw: *mut raw::libevdev,
+}
+
+impl Device {
+    /// Initialize a new libevdev device from the given fd.
     ///
-    /// This function may only be called once per device. If the device changed and
-    /// you need to re-read a device, use `new` method. If you need to change the file after
-    /// closing and re-opening the same device, use `change_fd`.
+    /// This is a shortcut for
     ///
-    /// Unless otherwise specified, evdev function behavior is undefined until
-    /// a successfull call to `set_fd`.
-    pub fn set_fd(&mut self, file: File) -> io::Result<()> {
-        let result = unsafe { raw::libevdev_set_fd(self.raw, file.as_raw_fd()) };
+    /// ```rust,no_run
+    /// use evdev_rs::{Device, UninitDevice};
+    /// # use std::fs::File;
+    ///
+    /// let uninit_device = UninitDevice::new().unwrap();
+    /// # let file = File::open("/dev/input/event0").unwrap();
+    /// let device = uninit_device.set_file(file);
+    /// ```
+    pub fn new_from_file(file: File) -> io::Result<Device> {
+        let mut libevdev = std::ptr::null_mut();
+        let result =
+            unsafe { raw::libevdev_new_from_fd(file.as_raw_fd(), &mut libevdev) };
 
         match result {
-            0 => {
-                self._file = Some(file);
-                Ok(())
-            }
+            0 => Ok(Device {file,raw: libevdev}),
             error => Err(io::Error::from_raw_os_error(-error)),
         }
     }
 
-    /// Change the fd for this device, without re-reading the actual device.
+    string_getter!(
+        #[doc = "Get device's name, as set by the kernel, or overridden by a call to `set_name`"],
+        name, libevdev_get_name,
+        #[doc = "Get device's physical location, as set by the kernel, or overridden by a call to `set_phys`"],
+        phys, libevdev_get_phys,
+        #[doc = "Get device's unique identifier, as set by the kernel, or overridden by a call to `set_uniq`"],
+        uniq, libevdev_get_uniq
+    );
+
+    string_setter!(
+        set_name,
+        libevdev_set_name,
+        set_phys,
+        libevdev_set_phys,
+        set_uniq,
+        libevdev_set_uniq
+    );
+
+    product_getter!(
+        product_id,
+        libevdev_get_id_product,
+        vendor_id,
+        libevdev_get_id_vendor,
+        bustype,
+        libevdev_get_id_bustype,
+        version,
+        libevdev_get_id_version
+    );
+
+    product_setter!(
+        set_product_id,
+        libevdev_set_id_product,
+        set_vendor_id,
+        libevdev_set_id_vendor,
+        set_bustype,
+        libevdev_set_id_bustype,
+        set_version,
+        libevdev_set_id_version
+    );
+
+    /// Returns the file associated with the device
+    pub fn file(&self) -> &File {
+        &self.file
+    }
+
+    /// Change the file for this device, without re-reading the actual device.
     ///
-    /// If the fd changes after initializing the device, for example after a
-    /// VT-switch in the X.org X server, this function updates the internal fd
-    /// to the newly opened. No check is made that new fd points to the same
-    /// device. If the device has changed, evdev's behavior is undefined.
+    /// On success, returns the file that was previously associated with this
+    /// device.
     ///
-    /// evdev device does not sync itself after changing the fd and keeps the current
-    /// device state. Use next_event with the FORCE_SYNC flag to force a re-sync.
+    /// If the file changes after initializing the device, for example after a
+    /// VT-switch in the X.org X server, this function updates the internal
+    /// file to the newly opened. No check is made that new file points to the
+    /// same device. If the device has changed, evdev's behavior is undefined.
+    ///
+    /// evdev device does not sync itself after changing the file and keeps the
+    /// current device state. Use next_event with the FORCE_SYNC flag to force
+    /// a re-sync.
     ///
     /// # Example
     ///
-    /// ```rust,ignore
-    /// dev.change_fd(new_fd);
-    /// dev.next_event(evdev::FORCE_SYNC);
-    /// while dev.next_event(evdev::SYNC).ok().unwrap().0 == ReadStatus::SYNC
+    /// ```rust,no_run
+    /// use evdev_rs::{Device, UninitDevice, ReadFlag, ReadStatus};
+    /// # use std::fs::File;
+    /// # fn hidden() -> std::io::Result<()> {
+    /// let mut dev = Device::new_from_file(File::open("/dev/input/input0")?)?;
+    /// dev.change_file(File::open("/dev/input/input1")?)?;
+    /// dev.next_event(ReadFlag::FORCE_SYNC);
+    /// while dev.next_event(ReadFlag::SYNC).ok().unwrap().0 == ReadStatus::Sync
     ///                             {} // noop
+    /// # Ok(())
+    /// # }
     /// ```
-    /// After changing the fd, the device is assumed ungrabbed and a caller must
+    /// After changing the file, the device is assumed ungrabbed and a caller must
     /// call libevdev_grab() again.
-    ///
-    /// It is an error to call this function before calling set_fd().
-    pub fn change_fd(&mut self, file: File) -> io::Result<()> {
+    pub fn change_file(&mut self, file: File) -> io::Result<File> {
         let result = unsafe { raw::libevdev_change_fd(self.raw, file.as_raw_fd()) };
 
         match result {
             0 => {
-                self._file = Some(file);
-                Ok(())
+                let mut file = file;
+                std::mem::swap(&mut file, &mut self.file);
+                Ok(file)
             }
             error => Err(io::Error::from_raw_os_error(-error)),
         }
@@ -176,23 +232,16 @@ impl Device {
     /// doesn't support this code
     pub fn abs_info(&self, code: &EventCode) -> Option<AbsInfo> {
         let (_, ev_code) = event_code_to_int(code);
-        let a = unsafe { raw::libevdev_get_abs_info(self.raw, ev_code) };
+        let a = unsafe { raw::libevdev_get_abs_info(self.raw, ev_code).as_ref()? };
 
-        if a.is_null() {
-            return None;
-        }
-
-        unsafe {
-            let absinfo = AbsInfo {
-                value: (*a).value,
-                minimum: (*a).minimum,
-                maximum: (*a).maximum,
-                fuzz: (*a).fuzz,
-                flat: (*a).flat,
-                resolution: (*a).resolution,
-            };
-            Some(absinfo)
-        }
+        Some(AbsInfo {
+            value: a.value,
+            minimum: a.minimum,
+            maximum: a.maximum,
+            fuzz: a.fuzz,
+            flat: a.flat,
+            resolution: a.resolution,
+        })
     }
 
     /// Change the abs info for the given EV_ABS event code, if the code exists.
@@ -325,9 +374,9 @@ impl Device {
 
     /// Check if there are events waiting for us.
     ///
-    /// This function does not read an event off the fd and may not access the
-    /// fd at all. If there are events queued internally this function will
-    /// return non-zero. If the internal queue is empty, this function will poll
+    /// This function does not consume an event and may not access the device
+    /// file at all. If there are events queued internally this function will
+    /// return true. If the internal queue is empty, this function will poll
     /// the file descriptor for data.
     ///
     /// This is a convenience function for simple processes, most complex programs
@@ -339,28 +388,6 @@ impl Device {
     pub fn has_event_pending(&self) -> bool {
         unsafe { raw::libevdev_has_event_pending(self.raw) > 0 }
     }
-
-    product_getter!(
-        product_id,
-        libevdev_get_id_product,
-        vendor_id,
-        libevdev_get_id_vendor,
-        bustype,
-        libevdev_get_id_bustype,
-        version,
-        libevdev_get_id_version
-    );
-
-    product_setter!(
-        set_product_id,
-        libevdev_set_id_product,
-        set_vendor_id,
-        libevdev_set_id_vendor,
-        set_bustype,
-        libevdev_set_id_bustype,
-        set_version,
-        libevdev_set_id_version
-    );
 
     /// Return the driver version of a device already intialize with `set_fd`
     pub fn driver_version(&self) -> i32 {
