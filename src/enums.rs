@@ -2,6 +2,7 @@
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -36,7 +37,7 @@ pub fn int_to_event_type(code: u32) -> Option<EventType> {
         21 => Some(EventType::EV_FF),
         22 => Some(EventType::EV_PWR),
         23 => Some(EventType::EV_FF_STATUS),
-        c if c < 31 => Some(EventType::EV_UNK),
+        24..=30 => Some(EventType::EV_UNK),
         31 => Some(EventType::EV_MAX),
         _ => None,
     }
