@@ -53,7 +53,7 @@ pub mod uinput;
 pub mod util;
 
 use bitflags::bitflags;
-use libc::{c_long, c_uint, suseconds_t, time_t};
+use libc::{c_uint, suseconds_t, time_t};
 use std::convert::{TryFrom, TryInto};
 use std::time::{Duration, SystemTime, SystemTimeError, UNIX_EPOCH};
 
@@ -164,8 +164,8 @@ impl AbsInfo {
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Eq, Hash, PartialOrd, Ord, Debug, PartialEq)]
 pub struct TimeVal {
-    pub tv_sec: c_long,
-    pub tv_usec: c_long,
+    tv_sec: time_t,
+    tv_usec: suseconds_t,
 }
 
 impl TryFrom<SystemTime> for TimeVal {
@@ -192,8 +192,20 @@ impl TryInto<SystemTime> for TimeVal {
 }
 
 impl TimeVal {
-    pub fn new(tv_sec: c_long, tv_usec: c_long) -> TimeVal {
-        TimeVal { tv_sec, tv_usec }
+    pub fn new(tv_sec: time_t, tv_usec: suseconds_t) -> TimeVal {
+        const MICROS_PER_SEC:suseconds_t = 1_000_000;
+        TimeVal {
+            tv_sec: tv_sec + tv_usec / MICROS_PER_SEC,
+            tv_usec: tv_usec % MICROS_PER_SEC 
+        }
+    }
+
+    pub fn secs(&self) -> time_t {
+        self.tv_sec
+    }
+
+    pub fn subsec_micros(&self) -> suseconds_t {
+        self.tv_usec
     }
 
     pub fn from_raw(timeval: &libc::timeval) -> TimeVal {

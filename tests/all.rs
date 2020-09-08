@@ -156,3 +156,11 @@ fn device_get_value() {
 fn check_event_name() {
     assert_eq!("EV_ABS", EventType::EV_ABS.to_string());
 }
+
+#[test]
+fn test_timeval() {
+    assert_eq!(TimeVal::new(1, 1_000_000), TimeVal::new(2, 0));
+    assert_eq!(TimeVal::new(-1, -1_000_000), TimeVal::new(-2, 0));
+    assert_eq!(TimeVal::new(1, -1_000_000), TimeVal::new(0, 0));
+    assert_eq!(TimeVal::new(-1, 1_000_000), TimeVal::new(0, 0));
+}
