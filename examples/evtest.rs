@@ -92,25 +92,23 @@ fn print_props(dev: &Device) {
 }
 
 fn print_event(ev: &InputEvent) {
-    match ev.event_type {
-        EventType::EV_SYN => {
-            println!(
-                "Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
-                ev.time.secs(),
-                ev.time.subsec_micros(),
-                ev.event_type
-            );
-        }
-        _ => {
-            println!(
-                "Event: time {}.{}, type {} , code {} , value {}",
-                ev.time.secs(),
-                ev.time.subsec_micros(),
-                ev.event_type,
-                ev.event_code,
-                ev.value
-            );
-        }
+    match ev.event_code {
+        EventCode::EV_SYN(_) => println!(
+            "Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
+            ev.time.secs(),
+            ev.time.subsec_micros(),
+            ev.event_type().unwrap()
+        ),
+        _ => println!(
+            "Event: time {}.{}, type {} , code {} , value {}",
+            ev.time.secs(),
+            ev.time.subsec_micros(),
+            ev.event_type()
+                .map(|ev_type| format!("{}", ev_type))
+                .unwrap_or("None".to_owned()),
+            ev.event_code,
+            ev.value
+        ),
     }
 }
 

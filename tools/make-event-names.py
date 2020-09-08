@@ -80,11 +80,12 @@ def print_enums(bits, prefix):
 
         associated_names = []
 
+        print("");
         print("#[allow(non_camel_case_types)]")
         print('#[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]')
         print("#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]")
         print("pub enum %s {" % enum_name)
-        for val, names in list(getattr(bits, prefix).items()):
+        for val, names in getattr(bits, prefix).items():
             # Note(ndesh): We use EV_MAX as proxy to write the UNKnown event
             if names[0] == "EV_MAX":
                 print("    EV_UNK,")
@@ -92,20 +93,19 @@ def print_enums(bits, prefix):
             if len(names) > 1:
                 associated_names.extend([(names[0], names[1:])])
         if prefix == "key":
-            for val, names in list(getattr(bits, "btn").items()):
+            for val, names in getattr(bits, "btn").items():
                 print("    %s = %s," % (names[0], val))
                 if len(names) > 1:
                     associated_names.extend([(names[0], names[1:])])
         print("}");
-        print("");
 
         if len(associated_names) > 0:
+            print("")
             print("impl %s {" % enum_name)
             for orig, names in associated_names:
                 for name in names:
                     print("    pub const %s: %s = %s::%s;" % (name, enum_name, enum_name, orig))
             print("}")
-            print("")
 
 def print_enums_convert_fn(bits, prefix):
         if prefix == "ev":
@@ -120,30 +120,33 @@ def print_enums_convert_fn(bits, prefix):
         if  not hasattr(bits, prefix):
                 return
 
+        print("");
         print("pub fn %s(code: u32) -> Option<%s> {" %("int_to_" + convert(fn_name), fn_name))
         print("    match code {")
-        for val, names in list(getattr(bits, prefix).items()):
+        for val, names in getattr(bits, prefix).items():
             # Note(ndesh): We use EV_MAX as proxy to write the UNKnown event
             if names[0] == "EV_MAX":
-                print("        c if c < 31 => Some(EventType::EV_UNK),")
+                print("        %s..=%s => Some(EventType::EV_UNK)," % (last_val+1, val-1))
             print("        %s => Some(%s::%s)," % (val, fn_name, names[0]))
+            last_val = val
+
         if prefix == "key":
-                for val, names in list(getattr(bits, "btn").items()):
+                for val, names in getattr(bits, "btn").items():
                     print("        %s => Some(%s::%s)," % (val, fn_name, names[0]))
-        print("        _ => None")
+        print("        _ => None,")
         print("    }");
         print("}");
-        print("");
 
 def print_event_code(bits, prefix):
         if  not hasattr(bits, prefix):
                 return
 
+        print("");
         print("#[allow(non_camel_case_types)]")
         print('#[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]')
         print("#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]")
         print("pub enum EventCode {")
-        for val, [name] in list(getattr(bits, prefix).items()):
+        for val, [name] in getattr(bits, prefix).items():
             if name[3:]+"_" in event_names:
                     print("    %s(%s)," % (name, name))
             elif name == "EV_FF_STATUS":
@@ -154,11 +157,10 @@ def print_event_code(bits, prefix):
                         print("    EV_UNK { event_type: u32, event_code: u32 },")
                     print("    %s," % (name))
         if prefix == "key":
-            for val, names in list(getattr(bits, "btn").items()):
+            for val, names in getattr(bits, "btn").items():
                 for name in names:
                     print("    %s = %s," % (name, val))
         print("}");
-        print("");
 
 def print_lookup(bits, prefix):
     if not hasattr(bits, prefix):
@@ -172,6 +174,7 @@ def print_lookup(bits, prefix):
         print("	{ .name = \"%s\", .value = %s }," % (name, name))
 
 def print_lookup_table(bits):
+    print("")
     print("struct name_entry {")
     print("	const char *name;")
     print("	unsigned int value;")
@@ -180,8 +183,8 @@ def print_lookup_table(bits):
     print("static const struct name_entry ev_names[] = {")
     print_lookup(bits, "ev")
     print("};")
-    print("")
 
+    print("")
     print("static const struct name_entry code_names[] = {")
     for prefix in sorted(names, key=lambda e: e):
         print_lookup(bits, prefix[:-1].lower())
@@ -190,7 +193,6 @@ def print_lookup_table(bits):
     print("static const struct name_entry prop_names[] = {")
     print_lookup(bits, "input_prop")
     print("};")
-    print("")
 
 def print_mapping_table(bits):
         for prefix in prefixes:
@@ -252,7 +254,7 @@ if __name__ == "__main__":
         print("/* THIS FILE IS GENERATED, DO NOT EDIT */")
         print("")
         print('#[cfg(feature = "serde")]')
-        print("use serde::{Serialize, Deserialize};")
+        print("use serde::{Deserialize, Serialize};")
 
         if len(sys.argv) == 2:
                 with open(sys.argv[1]) as f:
