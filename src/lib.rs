@@ -1,4 +1,4 @@
-//! Rust bindings to libevdev, an wrapper for evdev devices.
+//! Rust bindings to libevdev, a wrapper for evdev devices.
 //!
 //! This library intends to provide a safe interface to the libevdev library. It
 //! will look for the library on the local system, and link to the installed copy.
@@ -20,6 +20,7 @@
 //! ```rust,no_run
 //! use evdev_rs::Device;
 //! use std::fs::File;
+//! use evdev_rs::ReadFlag;
 //!
 //! let file = File::open("/dev/input/event0").unwrap();
 //! let mut d = Device::new_from_file(file).unwrap();
@@ -223,29 +224,28 @@ impl TimeVal {
 pub struct InputEvent {
     /// The time at which event occured
     pub time: TimeVal,
-    pub event_type: EventType,
     pub event_code: EventCode,
     pub value: i32,
 }
 
 impl InputEvent {
     pub fn new(timeval: &TimeVal, code: &EventCode, value: i32) -> InputEvent {
-        let (ev_type, _) = event_code_to_int(code);
         InputEvent {
             time: *timeval,
-            event_type: int_to_event_type(ev_type).unwrap(),
             event_code: *code,
             value,
         }
     }
 
+    pub fn event_type(&self) -> Option<EventType> {
+        int_to_event_type(event_code_to_int(&self.event_code).0)
+    }
+
     pub fn from_raw(event: &libc::input_event) -> InputEvent {
         let ev_type = event.type_ as u32;
-        let event_type = int_to_event_type(ev_type).unwrap();
         let event_code = int_to_event_code(ev_type, event.code as u32);
         InputEvent {
             time: TimeVal::from_raw(&event.time),
-            event_type,
             event_code,
             value: event.value,
         }
