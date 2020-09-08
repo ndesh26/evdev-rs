@@ -96,13 +96,19 @@ fn print_event(ev: &InputEvent) {
         EventType::EV_SYN => {
             println!(
                 "Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
-                ev.time.tv_sec, ev.time.tv_usec, ev.event_type
+                ev.time.secs(),
+                ev.time.subsec_micros(),
+                ev.event_type
             );
         }
         _ => {
             println!(
                 "Event: time {}.{}, type {} , code {} , value {}",
-                ev.time.tv_sec, ev.time.tv_usec, ev.event_type, ev.event_code, ev.value
+                ev.time.secs(),
+                ev.time.subsec_micros(),
+                ev.event_type,
+                ev.event_code,
+                ev.value
             );
         }
     }

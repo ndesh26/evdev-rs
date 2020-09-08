@@ -28,7 +28,7 @@ impl UninitDevice {
         if libevdev.is_null() {
             None
         } else {
-            Some(UninitDevice {raw: libevdev})
+            Some(UninitDevice { raw: libevdev })
         }
     }
 
@@ -41,7 +41,10 @@ impl UninitDevice {
         let result = unsafe { raw::libevdev_set_fd(self.raw, file.as_raw_fd()) };
 
         match result {
-            0 => Ok(Device {file, raw: self.raw}),
+            0 => Ok(Device {
+                file,
+                raw: self.raw,
+            }),
             error => Err(io::Error::from_raw_os_error(-error)),
         }
     }
@@ -114,7 +117,10 @@ impl Device {
             unsafe { raw::libevdev_new_from_fd(file.as_raw_fd(), &mut libevdev) };
 
         match result {
-            0 => Ok(Device {file,raw: libevdev}),
+            0 => Ok(Device {
+                file,
+                raw: libevdev,
+            }),
             error => Err(io::Error::from_raw_os_error(-error)),
         }
     }
