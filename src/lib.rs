@@ -28,8 +28,8 @@
 //!     let a = d.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING);
 //!     match a {
 //!         Ok(k) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
-//!                           k.1.time.tv_sec,
-//!                           k.1.time.tv_usec,
+//!                           k.1.time.secs(),
+//!                           k.1.time.subsec_micros(),
 //!                           k.1.event_type),
 //!         Err(e) => (),
 //!     }
@@ -193,10 +193,10 @@ impl TryInto<SystemTime> for TimeVal {
 
 impl TimeVal {
     pub fn new(tv_sec: time_t, tv_usec: suseconds_t) -> TimeVal {
-        const MICROS_PER_SEC:suseconds_t = 1_000_000;
+        const MICROS_PER_SEC: suseconds_t = 1_000_000;
         TimeVal {
             tv_sec: tv_sec + tv_usec / MICROS_PER_SEC,
-            tv_usec: tv_usec % MICROS_PER_SEC 
+            tv_usec: tv_usec % MICROS_PER_SEC,
         }
     }
 

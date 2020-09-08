@@ -58,12 +58,12 @@ device node returned with libevdev_uinput_get_devnode()."],
     /// This is an fd pointing to /dev/uinput. This file descriptor may be used
     /// to write events that are emitted by the uinput device.
     /// # Safety
-    /// Closing this file descriptor (i.e. by creating a File from it, then 
+    /// Closing this file descriptor (i.e. by creating a File from it, then
     /// dropping the file) invalidates this UInputDevice
     pub unsafe fn as_fd(&self) -> Option<RawFd> {
         match raw::libevdev_uinput_get_fd(self.raw) {
             0 => None,
-            result => Some(result)
+            result => Some(result),
         }
     }
 
@@ -74,7 +74,7 @@ device node returned with libevdev_uinput_get_devnode()."],
     pub fn into_fd(self) -> Option<RawFd> {
         match unsafe { raw::libevdev_uinput_get_fd(self.raw) } {
             0 => None,
-            result => Some(result)
+            result => Some(result),
         }
     }
 
