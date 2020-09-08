@@ -580,7 +580,6 @@ impl Device {
                 tv_sec: ev.time.tv_sec,
                 tv_usec: ev.time.tv_usec,
             },
-            event_type: int_to_event_type(ev.type_ as u32).unwrap(),
             event_code: int_to_event_code(ev.type_ as u32, ev.code as u32),
             value: ev.value,
         };
