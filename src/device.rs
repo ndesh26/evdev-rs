@@ -12,6 +12,9 @@ use crate::util::*;
 
 use evdev_sys as raw;
 
+/// Opaque struct representing an evdev device
+///
+/// `UninitDevices` do not have an associated file
 pub struct UninitDevice {
     pub(crate) raw: *mut raw::libevdev,
 }
@@ -88,6 +91,100 @@ impl UninitDevice {
         set_version,
         libevdev_set_id_version
     );
+
+    /// Forcibly enable an EventType/InputProp on this device, even if the underlying
+    /// device does not support it. While this cannot make the device actually
+    /// report such events, it will now return true for has().
+    ///
+    /// This is a local modification only affecting only this representation of
+    /// this device.
+    pub fn enable(&self, blob: &dyn Any) -> io::Result<()> {
+        if let Some(ev_type) = blob.downcast_ref::<EventType>() {
+            self.enable_event_type(ev_type)
+        } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
+            self.enable_event_code(ev_code, None)
+        } else if let Some(prop) = blob.downcast_ref::<InputProp>() {
+            self.enable_property(prop)
+        } else {
+            Err(io::Error::from_raw_os_error(-1))
+        }
+    }
+
+    /// Forcibly enable an event type on this device, even if the underlying
+    /// device does not support it. While this cannot make the device actually
+    /// report such events, it will now return true for libevdev_has_event_type().
+    ///
+    /// This is a local modification only affecting only this representation of
+    /// this device.
+    ///
+    /// Note: Please use the `enable` function instead. This function is only
+    /// available for the sake of maintaining compatibility with libevdev.
+    pub fn enable_event_type(&self, ev_type: &EventType) -> io::Result<()> {
+        let result =
+            unsafe { raw::libevdev_enable_event_type(self.raw, *ev_type as c_uint) };
+
+        match result {
+            0 => Ok(()),
+            error => Err(io::Error::from_raw_os_error(-error)),
+        }
+    }
+
+    /// Forcibly enable an event type on this device, even if the underlying
+    /// device does not support it. While this cannot make the device actually
+    /// report such events, it will now return true for libevdev_has_event_code().
+    ///
+    /// The last argument depends on the type and code:
+    /// If type is EV_ABS, data must be a pointer to a struct input_absinfo
+    /// containing the data for this axis.
+    /// If type is EV_REP, data must be a pointer to a int containing the data
+    /// for this axis.
+    /// For all other types, the argument must be NULL.
+    ///
+    /// Note: Please use the `enable` function instead. This function is only
+    /// available for the sake of maintaining compatibility with libevdev.
+    pub fn enable_event_code(
+        &self,
+        ev_code: &EventCode,
+        blob: Option<&dyn Any>,
+    ) -> io::Result<()> {
+        let (ev_type, ev_code) = event_code_to_int(ev_code);
+
+        let data = blob
+            .map(|data| {
+                data.downcast_ref::<AbsInfo>()
+                    .map(|absinfo| &absinfo.as_raw() as *const _ as *const c_void)
+                    .unwrap_or_else(|| data as *const _ as *const c_void)
+            })
+            .unwrap_or_else(|| ptr::null() as *const _ as *const c_void);
+
+        let result = unsafe {
+            raw::libevdev_enable_event_code(
+                self.raw,
+                ev_type as c_uint,
+                ev_code as c_uint,
+                data,
+            )
+        };
+
+        match result {
+            0 => Ok(()),
+            error => Err(io::Error::from_raw_os_error(-error)),
+        }
+    }
+
+    /// Enables this property, a call to `set_fd` will overwrite any previously set values
+    ///
+    /// Note: Please use the `enable` function instead. This function is only
+    /// available for the sake of maintaining compatibility with libevdev.
+    pub fn enable_property(&self, prop: &InputProp) -> io::Result<()> {
+        let result =
+            unsafe { raw::libevdev_enable_property(self.raw, *prop as c_uint) as i32 };
+
+        match result {
+            0 => Ok(()),
+            error => Err(io::Error::from_raw_os_error(-error)),
+        }
+    }
 }
 
 /// Opaque struct representing an evdev device

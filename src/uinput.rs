@@ -1,4 +1,4 @@
-use crate::device::Device;
+use crate::device::{Device, UninitDevice};
 use crate::InputEvent;
 use libc::c_int;
 use std::io;
@@ -14,21 +14,33 @@ pub struct UInputDevice {
 }
 
 impl UInputDevice {
-    /// Create a uinput device based on the given libevdev device.
+    /// Create a uinput device based on the given `Device`.
     ///
     /// The uinput device will be an exact copy of the libevdev device, minus
     /// the bits that uinput doesn't allow to be set.
     pub fn create_from_device(device: &Device) -> io::Result<UInputDevice> {
-        let mut libevdev_uinput = std::ptr::null_mut();
-        let result = unsafe {
-            raw::libevdev_uinput_create_from_device(
-                device.raw,
-                raw::LIBEVDEV_UINPUT_OPEN_MANAGED,
-                &mut libevdev_uinput,
-            )
-        };
+        unsafe { Self::create_from_raw(device.raw) }
+    }
 
-        match result {
+    /// Create a uinput device based on the given `UninitDevice`.
+    ///
+    /// The uinput device will be an exact copy of the libevdev device, minus
+    /// the bits that uinput doesn't allow to be set.
+    /// This method will return Err() if the input UninitDevice's name has not
+    /// been set by a call to `set_name`
+    pub fn create_from_uninitdevice(device: &UninitDevice) -> io::Result<UInputDevice> {
+        unsafe { Self::create_from_raw(device.raw) }
+    }
+
+    /// Helper function for create_from_* functions
+    unsafe fn create_from_raw(device: *mut raw::libevdev) -> io::Result<UInputDevice> {
+        let mut libevdev_uinput = std::ptr::null_mut();
+
+        match raw::libevdev_uinput_create_from_device(
+            device,
+            raw::LIBEVDEV_UINPUT_OPEN_MANAGED,
+            &mut libevdev_uinput,
+        ) {
             0 => Ok(UInputDevice {
                 raw: libevdev_uinput,
             }),

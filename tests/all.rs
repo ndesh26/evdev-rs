@@ -4,7 +4,6 @@ use std::fs::File;
 use std::os::unix::io::AsRawFd;
 
 #[test]
-#[allow(dead_code)]
 fn context_create() {
     UninitDevice::new().unwrap();
 }
@@ -155,6 +154,17 @@ fn device_get_value() {
 #[test]
 fn check_event_name() {
     assert_eq!("EV_ABS", EventType::EV_ABS.to_string());
+}
+
+#[test]
+fn create_uinput() {
+    let uninit = &UninitDevice::new().unwrap();
+    uninit.set_name("test device");
+    //uninit.enable(&EventCode::EV_KEY(EV_KEY::KEY_RESERVED)).unwrap();
+    UInputDevice::create_from_uninitdevice(uninit).unwrap();
+
+    let event0 = Device::new_from_file(File::open("/dev/input/event0").unwrap()).unwrap();
+    UInputDevice::create_from_device(&event0).unwrap();
 }
 
 #[test]
