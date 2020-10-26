@@ -2,6 +2,7 @@
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
