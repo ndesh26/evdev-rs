@@ -130,7 +130,7 @@ def print_enums_convert_fn(bits, prefix):
         if prefix == "key":
                 for val, names in list(getattr(bits, "btn").items()):
                     print("        %s => Some(%s::%s)," % (val, fn_name, names[0]))
-        print("        _ => None")
+        print("        _ => None,")
         print("    }");
         print("}");
         print("");
@@ -242,25 +242,20 @@ def parse(fp):
     return bits
 
 def usage(prog):
-    print("Usage: %s /path/to/linux/input.h" % prog)
+    print("Usage: %s <files>".format(prog))
 
 if __name__ == "__main__":
-        if len(sys.argv) < 2:
-                usage(sys.argv[0])
-                sys.exit(2)
+    if len(sys.argv) <= 1:
+        usage(sys.argv[0])
+        sys.exit(2)
 
-        print("/* THIS FILE IS GENERATED, DO NOT EDIT */")
-        print("")
-        print('#[cfg(feature = "serde")]')
-        print("use serde::{Serialize, Deserialize};")
+    print("/* THIS FILE IS GENERATED, DO NOT EDIT */")
+    print("")
+    print('#[cfg(feature = "serde")]')
+    print("use serde::{Deserialize, Serialize};")
+    print("")
 
-        if len(sys.argv) == 2:
-                with open(sys.argv[1]) as f:
-                        bits = parse(f)
-                        print_mapping_table(bits)
-                        sys.exit(2)
-
-        for i in (1, len(sys.argv) - 1):
-                with open(sys.argv[i]) as f:
-                        bits = parse(f)
-                        print_mapping_table(bits)
+    for arg in sys.argv[1:]:
+        with open(arg) as f:
+            bits = parse(f)
+            print_mapping_table(bits)

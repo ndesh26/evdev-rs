@@ -2,4 +2,6 @@
 
 set -eux
 
-./tools/make-event-names.py evdev-sys/libevdev/include/linux/input-event-codes.h evdev-sys/libevdev/include/linux/input.hpython tools/make-event-names.py evdev-sys/libevdev/include/linux/input-event-codes.h evdev-sys/libevdev/include/linux/input.h > src/enums.rs
+HEADER_DIR=evdev-sys/libevdev/include/linux
+
+./tools/make-event-names.py $HEADER_DIR/input-event-codes.h $HEADER_DIR/input.h | head -n -1 > src/enums.rs
