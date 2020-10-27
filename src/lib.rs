@@ -25,12 +25,12 @@
 //! let mut d = Device::new_from_file(file).unwrap();
 //!
 //! loop {
-//!     let a = d.next_event(evdev_rs::ReadFlag::NORMAL | evdev_rs::ReadFlag::BLOCKING);
-//!     match a {
-//!         Ok(k) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
-//!                           k.1.time.tv_sec,
-//!                           k.1.time.tv_usec,
-//!                           k.1.event_type),
+//!     let ev = d.next_event(ReadFlag::NORMAL | ReadFlag::BLOCKING).map(|val| val.1);
+//!     match ev {
+//!         Ok(ev) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
+//!                           ev.time.tv_sec,
+//!                           ev.time.tv_usec,
+//!                           ev.event_type().map(|ev_type| format!("{}", ev_type)).unwrap_or("".to_owned())),
 //!         Err(e) => (),
 //!     }
 //! }
@@ -53,7 +53,7 @@ pub mod uinput;
 pub mod util;
 
 use bitflags::bitflags;
-use libc::{c_long, c_uint, c_void, suseconds_t, time_t};
+use libc::{c_uint, c_void, suseconds_t, time_t};
 use std::any::Any;
 use std::convert::{TryFrom, TryInto};
 use std::time::{Duration, SystemTime, SystemTimeError, UNIX_EPOCH};
@@ -166,8 +166,8 @@ impl AbsInfo {
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Eq, Hash, PartialOrd, Ord, Debug, PartialEq)]
 pub struct TimeVal {
-    pub tv_sec: c_long,
-    pub tv_usec: c_long,
+    pub tv_sec: time_t,
+    pub tv_usec: suseconds_t,
 }
 
 impl TryFrom<SystemTime> for TimeVal {
@@ -194,8 +194,12 @@ impl TryInto<SystemTime> for TimeVal {
 }
 
 impl TimeVal {
-    pub fn new(tv_sec: c_long, tv_usec: c_long) -> TimeVal {
-        TimeVal { tv_sec, tv_usec }
+    pub fn new(tv_sec: time_t, tv_usec: suseconds_t) -> TimeVal {
+        const MICROS_PER_SEC: suseconds_t = 1_000_000;
+        TimeVal {
+            tv_sec: tv_sec + tv_usec / MICROS_PER_SEC,
+            tv_usec: tv_usec % MICROS_PER_SEC,
+        }
     }
 
     pub fn from_raw(timeval: &libc::timeval) -> TimeVal {
