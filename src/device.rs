@@ -527,7 +527,7 @@ impl Device {
     /// This is a modification only affecting this representation of
     /// this device.
     pub fn set_clock_id(&self, clockid: i32) -> io::Result<()> {
-        let result = unsafe { raw::libevdev_set_clock_id(self.raw, clockid as c_int) };
+        let result = unsafe { raw::libevdev_set_clock_id(self.raw, clockid) };
 
         match result {
             0 => Ok(()),
