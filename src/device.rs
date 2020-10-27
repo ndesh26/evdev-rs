@@ -1,68 +1,65 @@
 use crate::{AbsInfo, GrabMode, InputEvent, LedState, ReadFlag, ReadStatus, TimeVal};
-use libc::{c_int, c_uint, c_void};
-use std::any::Any;
+use libc::{c_int, c_uint};
 use std::ffi::CString;
 use std::fs::File;
 use std::io;
+use std::mem::ManuallyDrop;
 use std::os::unix::io::{AsRawFd, FromRawFd};
-use std::ptr;
 
 use crate::enums::*;
 use crate::util::*;
 
 use evdev_sys as raw;
 
-/// Opaque struct representing an evdev device
-pub struct Device {
-    // The file descriptor of the device must live as long as the device itself.
-    _file: Option<File>,
+/// Opaque struct representing an evdev device with no backing file
+pub struct UninitDevice {
     pub(crate) raw: *mut raw::libevdev,
 }
 
-unsafe impl Send for Device {}
+unsafe impl Send for UninitDevice{}
 
-impl Device {
+impl UninitDevice {
     /// Initialize a new libevdev device.
     ///
-    /// This function only initializesthe struct to sane default values.
-    /// To actually hook up the device to a kernel device, use `set_fd`.
-    pub fn new() -> Option<Device> {
+    /// Generally you should use Device::new_from_file instead of this method
+    /// This function only initializes the struct to sane default values.
+    /// To actually hook up the device to a kernel device, use `set_file`.
+    pub fn new() -> Option<UninitDevice> {
         let libevdev = unsafe { raw::libevdev_new() };
 
         if libevdev.is_null() {
             None
         } else {
-            Some(Device {
-                _file: None,
-                raw: libevdev,
-            })
+            Some(UninitDevice { raw: libevdev })
         }
     }
 
-    /// Initialize a new libevdev device from the given fd.
+    /// Set the file for this struct and initialize internal data.
     ///
-    /// This is a shortcut for
-    ///
-    /// ```rust,no_run
-    /// use evdev_rs::Device;
-    /// # use std::fs::File;
-    ///
-    /// let mut device = Device::new().unwrap();
-    /// # let fd = File::open("/dev/input/event0").unwrap();
-    /// device.set_fd(fd);
-    /// ```
-    pub fn new_from_fd(file: File) -> io::Result<Device> {
-        let mut libevdev = std::ptr::null_mut();
-        let result =
-            unsafe { raw::libevdev_new_from_fd(file.as_raw_fd(), &mut libevdev) };
-
+    /// If the device changed and you need to re-read a device, use `Device::new_from_file` method.
+    /// If you need to change the file after
+    /// closing and re-opening the same device, use `change_file`.
+    pub fn set_file(self, file: File) -> io::Result<Device> {
+        // Don't call UninitDevice's destructor so we can reuse the inner libevdev
+        let leak = ManuallyDrop::new(self);
+        let result = unsafe { raw::libevdev_set_fd(leak.raw, file.as_raw_fd()) };
         match result {
             0 => Ok(Device {
-                _file: Some(file),
-                raw: libevdev,
+                file,
+                raw: leak.raw,
             }),
             error => Err(io::Error::from_raw_os_error(-error)),
         }
+    }
+
+    #[deprecated(
+        since = "0.5.0",
+        note = "Prefer `set_file`. Some function names were changed so they
+        more closely match their type signature. See issue 42 for discussion
+        https://github.com/ndesh26/evdev-rs/issues/42"
+    )]
+    pub fn set_fd(self, file: File) -> io::Result<Device> {
+        self.set_file(file)
     }
 
     string_getter!(
@@ -83,74 +80,195 @@ impl Device {
         libevdev_set_uniq
     );
 
-    /// Returns the file associated with the device
-    ///
-    /// if the `set_fd` hasn't been called yet then it return `None`
-    pub fn fd(&self) -> Option<File> {
-        let result = unsafe { raw::libevdev_get_fd(self.raw) };
+    product_getter!(
+        product_id,
+        libevdev_get_id_product,
+        vendor_id,
+        libevdev_get_id_vendor,
+        bustype,
+        libevdev_get_id_bustype,
+        version,
+        libevdev_get_id_version
+    );
 
-        if result == 0 {
-            None
-        } else {
-            unsafe {
-                let f = File::from_raw_fd(result);
-                Some(f)
-            }
+    product_setter!(
+        set_product_id,
+        libevdev_set_id_product,
+        set_vendor_id,
+        libevdev_set_id_vendor,
+        set_bustype,
+        libevdev_set_id_bustype,
+        set_version,
+        libevdev_set_id_version
+    );
+}
+
+impl Drop for UninitDevice {
+    fn drop(&mut self) {
+        unsafe {
+            raw::libevdev_free(self.raw);
         }
     }
+}
 
-    /// Set the file for this struct and initialize internal data.
+unsafe impl Send for Device {}
+
+/// Opaque struct representing an evdev device
+///
+/// Unlike libevdev, this `Device` mantains an associated file as an invariant
+pub struct Device {
+    file: File,
+    pub(crate) raw: *mut raw::libevdev,
+}
+
+impl Device {
+    /// Initialize a new libevdev device from the given file.
     ///
-    /// This function may only be called once per device. If the device changed and
-    /// you need to re-read a device, use `new` method. If you need to change the file after
-    /// closing and re-opening the same device, use `change_fd`.
+    /// This is a shortcut for
     ///
-    /// Unless otherwise specified, evdev function behavior is undefined until
-    /// a successfull call to `set_fd`.
-    pub fn set_fd(&mut self, file: File) -> io::Result<()> {
-        let result = unsafe { raw::libevdev_set_fd(self.raw, file.as_raw_fd()) };
+    /// ```rust,no_run
+    /// use evdev_rs::{Device, UninitDevice};
+    /// # use std::fs::File;
+    ///
+    /// let uninit_device = UninitDevice::new().unwrap();
+    /// # let file = File::open("/dev/input/event0").unwrap();
+    /// let device = uninit_device.set_file(file);
+    /// ```
+    pub fn new_from_file(file: File) -> io::Result<Device> {
+        let mut libevdev = std::ptr::null_mut();
+        let result =
+            unsafe { raw::libevdev_new_from_fd(file.as_raw_fd(), &mut libevdev) };
 
         match result {
-            0 => {
-                self._file = Some(file);
-                Ok(())
-            }
+            0 => Ok(Device {
+                file,
+                raw: libevdev,
+            }),
             error => Err(io::Error::from_raw_os_error(-error)),
         }
     }
 
-    /// Change the fd for this device, without re-reading the actual device.
+    #[deprecated(
+        since = "0.5.0",
+        note = "Prefer `new_from_file`. Some function names were changed so they
+        more closely match their type signature. See issue 42 for discussion
+        https://github.com/ndesh26/evdev-rs/issues/42"
+    )]
+    pub fn new_from_fd(file: File) -> io::Result<Device> {
+        Self::new_from_file(file)
+    }
+
+    string_getter!(
+        #[doc = "Get device's name, as set by the kernel, or overridden by a call to `set_name`"],
+        name, libevdev_get_name,
+        #[doc = "Get device's physical location, as set by the kernel, or overridden by a call to `set_phys`"],
+        phys, libevdev_get_phys,
+        #[doc = "Get device's unique identifier, as set by the kernel, or overridden by a call to `set_uniq`"],
+        uniq, libevdev_get_uniq
+    );
+
+    string_setter!(
+        set_name,
+        libevdev_set_name,
+        set_phys,
+        libevdev_set_phys,
+        set_uniq,
+        libevdev_set_uniq
+    );
+
+    product_getter!(
+        product_id,
+        libevdev_get_id_product,
+        vendor_id,
+        libevdev_get_id_vendor,
+        bustype,
+        libevdev_get_id_bustype,
+        version,
+        libevdev_get_id_version
+    );
+
+    product_setter!(
+        set_product_id,
+        libevdev_set_id_product,
+        set_vendor_id,
+        libevdev_set_id_vendor,
+        set_bustype,
+        libevdev_set_id_bustype,
+        set_version,
+        libevdev_set_id_version
+    );
+
+    /// Returns the file associated with the device
+    pub fn file(&self) -> &File {
+        &self.file
+    }
+
+    #[deprecated(
+        since = "0.5.0",
+        note = "Prefer `file`. This function can easily be misused. Calling
+        this method, then dropping the returned file will lead to failures
+        e.g. next_event will return an Err()"
+    )]
+    pub fn fd(&self) -> Option<File> {
+        let result = unsafe { raw::libevdev_get_fd(self.raw) };
+        match result {
+            0 => None,
+            _ => unsafe { Some(File::from_raw_fd(result)) },
+        }
+    }
+
+    /// Change the file for this device, without re-reading the actual device.
     ///
-    /// If the fd changes after initializing the device, for example after a
-    /// VT-switch in the X.org X server, this function updates the internal fd
-    /// to the newly opened. No check is made that new fd points to the same
-    /// device. If the device has changed, evdev's behavior is undefined.
+    /// On success, returns the file that was previously associated with this
+    /// device.
     ///
-    /// evdev device does not sync itself after changing the fd and keeps the current
-    /// device state. Use next_event with the FORCE_SYNC flag to force a re-sync.
+    /// If the file changes after initializing the device, for example after a
+    /// VT-switch in the X.org X server, this function updates the internal
+    /// file to the newly opened. No check is made that new file points to the
+    /// same device. If the device has changed, evdev's behavior is undefined.
+    ///
+    /// evdev device does not sync itself after changing the file and keeps the
+    /// current device state. Use next_event with the FORCE_SYNC flag to force
+    /// a re-sync.
     ///
     /// # Example
     ///
-    /// ```rust,ignore
-    /// dev.change_fd(new_fd);
-    /// dev.next_event(evdev::FORCE_SYNC);
-    /// while dev.next_event(evdev::SYNC).ok().unwrap().0 == ReadStatus::SYNC
+    /// ```rust,no_run
+    /// use evdev_rs::{Device, UninitDevice, ReadFlag, ReadStatus};
+    /// # use std::fs::File;
+    /// # fn hidden() -> std::io::Result<()> {
+    /// let mut dev = Device::new_from_file(File::open("/dev/input/input0")?)?;
+    /// dev.change_file(File::open("/dev/input/input1")?)?;
+    /// dev.next_event(ReadFlag::FORCE_SYNC);
+    /// while dev.next_event(ReadFlag::SYNC).ok().unwrap().0 == ReadStatus::Sync
     ///                             {} // noop
+    /// # Ok(())
+    /// # }
     /// ```
-    /// After changing the fd, the device is assumed ungrabbed and a caller must
+    /// After changing the file, the device is assumed ungrabbed and a caller must
     /// call libevdev_grab() again.
-    ///
-    /// It is an error to call this function before calling set_fd().
-    pub fn change_fd(&mut self, file: File) -> io::Result<()> {
+    pub fn change_file(&mut self, file: File) -> io::Result<File> {
         let result = unsafe { raw::libevdev_change_fd(self.raw, file.as_raw_fd()) };
 
         match result {
             0 => {
-                self._file = Some(file);
-                Ok(())
+                let mut file = file;
+                std::mem::swap(&mut file, &mut self.file);
+                Ok(file)
             }
             error => Err(io::Error::from_raw_os_error(-error)),
         }
+    }
+
+    #[deprecated(
+        since = "0.5.0",
+        note = "Prefer new_from_file. Some function names were changed so they
+        more closely match their type signature. See issue 42 for discussion
+        https://github.com/ndesh26/evdev-rs/issues/42"
+    )]
+    pub fn change_fd(&mut self, file: File) -> io::Result<()> {
+        self.change_file(file)?;
+        Ok(())
     }
 
     /// Grab or ungrab the device through a kernel EVIOCGRAB.
@@ -161,7 +279,7 @@ impl Device {
     /// ungrabbing an ungrabbed device is a noop and always succeeds.
     ///
     /// A grab is an operation tied to a file descriptor, not a device. If a
-    /// client changes the file descriptor with libevdev_change_fd(), it must
+    /// client changes the file descriptor with Device::change_file(), it must
     /// also re-issue a grab with libevdev_grab().
     pub fn grab(&mut self, grab: GrabMode) -> io::Result<()> {
         let result = unsafe { raw::libevdev_grab(self.raw, grab as c_int) };
@@ -178,23 +296,16 @@ impl Device {
     /// doesn't support this code
     pub fn abs_info(&self, code: &EventCode) -> Option<AbsInfo> {
         let (_, ev_code) = event_code_to_int(code);
-        let a = unsafe { raw::libevdev_get_abs_info(self.raw, ev_code) };
+        let a = unsafe { raw::libevdev_get_abs_info(self.raw, ev_code).as_ref()? };
 
-        if a.is_null() {
-            return None;
-        }
-
-        unsafe {
-            let absinfo = AbsInfo {
-                value: (*a).value,
-                minimum: (*a).minimum,
-                maximum: (*a).maximum,
-                fuzz: (*a).fuzz,
-                flat: (*a).flat,
-                resolution: (*a).resolution,
-            };
-            Some(absinfo)
-        }
+        Some(AbsInfo {
+            value: a.value,
+            minimum: a.minimum,
+            maximum: a.maximum,
+            fuzz: a.fuzz,
+            flat: a.flat,
+            resolution: a.resolution,
+        })
     }
 
     /// Change the abs info for the given EV_ABS event code, if the code exists.
@@ -206,77 +317,6 @@ impl Device {
 
         unsafe {
             raw::libevdev_set_abs_info(self.raw, ev_code, &absinfo.as_raw() as *const _);
-        }
-    }
-
-    /// Returns `true` if device support the InputProp/EventType/EventCode and false otherwise
-    pub fn has(&self, blob: &dyn Any) -> bool {
-        if let Some(ev_type) = blob.downcast_ref::<EventType>() {
-            self.has_event_type(ev_type)
-        } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
-            self.has_event_code(ev_code)
-        } else if let Some(prop) = blob.downcast_ref::<InputProp>() {
-            self.has_property(prop)
-        } else {
-            false
-        }
-    }
-
-    /// Forcibly enable an EventType/InputProp on this device, even if the underlying
-    /// device does not support it. While this cannot make the device actually
-    /// report such events, it will now return true for has().
-    ///
-    /// This is a local modification only affecting only this representation of
-    /// this device.
-    pub fn enable(&self, blob: &dyn Any) -> io::Result<()> {
-        if let Some(ev_type) = blob.downcast_ref::<EventType>() {
-            self.enable_event_type(ev_type)
-        } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
-            self.enable_event_code(ev_code, None)
-        } else if let Some(prop) = blob.downcast_ref::<InputProp>() {
-            self.enable_property(prop)
-        } else {
-            Err(io::Error::from_raw_os_error(-1))
-        }
-    }
-
-    /// Returns `true` if device support the property and false otherwise
-    ///
-    /// Note: Please use the `has` function instead. This function is only
-    /// available for the sake of maintaining compatibility with libevdev.
-    pub fn has_property(&self, prop: &InputProp) -> bool {
-        unsafe { raw::libevdev_has_property(self.raw, *prop as c_uint) != 0 }
-    }
-
-    /// Enables this property, a call to `set_fd` will overwrite any previously set values
-    ///
-    /// Note: Please use the `enable` function instead. This function is only
-    /// available for the sake of maintaining compatibility with libevdev.
-    pub fn enable_property(&self, prop: &InputProp) -> io::Result<()> {
-        let result =
-            unsafe { raw::libevdev_enable_property(self.raw, *prop as c_uint) as i32 };
-
-        match result {
-            0 => Ok(()),
-            error => Err(io::Error::from_raw_os_error(-error)),
-        }
-    }
-    /// Returns `true` is the device support this event type and `false` otherwise
-    ///
-    /// Note: Please use the `has` function instead. This function is only
-    /// available for the sake of maintaining compatibility with libevdev.
-    pub fn has_event_type(&self, ev_type: &EventType) -> bool {
-        unsafe { raw::libevdev_has_event_type(self.raw, *ev_type as c_uint) != 0 }
-    }
-
-    /// Return `true` is the device support this event type and code and `false` otherwise
-    ///
-    /// Note: Please use the `has` function instead. This function is only
-    /// available for the sake of maintaining compatibility with libevdev.
-    pub fn has_event_code(&self, code: &EventCode) -> bool {
-        unsafe {
-            let (ev_type, ev_code) = event_code_to_int(code);
-            raw::libevdev_has_event_code(self.raw, ev_type, ev_code) != 0
         }
     }
 
@@ -327,9 +367,9 @@ impl Device {
 
     /// Check if there are events waiting for us.
     ///
-    /// This function does not read an event off the fd and may not access the
-    /// fd at all. If there are events queued internally this function will
-    /// return non-zero. If the internal queue is empty, this function will poll
+    /// This function does not consume an event and may not access the device
+    /// file at all. If there are events queued internally this function will
+    /// return true. If the internal queue is empty, this function will poll
     /// the file descriptor for data.
     ///
     /// This is a convenience function for simple processes, most complex programs
@@ -342,29 +382,7 @@ impl Device {
         unsafe { raw::libevdev_has_event_pending(self.raw) > 0 }
     }
 
-    product_getter!(
-        product_id,
-        libevdev_get_id_product,
-        vendor_id,
-        libevdev_get_id_vendor,
-        bustype,
-        libevdev_get_id_bustype,
-        version,
-        libevdev_get_id_version
-    );
-
-    product_setter!(
-        set_product_id,
-        libevdev_set_id_product,
-        set_vendor_id,
-        libevdev_set_id_vendor,
-        set_bustype,
-        libevdev_set_id_bustype,
-        set_version,
-        libevdev_set_id_version
-    );
-
-    /// Return the driver version of a device already intialize with `set_fd`
+    /// Return the driver version of a device already intialize with `set_file`
     pub fn driver_version(&self) -> i32 {
         unsafe { raw::libevdev_get_driver_version(self.raw) as i32 }
     }
@@ -457,7 +475,7 @@ impl Device {
     /// Get the currently active slot.
     ///
     /// This may differ from the value an ioctl may return at this time as
-    /// events may have been read off the fd since changing the slot value
+    /// events may have been read off the file since changing the slot value
     /// but those events are still in the buffer waiting to be processed.
     /// The returned value is the value a caller would see if it were to
     /// process events manually one-by-one.
@@ -467,144 +485,6 @@ impl Device {
         match result {
             -1 => None,
             slots => Some(slots),
-        }
-    }
-
-    /// Forcibly enable an event type on this device, even if the underlying
-    /// device does not support it. While this cannot make the device actually
-    /// report such events, it will now return true for libevdev_has_event_type().
-    ///
-    /// This is a local modification only affecting only this representation of
-    /// this device.
-    ///
-    /// Note: Please use the `enable` function instead. This function is only
-    /// available for the sake of maintaining compatibility with libevdev.
-    pub fn enable_event_type(&self, ev_type: &EventType) -> io::Result<()> {
-        let result =
-            unsafe { raw::libevdev_enable_event_type(self.raw, *ev_type as c_uint) };
-
-        match result {
-            0 => Ok(()),
-            error => Err(io::Error::from_raw_os_error(-error)),
-        }
-    }
-
-    /// Forcibly enable an event type on this device, even if the underlying
-    /// device does not support it. While this cannot make the device actually
-    /// report such events, it will now return true for libevdev_has_event_code().
-    ///
-    /// The last argument depends on the type and code:
-    /// If type is EV_ABS, data must be a pointer to a struct input_absinfo
-    /// containing the data for this axis.
-    /// If type is EV_REP, data must be a pointer to a int containing the data
-    /// for this axis.
-    /// For all other types, the argument must be NULL.
-    ///
-    /// Note: Please use the `enable` function instead. This function is only
-    /// available for the sake of maintaining compatibility with libevdev.
-    pub fn enable_event_code(
-        &self,
-        ev_code: &EventCode,
-        blob: Option<&dyn Any>,
-    ) -> io::Result<()> {
-        let (ev_type, ev_code) = event_code_to_int(ev_code);
-
-        let data = blob
-            .map(|data| {
-                data.downcast_ref::<AbsInfo>()
-                    .map(|absinfo| &absinfo.as_raw() as *const _ as *const c_void)
-                    .unwrap_or_else(|| data as *const _ as *const c_void)
-            })
-            .unwrap_or_else(|| ptr::null() as *const _ as *const c_void);
-
-        let result = unsafe {
-            raw::libevdev_enable_event_code(
-                self.raw,
-                ev_type as c_uint,
-                ev_code as c_uint,
-                data,
-            )
-        };
-
-        match result {
-            0 => Ok(()),
-            error => Err(io::Error::from_raw_os_error(-error)),
-        }
-    }
-
-    /// Forcibly disable an EventType/EventCode on this device, even if the
-    /// underlying device provides it. This effectively mutes the respective set of
-    /// events. has() will return false for this EventType/EventCode
-    ///
-    /// In most cases, a caller likely only wants to disable a single code, not
-    /// the whole type.
-    ///
-    /// Disabling EV_SYN will not work. In Peter's Words "Don't shoot yourself
-    /// in the foot. It hurts".
-    ///
-    /// This is a local modification only affecting only this representation of
-    /// this device.
-    pub fn disable(&self, blob: &dyn Any) -> io::Result<()> {
-        if let Some(ev_type) = blob.downcast_ref::<EventType>() {
-            self.disable_event_type(ev_type)
-        } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
-            self.disable_event_code(ev_code)
-        } else {
-            Err(io::Error::from_raw_os_error(-1))
-        }
-    }
-
-    /// Forcibly disable an event type on this device, even if the underlying
-    /// device provides it. This effectively mutes the respective set of
-    /// events. libevdev will filter any events matching this type and none will
-    /// reach the caller. libevdev_has_event_type() will return false for this
-    /// type.
-    ///
-    /// In most cases, a caller likely only wants to disable a single code, not
-    /// the whole type. Use `disable_event_code` for that.
-    ///
-    /// Disabling EV_SYN will not work. In Peter's Words "Don't shoot yourself
-    /// in the foot. It hurts".
-    ///
-    /// This is a local modification only affecting only this representation of
-    /// this device.
-    ///
-    /// Note: Please use the `disable` function instead. This function is only
-    /// available for the sake of maintaining compatibility with libevdev.
-    pub fn disable_event_type(&self, ev_type: &EventType) -> io::Result<()> {
-        let result =
-            unsafe { raw::libevdev_disable_event_type(self.raw, *ev_type as c_uint) };
-
-        match result {
-            0 => Ok(()),
-            error => Err(io::Error::from_raw_os_error(-error)),
-        }
-    }
-    /// Forcibly disable an event code on this device, even if the underlying
-    /// device provides it. This effectively mutes the respective set of
-    /// events. libevdev will filter any events matching this type and code and
-    /// none will reach the caller. `has_event_code` will return false for
-    /// this code.
-    ///
-    /// Disabling all event codes for a given type will not disable the event
-    /// type. Use `disable_event_type` for that.
-    ///
-    /// This is a local modification only affecting only this representation of
-    /// this device.
-    ///
-    /// Disabling codes of type EV_SYN will not work. Don't shoot yourself in the
-    /// foot. It hurts.
-    ///
-    /// Note: Please use the `disable` function instead. This function is only
-    /// available for the sake of maintaining compatibility with libevdev.
-    pub fn disable_event_code(&self, code: &EventCode) -> io::Result<()> {
-        let (ev_type, ev_code) = event_code_to_int(code);
-        let result =
-            unsafe { raw::libevdev_disable_event_code(self.raw, ev_type, ev_code) };
-
-        match result {
-            0 => Ok(()),
-            error => Err(io::Error::from_raw_os_error(-error)),
         }
     }
 
