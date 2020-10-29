@@ -169,40 +169,6 @@ def print_event_code(bits, prefix):
     print("")
 
 
-def print_lookup(bits, prefix):
-    if not hasattr(bits, prefix):
-        return
-
-    names = list(getattr(bits, prefix).items())
-    if prefix == "btn":
-        names = names + btn_additional
-
-    for _val, name in sorted(names, key=lambda e: e[1]):
-        print("	{ .name = \"%s\", .value = %s }," % (name, name))
-
-
-def print_lookup_table(bits):
-    print("struct name_entry {")
-    print("	const char *name;")
-    print("	unsigned int value;")
-    print("};")
-    print("")
-    print("static const struct name_entry ev_names[] = {")
-    print_lookup(bits, "ev")
-    print("};")
-    print("")
-
-    print("static const struct name_entry code_names[] = {")
-    for prefix in sorted(names, key=lambda e: e):
-        print_lookup(bits, prefix[:-1].lower())
-    print("};")
-    print("")
-    print("static const struct name_entry prop_names[] = {")
-    print_lookup(bits, "input_prop")
-    print("};")
-    print("")
-
-
 def print_mapping_table(bits):
     for prefix in prefixes:
         if prefix == "BTN_":
