@@ -256,7 +256,7 @@ def parse(fp):
 
 
 def usage(prog):
-    print("Usage: %s <files>".format(prog))
+    print("Usage: {} <files>".format(prog))
 
 
 if __name__ == "__main__":
