@@ -19,6 +19,8 @@ pub struct Device {
     pub(crate) raw: *mut raw::libevdev,
 }
 
+unsafe impl Send for Device {}
+
 impl Device {
     /// Initialize a new libevdev device.
     ///
