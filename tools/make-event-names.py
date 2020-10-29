@@ -177,7 +177,7 @@ def print_lookup(bits, prefix):
     if prefix == "btn":
         names = names + btn_additional
 
-    for val, name in sorted(names, key=lambda e: e[1]):
+    for _val, name in sorted(names, key=lambda e: e[1]):
         print("	{ .name = \"%s\", .value = %s }," % (name, name))
 
 
