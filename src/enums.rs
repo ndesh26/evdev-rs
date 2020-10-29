@@ -43,6 +43,28 @@ pub fn int_to_event_type(code: u32) -> Option<EventType> {
     }
 }
 
+impl std::str::FromStr for EventType {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "EV_SYN" => Ok(EventType::EV_SYN),
+            "EV_KEY" => Ok(EventType::EV_KEY),
+            "EV_REL" => Ok(EventType::EV_REL),
+            "EV_ABS" => Ok(EventType::EV_ABS),
+            "EV_MSC" => Ok(EventType::EV_MSC),
+            "EV_SW" => Ok(EventType::EV_SW),
+            "EV_LED" => Ok(EventType::EV_LED),
+            "EV_SND" => Ok(EventType::EV_SND),
+            "EV_REP" => Ok(EventType::EV_REP),
+            "EV_FF" => Ok(EventType::EV_FF),
+            "EV_PWR" => Ok(EventType::EV_PWR),
+            "EV_FF_STATUS" => Ok(EventType::EV_FF_STATUS),
+            "EV_MAX" => Ok(EventType::EV_MAX),
+            _ => Err(()),
+        }
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -100,6 +122,29 @@ pub fn int_to_ev_rel(code: u32) -> Option<EV_REL> {
         12 => Some(EV_REL::REL_HWHEEL_HI_RES),
         15 => Some(EV_REL::REL_MAX),
         _ => None,
+    }
+}
+
+impl std::str::FromStr for EV_REL {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "REL_X" => Ok(EV_REL::REL_X),
+            "REL_Y" => Ok(EV_REL::REL_Y),
+            "REL_Z" => Ok(EV_REL::REL_Z),
+            "REL_RX" => Ok(EV_REL::REL_RX),
+            "REL_RY" => Ok(EV_REL::REL_RY),
+            "REL_RZ" => Ok(EV_REL::REL_RZ),
+            "REL_HWHEEL" => Ok(EV_REL::REL_HWHEEL),
+            "REL_DIAL" => Ok(EV_REL::REL_DIAL),
+            "REL_WHEEL" => Ok(EV_REL::REL_WHEEL),
+            "REL_MISC" => Ok(EV_REL::REL_MISC),
+            "REL_RESERVED" => Ok(EV_REL::REL_RESERVED),
+            "REL_WHEEL_HI_RES" => Ok(EV_REL::REL_WHEEL_HI_RES),
+            "REL_HWHEEL_HI_RES" => Ok(EV_REL::REL_HWHEEL_HI_RES),
+            "REL_MAX" => Ok(EV_REL::REL_MAX),
+            _ => Err(()),
+        }
     }
 }
 
@@ -198,6 +243,58 @@ pub fn int_to_ev_abs(code: u32) -> Option<EV_ABS> {
         61 => Some(EV_ABS::ABS_MT_TOOL_Y),
         63 => Some(EV_ABS::ABS_MAX),
         _ => None,
+    }
+}
+
+impl std::str::FromStr for EV_ABS {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "ABS_X" => Ok(EV_ABS::ABS_X),
+            "ABS_Y" => Ok(EV_ABS::ABS_Y),
+            "ABS_Z" => Ok(EV_ABS::ABS_Z),
+            "ABS_RX" => Ok(EV_ABS::ABS_RX),
+            "ABS_RY" => Ok(EV_ABS::ABS_RY),
+            "ABS_RZ" => Ok(EV_ABS::ABS_RZ),
+            "ABS_THROTTLE" => Ok(EV_ABS::ABS_THROTTLE),
+            "ABS_RUDDER" => Ok(EV_ABS::ABS_RUDDER),
+            "ABS_WHEEL" => Ok(EV_ABS::ABS_WHEEL),
+            "ABS_GAS" => Ok(EV_ABS::ABS_GAS),
+            "ABS_BRAKE" => Ok(EV_ABS::ABS_BRAKE),
+            "ABS_HAT0X" => Ok(EV_ABS::ABS_HAT0X),
+            "ABS_HAT0Y" => Ok(EV_ABS::ABS_HAT0Y),
+            "ABS_HAT1X" => Ok(EV_ABS::ABS_HAT1X),
+            "ABS_HAT1Y" => Ok(EV_ABS::ABS_HAT1Y),
+            "ABS_HAT2X" => Ok(EV_ABS::ABS_HAT2X),
+            "ABS_HAT2Y" => Ok(EV_ABS::ABS_HAT2Y),
+            "ABS_HAT3X" => Ok(EV_ABS::ABS_HAT3X),
+            "ABS_HAT3Y" => Ok(EV_ABS::ABS_HAT3Y),
+            "ABS_PRESSURE" => Ok(EV_ABS::ABS_PRESSURE),
+            "ABS_DISTANCE" => Ok(EV_ABS::ABS_DISTANCE),
+            "ABS_TILT_X" => Ok(EV_ABS::ABS_TILT_X),
+            "ABS_TILT_Y" => Ok(EV_ABS::ABS_TILT_Y),
+            "ABS_TOOL_WIDTH" => Ok(EV_ABS::ABS_TOOL_WIDTH),
+            "ABS_VOLUME" => Ok(EV_ABS::ABS_VOLUME),
+            "ABS_MISC" => Ok(EV_ABS::ABS_MISC),
+            "ABS_RESERVED" => Ok(EV_ABS::ABS_RESERVED),
+            "ABS_MT_SLOT" => Ok(EV_ABS::ABS_MT_SLOT),
+            "ABS_MT_TOUCH_MAJOR" => Ok(EV_ABS::ABS_MT_TOUCH_MAJOR),
+            "ABS_MT_TOUCH_MINOR" => Ok(EV_ABS::ABS_MT_TOUCH_MINOR),
+            "ABS_MT_WIDTH_MAJOR" => Ok(EV_ABS::ABS_MT_WIDTH_MAJOR),
+            "ABS_MT_WIDTH_MINOR" => Ok(EV_ABS::ABS_MT_WIDTH_MINOR),
+            "ABS_MT_ORIENTATION" => Ok(EV_ABS::ABS_MT_ORIENTATION),
+            "ABS_MT_POSITION_X" => Ok(EV_ABS::ABS_MT_POSITION_X),
+            "ABS_MT_POSITION_Y" => Ok(EV_ABS::ABS_MT_POSITION_Y),
+            "ABS_MT_TOOL_TYPE" => Ok(EV_ABS::ABS_MT_TOOL_TYPE),
+            "ABS_MT_BLOB_ID" => Ok(EV_ABS::ABS_MT_BLOB_ID),
+            "ABS_MT_TRACKING_ID" => Ok(EV_ABS::ABS_MT_TRACKING_ID),
+            "ABS_MT_PRESSURE" => Ok(EV_ABS::ABS_MT_PRESSURE),
+            "ABS_MT_DISTANCE" => Ok(EV_ABS::ABS_MT_DISTANCE),
+            "ABS_MT_TOOL_X" => Ok(EV_ABS::ABS_MT_TOOL_X),
+            "ABS_MT_TOOL_Y" => Ok(EV_ABS::ABS_MT_TOOL_Y),
+            "ABS_MAX" => Ok(EV_ABS::ABS_MAX),
+            _ => Err(()),
+        }
     }
 }
 
@@ -1307,6 +1404,454 @@ pub fn int_to_ev_key(code: u32) -> Option<EV_KEY> {
     }
 }
 
+impl std::str::FromStr for EV_KEY {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "KEY_RESERVED" => Ok(EV_KEY::KEY_RESERVED),
+            "KEY_ESC" => Ok(EV_KEY::KEY_ESC),
+            "KEY_1" => Ok(EV_KEY::KEY_1),
+            "KEY_2" => Ok(EV_KEY::KEY_2),
+            "KEY_3" => Ok(EV_KEY::KEY_3),
+            "KEY_4" => Ok(EV_KEY::KEY_4),
+            "KEY_5" => Ok(EV_KEY::KEY_5),
+            "KEY_6" => Ok(EV_KEY::KEY_6),
+            "KEY_7" => Ok(EV_KEY::KEY_7),
+            "KEY_8" => Ok(EV_KEY::KEY_8),
+            "KEY_9" => Ok(EV_KEY::KEY_9),
+            "KEY_0" => Ok(EV_KEY::KEY_0),
+            "KEY_MINUS" => Ok(EV_KEY::KEY_MINUS),
+            "KEY_EQUAL" => Ok(EV_KEY::KEY_EQUAL),
+            "KEY_BACKSPACE" => Ok(EV_KEY::KEY_BACKSPACE),
+            "KEY_TAB" => Ok(EV_KEY::KEY_TAB),
+            "KEY_Q" => Ok(EV_KEY::KEY_Q),
+            "KEY_W" => Ok(EV_KEY::KEY_W),
+            "KEY_E" => Ok(EV_KEY::KEY_E),
+            "KEY_R" => Ok(EV_KEY::KEY_R),
+            "KEY_T" => Ok(EV_KEY::KEY_T),
+            "KEY_Y" => Ok(EV_KEY::KEY_Y),
+            "KEY_U" => Ok(EV_KEY::KEY_U),
+            "KEY_I" => Ok(EV_KEY::KEY_I),
+            "KEY_O" => Ok(EV_KEY::KEY_O),
+            "KEY_P" => Ok(EV_KEY::KEY_P),
+            "KEY_LEFTBRACE" => Ok(EV_KEY::KEY_LEFTBRACE),
+            "KEY_RIGHTBRACE" => Ok(EV_KEY::KEY_RIGHTBRACE),
+            "KEY_ENTER" => Ok(EV_KEY::KEY_ENTER),
+            "KEY_LEFTCTRL" => Ok(EV_KEY::KEY_LEFTCTRL),
+            "KEY_A" => Ok(EV_KEY::KEY_A),
+            "KEY_S" => Ok(EV_KEY::KEY_S),
+            "KEY_D" => Ok(EV_KEY::KEY_D),
+            "KEY_F" => Ok(EV_KEY::KEY_F),
+            "KEY_G" => Ok(EV_KEY::KEY_G),
+            "KEY_H" => Ok(EV_KEY::KEY_H),
+            "KEY_J" => Ok(EV_KEY::KEY_J),
+            "KEY_K" => Ok(EV_KEY::KEY_K),
+            "KEY_L" => Ok(EV_KEY::KEY_L),
+            "KEY_SEMICOLON" => Ok(EV_KEY::KEY_SEMICOLON),
+            "KEY_APOSTROPHE" => Ok(EV_KEY::KEY_APOSTROPHE),
+            "KEY_GRAVE" => Ok(EV_KEY::KEY_GRAVE),
+            "KEY_LEFTSHIFT" => Ok(EV_KEY::KEY_LEFTSHIFT),
+            "KEY_BACKSLASH" => Ok(EV_KEY::KEY_BACKSLASH),
+            "KEY_Z" => Ok(EV_KEY::KEY_Z),
+            "KEY_X" => Ok(EV_KEY::KEY_X),
+            "KEY_C" => Ok(EV_KEY::KEY_C),
+            "KEY_V" => Ok(EV_KEY::KEY_V),
+            "KEY_B" => Ok(EV_KEY::KEY_B),
+            "KEY_N" => Ok(EV_KEY::KEY_N),
+            "KEY_M" => Ok(EV_KEY::KEY_M),
+            "KEY_COMMA" => Ok(EV_KEY::KEY_COMMA),
+            "KEY_DOT" => Ok(EV_KEY::KEY_DOT),
+            "KEY_SLASH" => Ok(EV_KEY::KEY_SLASH),
+            "KEY_RIGHTSHIFT" => Ok(EV_KEY::KEY_RIGHTSHIFT),
+            "KEY_KPASTERISK" => Ok(EV_KEY::KEY_KPASTERISK),
+            "KEY_LEFTALT" => Ok(EV_KEY::KEY_LEFTALT),
+            "KEY_SPACE" => Ok(EV_KEY::KEY_SPACE),
+            "KEY_CAPSLOCK" => Ok(EV_KEY::KEY_CAPSLOCK),
+            "KEY_F1" => Ok(EV_KEY::KEY_F1),
+            "KEY_F2" => Ok(EV_KEY::KEY_F2),
+            "KEY_F3" => Ok(EV_KEY::KEY_F3),
+            "KEY_F4" => Ok(EV_KEY::KEY_F4),
+            "KEY_F5" => Ok(EV_KEY::KEY_F5),
+            "KEY_F6" => Ok(EV_KEY::KEY_F6),
+            "KEY_F7" => Ok(EV_KEY::KEY_F7),
+            "KEY_F8" => Ok(EV_KEY::KEY_F8),
+            "KEY_F9" => Ok(EV_KEY::KEY_F9),
+            "KEY_F10" => Ok(EV_KEY::KEY_F10),
+            "KEY_NUMLOCK" => Ok(EV_KEY::KEY_NUMLOCK),
+            "KEY_SCROLLLOCK" => Ok(EV_KEY::KEY_SCROLLLOCK),
+            "KEY_KP7" => Ok(EV_KEY::KEY_KP7),
+            "KEY_KP8" => Ok(EV_KEY::KEY_KP8),
+            "KEY_KP9" => Ok(EV_KEY::KEY_KP9),
+            "KEY_KPMINUS" => Ok(EV_KEY::KEY_KPMINUS),
+            "KEY_KP4" => Ok(EV_KEY::KEY_KP4),
+            "KEY_KP5" => Ok(EV_KEY::KEY_KP5),
+            "KEY_KP6" => Ok(EV_KEY::KEY_KP6),
+            "KEY_KPPLUS" => Ok(EV_KEY::KEY_KPPLUS),
+            "KEY_KP1" => Ok(EV_KEY::KEY_KP1),
+            "KEY_KP2" => Ok(EV_KEY::KEY_KP2),
+            "KEY_KP3" => Ok(EV_KEY::KEY_KP3),
+            "KEY_KP0" => Ok(EV_KEY::KEY_KP0),
+            "KEY_KPDOT" => Ok(EV_KEY::KEY_KPDOT),
+            "KEY_ZENKAKUHANKAKU" => Ok(EV_KEY::KEY_ZENKAKUHANKAKU),
+            "KEY_102ND" => Ok(EV_KEY::KEY_102ND),
+            "KEY_F11" => Ok(EV_KEY::KEY_F11),
+            "KEY_F12" => Ok(EV_KEY::KEY_F12),
+            "KEY_RO" => Ok(EV_KEY::KEY_RO),
+            "KEY_KATAKANA" => Ok(EV_KEY::KEY_KATAKANA),
+            "KEY_HIRAGANA" => Ok(EV_KEY::KEY_HIRAGANA),
+            "KEY_HENKAN" => Ok(EV_KEY::KEY_HENKAN),
+            "KEY_KATAKANAHIRAGANA" => Ok(EV_KEY::KEY_KATAKANAHIRAGANA),
+            "KEY_MUHENKAN" => Ok(EV_KEY::KEY_MUHENKAN),
+            "KEY_KPJPCOMMA" => Ok(EV_KEY::KEY_KPJPCOMMA),
+            "KEY_KPENTER" => Ok(EV_KEY::KEY_KPENTER),
+            "KEY_RIGHTCTRL" => Ok(EV_KEY::KEY_RIGHTCTRL),
+            "KEY_KPSLASH" => Ok(EV_KEY::KEY_KPSLASH),
+            "KEY_SYSRQ" => Ok(EV_KEY::KEY_SYSRQ),
+            "KEY_RIGHTALT" => Ok(EV_KEY::KEY_RIGHTALT),
+            "KEY_LINEFEED" => Ok(EV_KEY::KEY_LINEFEED),
+            "KEY_HOME" => Ok(EV_KEY::KEY_HOME),
+            "KEY_UP" => Ok(EV_KEY::KEY_UP),
+            "KEY_PAGEUP" => Ok(EV_KEY::KEY_PAGEUP),
+            "KEY_LEFT" => Ok(EV_KEY::KEY_LEFT),
+            "KEY_RIGHT" => Ok(EV_KEY::KEY_RIGHT),
+            "KEY_END" => Ok(EV_KEY::KEY_END),
+            "KEY_DOWN" => Ok(EV_KEY::KEY_DOWN),
+            "KEY_PAGEDOWN" => Ok(EV_KEY::KEY_PAGEDOWN),
+            "KEY_INSERT" => Ok(EV_KEY::KEY_INSERT),
+            "KEY_DELETE" => Ok(EV_KEY::KEY_DELETE),
+            "KEY_MACRO" => Ok(EV_KEY::KEY_MACRO),
+            "KEY_MUTE" => Ok(EV_KEY::KEY_MUTE),
+            "KEY_VOLUMEDOWN" => Ok(EV_KEY::KEY_VOLUMEDOWN),
+            "KEY_VOLUMEUP" => Ok(EV_KEY::KEY_VOLUMEUP),
+            "KEY_POWER" => Ok(EV_KEY::KEY_POWER),
+            "KEY_KPEQUAL" => Ok(EV_KEY::KEY_KPEQUAL),
+            "KEY_KPPLUSMINUS" => Ok(EV_KEY::KEY_KPPLUSMINUS),
+            "KEY_PAUSE" => Ok(EV_KEY::KEY_PAUSE),
+            "KEY_SCALE" => Ok(EV_KEY::KEY_SCALE),
+            "KEY_KPCOMMA" => Ok(EV_KEY::KEY_KPCOMMA),
+            "KEY_HANGEUL" => Ok(EV_KEY::KEY_HANGEUL),
+            "KEY_HANJA" => Ok(EV_KEY::KEY_HANJA),
+            "KEY_YEN" => Ok(EV_KEY::KEY_YEN),
+            "KEY_LEFTMETA" => Ok(EV_KEY::KEY_LEFTMETA),
+            "KEY_RIGHTMETA" => Ok(EV_KEY::KEY_RIGHTMETA),
+            "KEY_COMPOSE" => Ok(EV_KEY::KEY_COMPOSE),
+            "KEY_STOP" => Ok(EV_KEY::KEY_STOP),
+            "KEY_AGAIN" => Ok(EV_KEY::KEY_AGAIN),
+            "KEY_PROPS" => Ok(EV_KEY::KEY_PROPS),
+            "KEY_UNDO" => Ok(EV_KEY::KEY_UNDO),
+            "KEY_FRONT" => Ok(EV_KEY::KEY_FRONT),
+            "KEY_COPY" => Ok(EV_KEY::KEY_COPY),
+            "KEY_OPEN" => Ok(EV_KEY::KEY_OPEN),
+            "KEY_PASTE" => Ok(EV_KEY::KEY_PASTE),
+            "KEY_FIND" => Ok(EV_KEY::KEY_FIND),
+            "KEY_CUT" => Ok(EV_KEY::KEY_CUT),
+            "KEY_HELP" => Ok(EV_KEY::KEY_HELP),
+            "KEY_MENU" => Ok(EV_KEY::KEY_MENU),
+            "KEY_CALC" => Ok(EV_KEY::KEY_CALC),
+            "KEY_SETUP" => Ok(EV_KEY::KEY_SETUP),
+            "KEY_SLEEP" => Ok(EV_KEY::KEY_SLEEP),
+            "KEY_WAKEUP" => Ok(EV_KEY::KEY_WAKEUP),
+            "KEY_FILE" => Ok(EV_KEY::KEY_FILE),
+            "KEY_SENDFILE" => Ok(EV_KEY::KEY_SENDFILE),
+            "KEY_DELETEFILE" => Ok(EV_KEY::KEY_DELETEFILE),
+            "KEY_XFER" => Ok(EV_KEY::KEY_XFER),
+            "KEY_PROG1" => Ok(EV_KEY::KEY_PROG1),
+            "KEY_PROG2" => Ok(EV_KEY::KEY_PROG2),
+            "KEY_WWW" => Ok(EV_KEY::KEY_WWW),
+            "KEY_MSDOS" => Ok(EV_KEY::KEY_MSDOS),
+            "KEY_COFFEE" => Ok(EV_KEY::KEY_COFFEE),
+            "KEY_ROTATE_DISPLAY" => Ok(EV_KEY::KEY_ROTATE_DISPLAY),
+            "KEY_CYCLEWINDOWS" => Ok(EV_KEY::KEY_CYCLEWINDOWS),
+            "KEY_MAIL" => Ok(EV_KEY::KEY_MAIL),
+            "KEY_BOOKMARKS" => Ok(EV_KEY::KEY_BOOKMARKS),
+            "KEY_COMPUTER" => Ok(EV_KEY::KEY_COMPUTER),
+            "KEY_BACK" => Ok(EV_KEY::KEY_BACK),
+            "KEY_FORWARD" => Ok(EV_KEY::KEY_FORWARD),
+            "KEY_CLOSECD" => Ok(EV_KEY::KEY_CLOSECD),
+            "KEY_EJECTCD" => Ok(EV_KEY::KEY_EJECTCD),
+            "KEY_EJECTCLOSECD" => Ok(EV_KEY::KEY_EJECTCLOSECD),
+            "KEY_NEXTSONG" => Ok(EV_KEY::KEY_NEXTSONG),
+            "KEY_PLAYPAUSE" => Ok(EV_KEY::KEY_PLAYPAUSE),
+            "KEY_PREVIOUSSONG" => Ok(EV_KEY::KEY_PREVIOUSSONG),
+            "KEY_STOPCD" => Ok(EV_KEY::KEY_STOPCD),
+            "KEY_RECORD" => Ok(EV_KEY::KEY_RECORD),
+            "KEY_REWIND" => Ok(EV_KEY::KEY_REWIND),
+            "KEY_PHONE" => Ok(EV_KEY::KEY_PHONE),
+            "KEY_ISO" => Ok(EV_KEY::KEY_ISO),
+            "KEY_CONFIG" => Ok(EV_KEY::KEY_CONFIG),
+            "KEY_HOMEPAGE" => Ok(EV_KEY::KEY_HOMEPAGE),
+            "KEY_REFRESH" => Ok(EV_KEY::KEY_REFRESH),
+            "KEY_EXIT" => Ok(EV_KEY::KEY_EXIT),
+            "KEY_MOVE" => Ok(EV_KEY::KEY_MOVE),
+            "KEY_EDIT" => Ok(EV_KEY::KEY_EDIT),
+            "KEY_SCROLLUP" => Ok(EV_KEY::KEY_SCROLLUP),
+            "KEY_SCROLLDOWN" => Ok(EV_KEY::KEY_SCROLLDOWN),
+            "KEY_KPLEFTPAREN" => Ok(EV_KEY::KEY_KPLEFTPAREN),
+            "KEY_KPRIGHTPAREN" => Ok(EV_KEY::KEY_KPRIGHTPAREN),
+            "KEY_NEW" => Ok(EV_KEY::KEY_NEW),
+            "KEY_REDO" => Ok(EV_KEY::KEY_REDO),
+            "KEY_F13" => Ok(EV_KEY::KEY_F13),
+            "KEY_F14" => Ok(EV_KEY::KEY_F14),
+            "KEY_F15" => Ok(EV_KEY::KEY_F15),
+            "KEY_F16" => Ok(EV_KEY::KEY_F16),
+            "KEY_F17" => Ok(EV_KEY::KEY_F17),
+            "KEY_F18" => Ok(EV_KEY::KEY_F18),
+            "KEY_F19" => Ok(EV_KEY::KEY_F19),
+            "KEY_F20" => Ok(EV_KEY::KEY_F20),
+            "KEY_F21" => Ok(EV_KEY::KEY_F21),
+            "KEY_F22" => Ok(EV_KEY::KEY_F22),
+            "KEY_F23" => Ok(EV_KEY::KEY_F23),
+            "KEY_F24" => Ok(EV_KEY::KEY_F24),
+            "KEY_PLAYCD" => Ok(EV_KEY::KEY_PLAYCD),
+            "KEY_PAUSECD" => Ok(EV_KEY::KEY_PAUSECD),
+            "KEY_PROG3" => Ok(EV_KEY::KEY_PROG3),
+            "KEY_PROG4" => Ok(EV_KEY::KEY_PROG4),
+            "KEY_DASHBOARD" => Ok(EV_KEY::KEY_DASHBOARD),
+            "KEY_SUSPEND" => Ok(EV_KEY::KEY_SUSPEND),
+            "KEY_CLOSE" => Ok(EV_KEY::KEY_CLOSE),
+            "KEY_PLAY" => Ok(EV_KEY::KEY_PLAY),
+            "KEY_FASTFORWARD" => Ok(EV_KEY::KEY_FASTFORWARD),
+            "KEY_BASSBOOST" => Ok(EV_KEY::KEY_BASSBOOST),
+            "KEY_PRINT" => Ok(EV_KEY::KEY_PRINT),
+            "KEY_HP" => Ok(EV_KEY::KEY_HP),
+            "KEY_CAMERA" => Ok(EV_KEY::KEY_CAMERA),
+            "KEY_SOUND" => Ok(EV_KEY::KEY_SOUND),
+            "KEY_QUESTION" => Ok(EV_KEY::KEY_QUESTION),
+            "KEY_EMAIL" => Ok(EV_KEY::KEY_EMAIL),
+            "KEY_CHAT" => Ok(EV_KEY::KEY_CHAT),
+            "KEY_SEARCH" => Ok(EV_KEY::KEY_SEARCH),
+            "KEY_CONNECT" => Ok(EV_KEY::KEY_CONNECT),
+            "KEY_FINANCE" => Ok(EV_KEY::KEY_FINANCE),
+            "KEY_SPORT" => Ok(EV_KEY::KEY_SPORT),
+            "KEY_SHOP" => Ok(EV_KEY::KEY_SHOP),
+            "KEY_ALTERASE" => Ok(EV_KEY::KEY_ALTERASE),
+            "KEY_CANCEL" => Ok(EV_KEY::KEY_CANCEL),
+            "KEY_BRIGHTNESSDOWN" => Ok(EV_KEY::KEY_BRIGHTNESSDOWN),
+            "KEY_BRIGHTNESSUP" => Ok(EV_KEY::KEY_BRIGHTNESSUP),
+            "KEY_MEDIA" => Ok(EV_KEY::KEY_MEDIA),
+            "KEY_SWITCHVIDEOMODE" => Ok(EV_KEY::KEY_SWITCHVIDEOMODE),
+            "KEY_KBDILLUMTOGGLE" => Ok(EV_KEY::KEY_KBDILLUMTOGGLE),
+            "KEY_KBDILLUMDOWN" => Ok(EV_KEY::KEY_KBDILLUMDOWN),
+            "KEY_KBDILLUMUP" => Ok(EV_KEY::KEY_KBDILLUMUP),
+            "KEY_SEND" => Ok(EV_KEY::KEY_SEND),
+            "KEY_REPLY" => Ok(EV_KEY::KEY_REPLY),
+            "KEY_FORWARDMAIL" => Ok(EV_KEY::KEY_FORWARDMAIL),
+            "KEY_SAVE" => Ok(EV_KEY::KEY_SAVE),
+            "KEY_DOCUMENTS" => Ok(EV_KEY::KEY_DOCUMENTS),
+            "KEY_BATTERY" => Ok(EV_KEY::KEY_BATTERY),
+            "KEY_BLUETOOTH" => Ok(EV_KEY::KEY_BLUETOOTH),
+            "KEY_WLAN" => Ok(EV_KEY::KEY_WLAN),
+            "KEY_UWB" => Ok(EV_KEY::KEY_UWB),
+            "KEY_UNKNOWN" => Ok(EV_KEY::KEY_UNKNOWN),
+            "KEY_VIDEO_NEXT" => Ok(EV_KEY::KEY_VIDEO_NEXT),
+            "KEY_VIDEO_PREV" => Ok(EV_KEY::KEY_VIDEO_PREV),
+            "KEY_BRIGHTNESS_CYCLE" => Ok(EV_KEY::KEY_BRIGHTNESS_CYCLE),
+            "KEY_BRIGHTNESS_AUTO" => Ok(EV_KEY::KEY_BRIGHTNESS_AUTO),
+            "KEY_DISPLAY_OFF" => Ok(EV_KEY::KEY_DISPLAY_OFF),
+            "KEY_WWAN" => Ok(EV_KEY::KEY_WWAN),
+            "KEY_RFKILL" => Ok(EV_KEY::KEY_RFKILL),
+            "KEY_MICMUTE" => Ok(EV_KEY::KEY_MICMUTE),
+            "KEY_OK" => Ok(EV_KEY::KEY_OK),
+            "KEY_SELECT" => Ok(EV_KEY::KEY_SELECT),
+            "KEY_GOTO" => Ok(EV_KEY::KEY_GOTO),
+            "KEY_CLEAR" => Ok(EV_KEY::KEY_CLEAR),
+            "KEY_POWER2" => Ok(EV_KEY::KEY_POWER2),
+            "KEY_OPTION" => Ok(EV_KEY::KEY_OPTION),
+            "KEY_INFO" => Ok(EV_KEY::KEY_INFO),
+            "KEY_TIME" => Ok(EV_KEY::KEY_TIME),
+            "KEY_VENDOR" => Ok(EV_KEY::KEY_VENDOR),
+            "KEY_ARCHIVE" => Ok(EV_KEY::KEY_ARCHIVE),
+            "KEY_PROGRAM" => Ok(EV_KEY::KEY_PROGRAM),
+            "KEY_CHANNEL" => Ok(EV_KEY::KEY_CHANNEL),
+            "KEY_FAVORITES" => Ok(EV_KEY::KEY_FAVORITES),
+            "KEY_EPG" => Ok(EV_KEY::KEY_EPG),
+            "KEY_PVR" => Ok(EV_KEY::KEY_PVR),
+            "KEY_MHP" => Ok(EV_KEY::KEY_MHP),
+            "KEY_LANGUAGE" => Ok(EV_KEY::KEY_LANGUAGE),
+            "KEY_TITLE" => Ok(EV_KEY::KEY_TITLE),
+            "KEY_SUBTITLE" => Ok(EV_KEY::KEY_SUBTITLE),
+            "KEY_ANGLE" => Ok(EV_KEY::KEY_ANGLE),
+            "KEY_FULL_SCREEN" => Ok(EV_KEY::KEY_FULL_SCREEN),
+            "KEY_MODE" => Ok(EV_KEY::KEY_MODE),
+            "KEY_KEYBOARD" => Ok(EV_KEY::KEY_KEYBOARD),
+            "KEY_ASPECT_RATIO" => Ok(EV_KEY::KEY_ASPECT_RATIO),
+            "KEY_PC" => Ok(EV_KEY::KEY_PC),
+            "KEY_TV" => Ok(EV_KEY::KEY_TV),
+            "KEY_TV2" => Ok(EV_KEY::KEY_TV2),
+            "KEY_VCR" => Ok(EV_KEY::KEY_VCR),
+            "KEY_VCR2" => Ok(EV_KEY::KEY_VCR2),
+            "KEY_SAT" => Ok(EV_KEY::KEY_SAT),
+            "KEY_SAT2" => Ok(EV_KEY::KEY_SAT2),
+            "KEY_CD" => Ok(EV_KEY::KEY_CD),
+            "KEY_TAPE" => Ok(EV_KEY::KEY_TAPE),
+            "KEY_RADIO" => Ok(EV_KEY::KEY_RADIO),
+            "KEY_TUNER" => Ok(EV_KEY::KEY_TUNER),
+            "KEY_PLAYER" => Ok(EV_KEY::KEY_PLAYER),
+            "KEY_TEXT" => Ok(EV_KEY::KEY_TEXT),
+            "KEY_DVD" => Ok(EV_KEY::KEY_DVD),
+            "KEY_AUX" => Ok(EV_KEY::KEY_AUX),
+            "KEY_MP3" => Ok(EV_KEY::KEY_MP3),
+            "KEY_AUDIO" => Ok(EV_KEY::KEY_AUDIO),
+            "KEY_VIDEO" => Ok(EV_KEY::KEY_VIDEO),
+            "KEY_DIRECTORY" => Ok(EV_KEY::KEY_DIRECTORY),
+            "KEY_LIST" => Ok(EV_KEY::KEY_LIST),
+            "KEY_MEMO" => Ok(EV_KEY::KEY_MEMO),
+            "KEY_CALENDAR" => Ok(EV_KEY::KEY_CALENDAR),
+            "KEY_RED" => Ok(EV_KEY::KEY_RED),
+            "KEY_GREEN" => Ok(EV_KEY::KEY_GREEN),
+            "KEY_YELLOW" => Ok(EV_KEY::KEY_YELLOW),
+            "KEY_BLUE" => Ok(EV_KEY::KEY_BLUE),
+            "KEY_CHANNELUP" => Ok(EV_KEY::KEY_CHANNELUP),
+            "KEY_CHANNELDOWN" => Ok(EV_KEY::KEY_CHANNELDOWN),
+            "KEY_FIRST" => Ok(EV_KEY::KEY_FIRST),
+            "KEY_LAST" => Ok(EV_KEY::KEY_LAST),
+            "KEY_AB" => Ok(EV_KEY::KEY_AB),
+            "KEY_NEXT" => Ok(EV_KEY::KEY_NEXT),
+            "KEY_RESTART" => Ok(EV_KEY::KEY_RESTART),
+            "KEY_SLOW" => Ok(EV_KEY::KEY_SLOW),
+            "KEY_SHUFFLE" => Ok(EV_KEY::KEY_SHUFFLE),
+            "KEY_BREAK" => Ok(EV_KEY::KEY_BREAK),
+            "KEY_PREVIOUS" => Ok(EV_KEY::KEY_PREVIOUS),
+            "KEY_DIGITS" => Ok(EV_KEY::KEY_DIGITS),
+            "KEY_TEEN" => Ok(EV_KEY::KEY_TEEN),
+            "KEY_TWEN" => Ok(EV_KEY::KEY_TWEN),
+            "KEY_VIDEOPHONE" => Ok(EV_KEY::KEY_VIDEOPHONE),
+            "KEY_GAMES" => Ok(EV_KEY::KEY_GAMES),
+            "KEY_ZOOMIN" => Ok(EV_KEY::KEY_ZOOMIN),
+            "KEY_ZOOMOUT" => Ok(EV_KEY::KEY_ZOOMOUT),
+            "KEY_ZOOMRESET" => Ok(EV_KEY::KEY_ZOOMRESET),
+            "KEY_WORDPROCESSOR" => Ok(EV_KEY::KEY_WORDPROCESSOR),
+            "KEY_EDITOR" => Ok(EV_KEY::KEY_EDITOR),
+            "KEY_SPREADSHEET" => Ok(EV_KEY::KEY_SPREADSHEET),
+            "KEY_GRAPHICSEDITOR" => Ok(EV_KEY::KEY_GRAPHICSEDITOR),
+            "KEY_PRESENTATION" => Ok(EV_KEY::KEY_PRESENTATION),
+            "KEY_DATABASE" => Ok(EV_KEY::KEY_DATABASE),
+            "KEY_NEWS" => Ok(EV_KEY::KEY_NEWS),
+            "KEY_VOICEMAIL" => Ok(EV_KEY::KEY_VOICEMAIL),
+            "KEY_ADDRESSBOOK" => Ok(EV_KEY::KEY_ADDRESSBOOK),
+            "KEY_MESSENGER" => Ok(EV_KEY::KEY_MESSENGER),
+            "KEY_DISPLAYTOGGLE" => Ok(EV_KEY::KEY_DISPLAYTOGGLE),
+            "KEY_SPELLCHECK" => Ok(EV_KEY::KEY_SPELLCHECK),
+            "KEY_LOGOFF" => Ok(EV_KEY::KEY_LOGOFF),
+            "KEY_DOLLAR" => Ok(EV_KEY::KEY_DOLLAR),
+            "KEY_EURO" => Ok(EV_KEY::KEY_EURO),
+            "KEY_FRAMEBACK" => Ok(EV_KEY::KEY_FRAMEBACK),
+            "KEY_FRAMEFORWARD" => Ok(EV_KEY::KEY_FRAMEFORWARD),
+            "KEY_CONTEXT_MENU" => Ok(EV_KEY::KEY_CONTEXT_MENU),
+            "KEY_MEDIA_REPEAT" => Ok(EV_KEY::KEY_MEDIA_REPEAT),
+            "KEY_10CHANNELSUP" => Ok(EV_KEY::KEY_10CHANNELSUP),
+            "KEY_10CHANNELSDOWN" => Ok(EV_KEY::KEY_10CHANNELSDOWN),
+            "KEY_IMAGES" => Ok(EV_KEY::KEY_IMAGES),
+            "KEY_DEL_EOL" => Ok(EV_KEY::KEY_DEL_EOL),
+            "KEY_DEL_EOS" => Ok(EV_KEY::KEY_DEL_EOS),
+            "KEY_INS_LINE" => Ok(EV_KEY::KEY_INS_LINE),
+            "KEY_DEL_LINE" => Ok(EV_KEY::KEY_DEL_LINE),
+            "KEY_FN" => Ok(EV_KEY::KEY_FN),
+            "KEY_FN_ESC" => Ok(EV_KEY::KEY_FN_ESC),
+            "KEY_FN_F1" => Ok(EV_KEY::KEY_FN_F1),
+            "KEY_FN_F2" => Ok(EV_KEY::KEY_FN_F2),
+            "KEY_FN_F3" => Ok(EV_KEY::KEY_FN_F3),
+            "KEY_FN_F4" => Ok(EV_KEY::KEY_FN_F4),
+            "KEY_FN_F5" => Ok(EV_KEY::KEY_FN_F5),
+            "KEY_FN_F6" => Ok(EV_KEY::KEY_FN_F6),
+            "KEY_FN_F7" => Ok(EV_KEY::KEY_FN_F7),
+            "KEY_FN_F8" => Ok(EV_KEY::KEY_FN_F8),
+            "KEY_FN_F9" => Ok(EV_KEY::KEY_FN_F9),
+            "KEY_FN_F10" => Ok(EV_KEY::KEY_FN_F10),
+            "KEY_FN_F11" => Ok(EV_KEY::KEY_FN_F11),
+            "KEY_FN_F12" => Ok(EV_KEY::KEY_FN_F12),
+            "KEY_FN_1" => Ok(EV_KEY::KEY_FN_1),
+            "KEY_FN_2" => Ok(EV_KEY::KEY_FN_2),
+            "KEY_FN_D" => Ok(EV_KEY::KEY_FN_D),
+            "KEY_FN_E" => Ok(EV_KEY::KEY_FN_E),
+            "KEY_FN_F" => Ok(EV_KEY::KEY_FN_F),
+            "KEY_FN_S" => Ok(EV_KEY::KEY_FN_S),
+            "KEY_FN_B" => Ok(EV_KEY::KEY_FN_B),
+            "KEY_BRL_DOT1" => Ok(EV_KEY::KEY_BRL_DOT1),
+            "KEY_BRL_DOT2" => Ok(EV_KEY::KEY_BRL_DOT2),
+            "KEY_BRL_DOT3" => Ok(EV_KEY::KEY_BRL_DOT3),
+            "KEY_BRL_DOT4" => Ok(EV_KEY::KEY_BRL_DOT4),
+            "KEY_BRL_DOT5" => Ok(EV_KEY::KEY_BRL_DOT5),
+            "KEY_BRL_DOT6" => Ok(EV_KEY::KEY_BRL_DOT6),
+            "KEY_BRL_DOT7" => Ok(EV_KEY::KEY_BRL_DOT7),
+            "KEY_BRL_DOT8" => Ok(EV_KEY::KEY_BRL_DOT8),
+            "KEY_BRL_DOT9" => Ok(EV_KEY::KEY_BRL_DOT9),
+            "KEY_BRL_DOT10" => Ok(EV_KEY::KEY_BRL_DOT10),
+            "KEY_NUMERIC_0" => Ok(EV_KEY::KEY_NUMERIC_0),
+            "KEY_NUMERIC_1" => Ok(EV_KEY::KEY_NUMERIC_1),
+            "KEY_NUMERIC_2" => Ok(EV_KEY::KEY_NUMERIC_2),
+            "KEY_NUMERIC_3" => Ok(EV_KEY::KEY_NUMERIC_3),
+            "KEY_NUMERIC_4" => Ok(EV_KEY::KEY_NUMERIC_4),
+            "KEY_NUMERIC_5" => Ok(EV_KEY::KEY_NUMERIC_5),
+            "KEY_NUMERIC_6" => Ok(EV_KEY::KEY_NUMERIC_6),
+            "KEY_NUMERIC_7" => Ok(EV_KEY::KEY_NUMERIC_7),
+            "KEY_NUMERIC_8" => Ok(EV_KEY::KEY_NUMERIC_8),
+            "KEY_NUMERIC_9" => Ok(EV_KEY::KEY_NUMERIC_9),
+            "KEY_NUMERIC_STAR" => Ok(EV_KEY::KEY_NUMERIC_STAR),
+            "KEY_NUMERIC_POUND" => Ok(EV_KEY::KEY_NUMERIC_POUND),
+            "KEY_NUMERIC_A" => Ok(EV_KEY::KEY_NUMERIC_A),
+            "KEY_NUMERIC_B" => Ok(EV_KEY::KEY_NUMERIC_B),
+            "KEY_NUMERIC_C" => Ok(EV_KEY::KEY_NUMERIC_C),
+            "KEY_NUMERIC_D" => Ok(EV_KEY::KEY_NUMERIC_D),
+            "KEY_CAMERA_FOCUS" => Ok(EV_KEY::KEY_CAMERA_FOCUS),
+            "KEY_WPS_BUTTON" => Ok(EV_KEY::KEY_WPS_BUTTON),
+            "KEY_TOUCHPAD_TOGGLE" => Ok(EV_KEY::KEY_TOUCHPAD_TOGGLE),
+            "KEY_TOUCHPAD_ON" => Ok(EV_KEY::KEY_TOUCHPAD_ON),
+            "KEY_TOUCHPAD_OFF" => Ok(EV_KEY::KEY_TOUCHPAD_OFF),
+            "KEY_CAMERA_ZOOMIN" => Ok(EV_KEY::KEY_CAMERA_ZOOMIN),
+            "KEY_CAMERA_ZOOMOUT" => Ok(EV_KEY::KEY_CAMERA_ZOOMOUT),
+            "KEY_CAMERA_UP" => Ok(EV_KEY::KEY_CAMERA_UP),
+            "KEY_CAMERA_DOWN" => Ok(EV_KEY::KEY_CAMERA_DOWN),
+            "KEY_CAMERA_LEFT" => Ok(EV_KEY::KEY_CAMERA_LEFT),
+            "KEY_CAMERA_RIGHT" => Ok(EV_KEY::KEY_CAMERA_RIGHT),
+            "KEY_ATTENDANT_ON" => Ok(EV_KEY::KEY_ATTENDANT_ON),
+            "KEY_ATTENDANT_OFF" => Ok(EV_KEY::KEY_ATTENDANT_OFF),
+            "KEY_ATTENDANT_TOGGLE" => Ok(EV_KEY::KEY_ATTENDANT_TOGGLE),
+            "KEY_LIGHTS_TOGGLE" => Ok(EV_KEY::KEY_LIGHTS_TOGGLE),
+            "KEY_ALS_TOGGLE" => Ok(EV_KEY::KEY_ALS_TOGGLE),
+            "KEY_ROTATE_LOCK_TOGGLE" => Ok(EV_KEY::KEY_ROTATE_LOCK_TOGGLE),
+            "KEY_BUTTONCONFIG" => Ok(EV_KEY::KEY_BUTTONCONFIG),
+            "KEY_TASKMANAGER" => Ok(EV_KEY::KEY_TASKMANAGER),
+            "KEY_JOURNAL" => Ok(EV_KEY::KEY_JOURNAL),
+            "KEY_CONTROLPANEL" => Ok(EV_KEY::KEY_CONTROLPANEL),
+            "KEY_APPSELECT" => Ok(EV_KEY::KEY_APPSELECT),
+            "KEY_SCREENSAVER" => Ok(EV_KEY::KEY_SCREENSAVER),
+            "KEY_VOICECOMMAND" => Ok(EV_KEY::KEY_VOICECOMMAND),
+            "KEY_ASSISTANT" => Ok(EV_KEY::KEY_ASSISTANT),
+            "KEY_KBD_LAYOUT_NEXT" => Ok(EV_KEY::KEY_KBD_LAYOUT_NEXT),
+            "KEY_BRIGHTNESS_MIN" => Ok(EV_KEY::KEY_BRIGHTNESS_MIN),
+            "KEY_BRIGHTNESS_MAX" => Ok(EV_KEY::KEY_BRIGHTNESS_MAX),
+            "KEY_KBDINPUTASSIST_PREV" => Ok(EV_KEY::KEY_KBDINPUTASSIST_PREV),
+            "KEY_KBDINPUTASSIST_NEXT" => Ok(EV_KEY::KEY_KBDINPUTASSIST_NEXT),
+            "KEY_KBDINPUTASSIST_PREVGROUP" => Ok(EV_KEY::KEY_KBDINPUTASSIST_PREVGROUP),
+            "KEY_KBDINPUTASSIST_NEXTGROUP" => Ok(EV_KEY::KEY_KBDINPUTASSIST_NEXTGROUP),
+            "KEY_KBDINPUTASSIST_ACCEPT" => Ok(EV_KEY::KEY_KBDINPUTASSIST_ACCEPT),
+            "KEY_KBDINPUTASSIST_CANCEL" => Ok(EV_KEY::KEY_KBDINPUTASSIST_CANCEL),
+            "KEY_RIGHT_UP" => Ok(EV_KEY::KEY_RIGHT_UP),
+            "KEY_RIGHT_DOWN" => Ok(EV_KEY::KEY_RIGHT_DOWN),
+            "KEY_LEFT_UP" => Ok(EV_KEY::KEY_LEFT_UP),
+            "KEY_LEFT_DOWN" => Ok(EV_KEY::KEY_LEFT_DOWN),
+            "KEY_ROOT_MENU" => Ok(EV_KEY::KEY_ROOT_MENU),
+            "KEY_MEDIA_TOP_MENU" => Ok(EV_KEY::KEY_MEDIA_TOP_MENU),
+            "KEY_NUMERIC_11" => Ok(EV_KEY::KEY_NUMERIC_11),
+            "KEY_NUMERIC_12" => Ok(EV_KEY::KEY_NUMERIC_12),
+            "KEY_AUDIO_DESC" => Ok(EV_KEY::KEY_AUDIO_DESC),
+            "KEY_3D_MODE" => Ok(EV_KEY::KEY_3D_MODE),
+            "KEY_NEXT_FAVORITE" => Ok(EV_KEY::KEY_NEXT_FAVORITE),
+            "KEY_STOP_RECORD" => Ok(EV_KEY::KEY_STOP_RECORD),
+            "KEY_PAUSE_RECORD" => Ok(EV_KEY::KEY_PAUSE_RECORD),
+            "KEY_VOD" => Ok(EV_KEY::KEY_VOD),
+            "KEY_UNMUTE" => Ok(EV_KEY::KEY_UNMUTE),
+            "KEY_FASTREVERSE" => Ok(EV_KEY::KEY_FASTREVERSE),
+            "KEY_SLOWREVERSE" => Ok(EV_KEY::KEY_SLOWREVERSE),
+            "KEY_DATA" => Ok(EV_KEY::KEY_DATA),
+            "KEY_ONSCREEN_KEYBOARD" => Ok(EV_KEY::KEY_ONSCREEN_KEYBOARD),
+            "KEY_MAX" => Ok(EV_KEY::KEY_MAX),
+            _ => Err(()),
+        }
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1343,6 +1888,27 @@ pub fn int_to_ev_led(code: u32) -> Option<EV_LED> {
     }
 }
 
+impl std::str::FromStr for EV_LED {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "LED_NUML" => Ok(EV_LED::LED_NUML),
+            "LED_CAPSL" => Ok(EV_LED::LED_CAPSL),
+            "LED_SCROLLL" => Ok(EV_LED::LED_SCROLLL),
+            "LED_COMPOSE" => Ok(EV_LED::LED_COMPOSE),
+            "LED_KANA" => Ok(EV_LED::LED_KANA),
+            "LED_SLEEP" => Ok(EV_LED::LED_SLEEP),
+            "LED_SUSPEND" => Ok(EV_LED::LED_SUSPEND),
+            "LED_MUTE" => Ok(EV_LED::LED_MUTE),
+            "LED_MISC" => Ok(EV_LED::LED_MISC),
+            "LED_MAIL" => Ok(EV_LED::LED_MAIL),
+            "LED_CHARGING" => Ok(EV_LED::LED_CHARGING),
+            "LED_MAX" => Ok(EV_LED::LED_MAX),
+            _ => Err(()),
+        }
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1360,6 +1926,19 @@ pub fn int_to_ev_snd(code: u32) -> Option<EV_SND> {
         2 => Some(EV_SND::SND_TONE),
         7 => Some(EV_SND::SND_MAX),
         _ => None,
+    }
+}
+
+impl std::str::FromStr for EV_SND {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "SND_CLICK" => Ok(EV_SND::SND_CLICK),
+            "SND_BELL" => Ok(EV_SND::SND_BELL),
+            "SND_TONE" => Ok(EV_SND::SND_TONE),
+            "SND_MAX" => Ok(EV_SND::SND_MAX),
+            _ => Err(()),
+        }
     }
 }
 
@@ -1386,6 +1965,22 @@ pub fn int_to_ev_msc(code: u32) -> Option<EV_MSC> {
         5 => Some(EV_MSC::MSC_TIMESTAMP),
         7 => Some(EV_MSC::MSC_MAX),
         _ => None,
+    }
+}
+
+impl std::str::FromStr for EV_MSC {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "MSC_SERIAL" => Ok(EV_MSC::MSC_SERIAL),
+            "MSC_PULSELED" => Ok(EV_MSC::MSC_PULSELED),
+            "MSC_GESTURE" => Ok(EV_MSC::MSC_GESTURE),
+            "MSC_RAW" => Ok(EV_MSC::MSC_RAW),
+            "MSC_SCAN" => Ok(EV_MSC::MSC_SCAN),
+            "MSC_TIMESTAMP" => Ok(EV_MSC::MSC_TIMESTAMP),
+            "MSC_MAX" => Ok(EV_MSC::MSC_MAX),
+            _ => Err(()),
+        }
     }
 }
 
@@ -1437,6 +2032,31 @@ pub fn int_to_ev_sw(code: u32) -> Option<EV_SW> {
     }
 }
 
+impl std::str::FromStr for EV_SW {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "SW_LID" => Ok(EV_SW::SW_LID),
+            "SW_TABLET_MODE" => Ok(EV_SW::SW_TABLET_MODE),
+            "SW_HEADPHONE_INSERT" => Ok(EV_SW::SW_HEADPHONE_INSERT),
+            "SW_RFKILL_ALL" => Ok(EV_SW::SW_RFKILL_ALL),
+            "SW_MICROPHONE_INSERT" => Ok(EV_SW::SW_MICROPHONE_INSERT),
+            "SW_DOCK" => Ok(EV_SW::SW_DOCK),
+            "SW_LINEOUT_INSERT" => Ok(EV_SW::SW_LINEOUT_INSERT),
+            "SW_JACK_PHYSICAL_INSERT" => Ok(EV_SW::SW_JACK_PHYSICAL_INSERT),
+            "SW_VIDEOOUT_INSERT" => Ok(EV_SW::SW_VIDEOOUT_INSERT),
+            "SW_CAMERA_LENS_COVER" => Ok(EV_SW::SW_CAMERA_LENS_COVER),
+            "SW_KEYPAD_SLIDE" => Ok(EV_SW::SW_KEYPAD_SLIDE),
+            "SW_FRONT_PROXIMITY" => Ok(EV_SW::SW_FRONT_PROXIMITY),
+            "SW_ROTATE_LOCK" => Ok(EV_SW::SW_ROTATE_LOCK),
+            "SW_LINEIN_INSERT" => Ok(EV_SW::SW_LINEIN_INSERT),
+            "SW_MUTE_DEVICE" => Ok(EV_SW::SW_MUTE_DEVICE),
+            "SW_PEN_INSERTED" => Ok(EV_SW::SW_PEN_INSERTED),
+            _ => Err(()),
+        }
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1459,6 +2079,20 @@ pub fn int_to_ev_syn(code: u32) -> Option<EV_SYN> {
     }
 }
 
+impl std::str::FromStr for EV_SYN {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "SYN_REPORT" => Ok(EV_SYN::SYN_REPORT),
+            "SYN_CONFIG" => Ok(EV_SYN::SYN_CONFIG),
+            "SYN_MT_REPORT" => Ok(EV_SYN::SYN_MT_REPORT),
+            "SYN_DROPPED" => Ok(EV_SYN::SYN_DROPPED),
+            "SYN_MAX" => Ok(EV_SYN::SYN_MAX),
+            _ => Err(()),
+        }
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1476,6 +2110,17 @@ pub fn int_to_ev_rep(code: u32) -> Option<EV_REP> {
         0 => Some(EV_REP::REP_DELAY),
         1 => Some(EV_REP::REP_PERIOD),
         _ => None,
+    }
+}
+
+impl std::str::FromStr for EV_REP {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "REP_DELAY" => Ok(EV_REP::REP_DELAY),
+            "REP_PERIOD" => Ok(EV_REP::REP_PERIOD),
+            _ => Err(()),
+        }
     }
 }
 
@@ -1504,6 +2149,23 @@ pub fn int_to_input_prop(code: u32) -> Option<InputProp> {
         6 => Some(InputProp::INPUT_PROP_ACCELEROMETER),
         31 => Some(InputProp::INPUT_PROP_MAX),
         _ => None,
+    }
+}
+
+impl std::str::FromStr for InputProp {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "INPUT_PROP_POINTER" => Ok(InputProp::INPUT_PROP_POINTER),
+            "INPUT_PROP_DIRECT" => Ok(InputProp::INPUT_PROP_DIRECT),
+            "INPUT_PROP_BUTTONPAD" => Ok(InputProp::INPUT_PROP_BUTTONPAD),
+            "INPUT_PROP_SEMI_MT" => Ok(InputProp::INPUT_PROP_SEMI_MT),
+            "INPUT_PROP_TOPBUTTONPAD" => Ok(InputProp::INPUT_PROP_TOPBUTTONPAD),
+            "INPUT_PROP_POINTING_STICK" => Ok(InputProp::INPUT_PROP_POINTING_STICK),
+            "INPUT_PROP_ACCELEROMETER" => Ok(InputProp::INPUT_PROP_ACCELEROMETER),
+            "INPUT_PROP_MAX" => Ok(InputProp::INPUT_PROP_MAX),
+            _ => Err(()),
+        }
     }
 }
 
@@ -1561,6 +2223,34 @@ pub fn int_to_ev_ff(code: u32) -> Option<EV_FF> {
     }
 }
 
+impl std::str::FromStr for EV_FF {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "FF_STATUS_STOPPED" => Ok(EV_FF::FF_STATUS_STOPPED),
+            "FF_STATUS_PLAYING" => Ok(EV_FF::FF_STATUS_PLAYING),
+            "FF_RUMBLE" => Ok(EV_FF::FF_RUMBLE),
+            "FF_PERIODIC" => Ok(EV_FF::FF_PERIODIC),
+            "FF_CONSTANT" => Ok(EV_FF::FF_CONSTANT),
+            "FF_SPRING" => Ok(EV_FF::FF_SPRING),
+            "FF_FRICTION" => Ok(EV_FF::FF_FRICTION),
+            "FF_DAMPER" => Ok(EV_FF::FF_DAMPER),
+            "FF_INERTIA" => Ok(EV_FF::FF_INERTIA),
+            "FF_RAMP" => Ok(EV_FF::FF_RAMP),
+            "FF_SQUARE" => Ok(EV_FF::FF_SQUARE),
+            "FF_TRIANGLE" => Ok(EV_FF::FF_TRIANGLE),
+            "FF_SINE" => Ok(EV_FF::FF_SINE),
+            "FF_SAW_UP" => Ok(EV_FF::FF_SAW_UP),
+            "FF_SAW_DOWN" => Ok(EV_FF::FF_SAW_DOWN),
+            "FF_CUSTOM" => Ok(EV_FF::FF_CUSTOM),
+            "FF_GAIN" => Ok(EV_FF::FF_GAIN),
+            "FF_AUTOCENTER" => Ok(EV_FF::FF_AUTOCENTER),
+            "FF_MAX" => Ok(EV_FF::FF_MAX),
+            _ => Err(()),
+        }
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1614,5 +2304,36 @@ pub fn int_to_bus_type(code: u32) -> Option<BusType> {
         30 => Some(BusType::BUS_CEC),
         31 => Some(BusType::BUS_INTEL_ISHTP),
         _ => None,
+    }
+}
+
+impl std::str::FromStr for BusType {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "BUS_PCI" => Ok(BusType::BUS_PCI),
+            "BUS_ISAPNP" => Ok(BusType::BUS_ISAPNP),
+            "BUS_USB" => Ok(BusType::BUS_USB),
+            "BUS_HIL" => Ok(BusType::BUS_HIL),
+            "BUS_BLUETOOTH" => Ok(BusType::BUS_BLUETOOTH),
+            "BUS_VIRTUAL" => Ok(BusType::BUS_VIRTUAL),
+            "BUS_ISA" => Ok(BusType::BUS_ISA),
+            "BUS_I8042" => Ok(BusType::BUS_I8042),
+            "BUS_XTKBD" => Ok(BusType::BUS_XTKBD),
+            "BUS_RS232" => Ok(BusType::BUS_RS232),
+            "BUS_GAMEPORT" => Ok(BusType::BUS_GAMEPORT),
+            "BUS_PARPORT" => Ok(BusType::BUS_PARPORT),
+            "BUS_AMIGA" => Ok(BusType::BUS_AMIGA),
+            "BUS_ADB" => Ok(BusType::BUS_ADB),
+            "BUS_I2C" => Ok(BusType::BUS_I2C),
+            "BUS_HOST" => Ok(BusType::BUS_HOST),
+            "BUS_GSC" => Ok(BusType::BUS_GSC),
+            "BUS_ATARI" => Ok(BusType::BUS_ATARI),
+            "BUS_SPI" => Ok(BusType::BUS_SPI),
+            "BUS_RMI" => Ok(BusType::BUS_RMI),
+            "BUS_CEC" => Ok(BusType::BUS_CEC),
+            "BUS_INTEL_ISHTP" => Ok(BusType::BUS_INTEL_ISHTP),
+            _ => Err(()),
+        }
     }
 }

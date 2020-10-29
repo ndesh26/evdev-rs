@@ -69,19 +69,23 @@ def convert(name):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
-def print_enums(bits, prefix):
+def get_enum_name(prefix):
     if prefix == "ev":
-        enum_name = "EventType"
+        return "EventType"
     elif prefix == "input_prop":
-        enum_name = "InputProp"
+        return "InputProp"
     elif prefix == "bus":
-        enum_name = "BusType"
+        return "BusType"
     else:
-        enum_name = "EV_" + prefix.upper()
+        return "EV_" + prefix.upper()
+
+
+def print_enums(bits, prefix):
 
     if not hasattr(bits, prefix):
         return
 
+    enum_name = get_enum_name(prefix)
     associated_names = []
 
     print("#[allow(non_camel_case_types)]")
@@ -143,6 +147,27 @@ def print_enums_convert_fn(bits, prefix):
     print("")
 
 
+def print_enums_fromstr(bits, prefix):
+
+    if not hasattr(bits, prefix):
+        return
+
+    enum_name = get_enum_name(prefix)
+
+    print('impl std::str::FromStr for %s {' % enum_name)
+    print('    type Err = ();')
+    print('    fn from_str(s: &str) -> Result<Self, Self::Err> {')
+    print('        match s {')
+    for _val, names in list(getattr(bits, prefix).items()):
+        name = names[0]
+        print('            "%s" => Ok(%s::%s),' % (name, enum_name, name))
+    print('            _ => Err(()),')
+    print('        }')
+    print('    }')
+    print('}')
+    print('')
+
+
 def print_event_code(bits, prefix):
     if not hasattr(bits, prefix):
         return
@@ -175,6 +200,7 @@ def print_mapping_table(bits):
             continue
         print_enums(bits, prefix[:-1].lower())
         print_enums_convert_fn(bits, prefix[:-1].lower())
+        print_enums_fromstr(bits, prefix[:-1].lower())
         if prefix == "EV_":
             print_event_code(bits, prefix[:-1].lower())
 
