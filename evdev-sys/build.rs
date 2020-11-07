@@ -6,21 +6,23 @@ use std::process::Command;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
 
-    match pkg_config::find_library("libevdev") {
-        Ok(lib) => {
-            for path in &lib.include_paths {
-                println!("cargo:include={}", path.display());
+    if env::var_os("TARGET") == env::var_os("HOST") {
+        match pkg_config::find_library("libevdev") {
+            Ok(lib) => {
+                for path in &lib.include_paths {
+                    println!("cargo:include={}", path.display());
+                }
+                return Ok(());
+            },
+            Err(e) => {
+                eprintln!(
+                    "Couldn't find libevdev from pkgconfig ({:?}), \
+                     compiling it from source...",
+                    e
+                );
             }
-            return Ok(());
-        },
-        Err(e) => {
-            eprintln!(
-                "Couldn't find libevdev from pkgconfig ({:?}), \
-                 compiling it from source...",
-                e
-            );
-        }
-    };
+        };
+    }
 
     if !Path::new("libevdev/.git").exists() {
         let mut download = Command::new("git");
@@ -56,6 +58,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                .replace("\\", "/"));
     if let Ok(h) = env::var("HOST") {
         autogen.arg(format!("--host={}", h));
+    }
+    if let Ok(t) = env::var("TARGET") {
+        autogen.arg(format!("--target={}", t));
     }
     autogen.arg(format!("--prefix={}", sanitize_sh(&dst)));
     run(&mut autogen)?;
