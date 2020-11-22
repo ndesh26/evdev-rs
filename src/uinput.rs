@@ -15,6 +15,10 @@ pub struct UInputDevice {
 unsafe impl Send for UInputDevice {}
 
 impl UInputDevice {
+    fn raw(&self) -> *mut raw::libevdev_uinput {
+        self.raw
+    }
+
     /// Create a uinput device based on the given libevdev device.
     ///
     /// The uinput device will be an exact copy of the libevdev device, minus
