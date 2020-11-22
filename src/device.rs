@@ -1,4 +1,7 @@
-use crate::{AbsInfo, GrabMode, InputEvent, LedState, ReadFlag, ReadStatus, TimeVal};
+use crate::{
+    AbsInfo, GrabMode, InputEvent, LedState, LibevdevWrapper, ReadFlag, ReadStatus,
+    TimeVal,
+};
 use libc::{c_int, c_uint};
 use std::ffi::CString;
 use std::fs::File;
