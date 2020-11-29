@@ -1,3 +1,4 @@
+use evdev_rs::device::LibevdevWrapper;
 use evdev_rs::enums::*;
 use evdev_rs::*;
 use std::fs::File;
