@@ -1,4 +1,4 @@
-use crate::{InputEvent, LibevdevWrapper};
+use crate::{device::DeviceWrapper, InputEvent};
 use libc::c_int;
 use std::io;
 use std::os::unix::io::RawFd;
@@ -23,9 +23,7 @@ impl UInputDevice {
     ///
     /// The uinput device will be an exact copy of the libevdev device, minus
     /// the bits that uinput doesn't allow to be set.
-    pub fn create_from_device<T: LibevdevWrapper>(
-        device: &T,
-    ) -> io::Result<UInputDevice> {
+    pub fn create_from_device<T: DeviceWrapper>(device: &T) -> io::Result<UInputDevice> {
         let mut libevdev_uinput = std::ptr::null_mut();
         let result = unsafe {
             raw::libevdev_uinput_create_from_device(
@@ -43,22 +41,24 @@ impl UInputDevice {
         }
     }
 
-    string_getter!(
-        #[doc = "Return the device node representing this uinput device.
+    ///Return the device node representing this uinput device.
+    ///
+    /// This relies on `libevdev_uinput_get_syspath()` to provide a valid syspath.
+    pub fn devnode(&self) -> Option<&str> {
+        unsafe { ptr_to_str(raw::libevdev_uinput_get_devnode(self.raw())) }
+    }
 
-This relies on `libevdev_uinput_get_syspath()` to provide a valid syspath."],
-        devnode, libevdev_uinput_get_devnode
-    );
-
-    string_getter!(#[doc = "Return the syspath representing this uinput device.
-
-If the UI_GET_SYSNAME ioctl not available, libevdev makes an educated
-guess. The UI_GET_SYSNAME ioctl is available since Linux 3.15.
-
-The syspath returned is the one of the input node itself
-(e.g. /sys/devices/virtual/input/input123), not the syspath of the
-device node returned with libevdev_uinput_get_devnode()."],
-        syspath, libevdev_uinput_get_syspath);
+    ///Return the syspath representing this uinput device.
+    ///
+    /// If the UI_GET_SYSNAME ioctl not available, libevdev makes an educated
+    /// guess. The UI_GET_SYSNAME ioctl is available since Linux 3.15.
+    ///
+    /// The syspath returned is the one of the input node itself
+    /// (e.g. /sys/devices/virtual/input/input123), not the syspath of the
+    /// device node returned with libevdev_uinput_get_devnode().
+    pub fn syspath(&self) -> Option<&str> {
+        unsafe { ptr_to_str(raw::libevdev_uinput_get_syspath(self.raw())) }
+    }
 
     /// Return the file descriptor used to create this uinput device.
     ///
@@ -66,7 +66,7 @@ device node returned with libevdev_uinput_get_devnode()."],
     /// to write events that are emitted by the uinput device. Closing this file
     /// descriptor will destroy the uinput device.
     pub fn as_fd(&self) -> Option<RawFd> {
-        match unsafe { raw::libevdev_uinput_get_fd(self.raw) } {
+        match unsafe { raw::libevdev_uinput_get_fd(self.raw()) } {
             0 => None,
             result => Some(result),
         }
@@ -92,7 +92,7 @@ device node returned with libevdev_uinput_get_devnode()."],
         let ev_value = event.value as c_int;
 
         let result = unsafe {
-            raw::libevdev_uinput_write_event(self.raw, ev_type, ev_code, ev_value)
+            raw::libevdev_uinput_write_event(self.raw(), ev_type, ev_code, ev_value)
         };
 
         match result {
@@ -105,7 +105,7 @@ device node returned with libevdev_uinput_get_devnode()."],
 impl Drop for UInputDevice {
     fn drop(&mut self) {
         unsafe {
-            raw::libevdev_uinput_destroy(self.raw);
+            raw::libevdev_uinput_destroy(self.raw());
         }
     }
 }
