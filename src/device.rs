@@ -454,7 +454,7 @@ pub trait DeviceWrapper {
 
 /// Opaque struct representing an evdev device with no backing file
 pub struct UninitDevice {
-    pub(crate) raw: *mut raw::libevdev,
+    raw: *mut raw::libevdev,
 }
 
 unsafe impl Send for UninitDevice {}
@@ -523,7 +523,7 @@ impl Drop for UninitDevice {
 /// Unlike libevdev, this `Device` mantains an associated file as an invariant
 pub struct Device {
     file: File,
-    pub(crate) raw: *mut raw::libevdev,
+    raw: *mut raw::libevdev,
 }
 
 unsafe impl Send for Device {}
