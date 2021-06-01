@@ -76,7 +76,7 @@ pub trait DeviceWrapper {
     /// containing the data for this axis.
     /// If type is EV_REP, data must be a pointer to a int containing the data
     /// for this axis.
-    /// For all other types, the argument must be NULL.
+    /// For all other types, the argument must be `None`.
     ///
     /// Note: Please use the `enable` function instead. This function is only
     /// available for the sake of maintaining compatibility with libevdev.
