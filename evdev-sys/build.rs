@@ -1,11 +1,10 @@
 use std::env;
 use std::ffi::OsString;
 use std::fs;
-use std::path::{PathBuf, Path};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-
     if env::var_os("TARGET") == env::var_os("HOST") {
         match pkg_config::find_library("libevdev") {
             Ok(lib) => {
@@ -13,7 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     println!("cargo:include={}", path.display());
                 }
                 return Ok(());
-            },
+            }
             Err(e) => {
                 eprintln!(
                     "Couldn't find libevdev from pkgconfig ({:?}), \
@@ -50,12 +49,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         cflags.push(arg);
         cflags.push(" ");
     }
-    autogen.env("CC", compiler.path())
-       .env("CFLAGS", cflags)
-       .current_dir(&dst.join("build"))
-       .arg(src.join("libevdev/autogen.sh").to_str().unwrap()
-               .replace("C:\\", "/c/")
-               .replace("\\", "/"));
+    autogen
+        .env("CC", compiler.path())
+        .env("CFLAGS", cflags)
+        .current_dir(&dst.join("build"))
+        .arg(
+            src.join("libevdev/autogen.sh")
+                .to_str()
+                .unwrap()
+                .replace("C:\\", "/c/")
+                .replace("\\", "/"),
+        );
     if let Ok(h) = env::var("HOST") {
         autogen.arg(format!("--host={}", h));
     }
@@ -90,10 +94,10 @@ fn sanitize_sh(path: &Path) -> String {
         let mut ch = s.chars();
         let drive = ch.next().unwrap_or('C');
         if ch.next() != Some(':') {
-            return None
+            return None;
         }
         if ch.next() != Some('/') {
-            return None
+            return None;
         }
         Some(format!("/{}/{}", drive, &s[drive.len_utf8() + 2..]))
     }
