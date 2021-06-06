@@ -31,17 +31,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let dst = PathBuf::from(env::var_os("OUT_DIR").unwrap());
     let src = env::current_dir()?;
+    let mut cp = Command::new("cp");
+    cp.arg("-r")
+        .arg(&src.join("libevdev/"))
+        .arg(&dst)
+        .current_dir(&src);
+    run(&mut cp)?;
 
     println!("cargo:rustc-link-search={}/lib", dst.display());
     println!("cargo:root={}", dst.display());
     println!("cargo:include={}/include", dst.display());
-    println!("cargo:rerun-if-changed=libevdev/autogen.sh");
+    println!(
+        "cargo:rerun-if-changed={}/libevdev/autogen.sh",
+        dst.display()
+    );
 
     println!("cargo:rustc-link-lib=static=evdev");
     let cfg = cc::Build::new();
     let compiler = cfg.get_compiler();
 
-    fs::create_dir(&dst.join("build"))?;
+    if !&dst.join("build").exists() {
+        fs::create_dir(&dst.join("build"))?;
+    }
 
     let mut autogen = Command::new("sh");
     let mut cflags = OsString::new();
@@ -54,7 +65,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .env("CFLAGS", cflags)
         .current_dir(&dst.join("build"))
         .arg(
-            src.join("libevdev/autogen.sh")
+            dst.join("libevdev/autogen.sh")
                 .to_str()
                 .unwrap()
                 .replace("C:\\", "/c/")
