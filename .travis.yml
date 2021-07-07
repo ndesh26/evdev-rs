@@ -48,7 +48,10 @@ script:
   - |
       if [ $TARGET == "x86_64-unknown-linux-gnu" ]
       then
+        #Build, but don't run tests as non-root user, so files have non-root ownership
+        cargo test --no-run
         sudo --preserve-env env "PATH=$PATH" cargo test --verbose
+        cargo test --all-features --no-run
         sudo --preserve-env env "PATH=$PATH" cargo test --all-features --verbose
       fi
   - cargo doc --no-deps --all-features -p evdev-sys -p evdev-rs
