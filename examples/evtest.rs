@@ -10,7 +10,7 @@ fn usage() {
 fn print_abs_bits(dev: &Device, axis: &EV_ABS) {
     let code = EventCode::EV_ABS(axis.clone());
 
-    if !dev.has(&code) {
+    if !dev.has(code) {
         return;
     }
 
@@ -35,7 +35,7 @@ fn print_code_bits(dev: &Device, ev_code: &EventCode, max: &EventCode) {
         if code == *max {
             break;
         }
-        if !dev.has(&code) {
+        if !dev.has(code) {
             continue;
         }
 
@@ -51,7 +51,7 @@ fn print_bits(dev: &Device) {
     println!("Supported events:");
 
     for ev_type in EventType::EV_SYN.iter() {
-        if dev.has(&ev_type) {
+        if dev.has(ev_type) {
             println!("  Event type: {} ", ev_type);
         }
 
@@ -85,7 +85,7 @@ fn print_props(dev: &Device) {
     println!("Properties:");
 
     for input_prop in InputProp::INPUT_PROP_POINTER.iter() {
-        if dev.has(&input_prop) {
+        if dev.has_property(&input_prop) {
             println!("  Property type: {}", input_prop);
         }
     }

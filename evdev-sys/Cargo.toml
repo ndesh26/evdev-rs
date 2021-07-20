@@ -14,6 +14,9 @@ Raw bindings to libevdev
 High level Rust bindings are available in the `evdev` crate
 """
 
+[features]
+libevdev-1-10 = []
+
 [dependencies]
 libc = "0.2.67"
 

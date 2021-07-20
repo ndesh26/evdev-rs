@@ -123,10 +123,39 @@ fn device_has_property() {
 
     let d = d.set_file(f).unwrap();
     for prop in InputProp::INPUT_PROP_POINTER.iter() {
-        if d.has(&prop) {
+        if d.has_property(&prop) {
             panic!("Prop {} is set, shouldn't be", prop);
         }
     }
+}
+
+#[test]
+fn device_enable_disable() {
+    #[cfg(feature = "libevdev-1-10")]
+    let prop = InputProp::INPUT_PROP_POINTER;
+    let ev_type = EventType::EV_KEY;
+    let code = EventCode::EV_KEY(EV_KEY::KEY_LEFTSHIFT);
+    let d = UninitDevice::new().unwrap();
+    #[cfg(feature = "libevdev-1-10")]
+    assert!(!d.has(prop));
+    assert!(!d.has(ev_type));
+    assert!(!d.has(code));
+    #[cfg(feature = "libevdev-1-10")]
+    d.enable(prop).unwrap();
+    d.enable(ev_type).unwrap();
+    d.enable(code).unwrap();
+    #[cfg(feature = "libevdev-1-10")]
+    assert!(d.has(prop));
+    assert!(d.has(ev_type));
+    assert!(d.has(code));
+    #[cfg(feature = "libevdev-1-10")]
+    d.disable(prop).unwrap();
+    d.disable(ev_type).unwrap();
+    d.disable(code).unwrap();
+    #[cfg(feature = "libevdev-1-10")]
+    assert!(!d.has(prop));
+    assert!(!d.has(ev_type));
+    assert!(!d.has(code));
 }
 
 #[test]
@@ -136,8 +165,8 @@ fn device_has_syn() {
 
     let d = d.set_file(f).unwrap();
 
-    assert!(d.has(&EventType::EV_SYN)); // EV_SYN
-    assert!(d.has(&EventCode::EV_SYN(EV_SYN::SYN_REPORT))); // SYN_REPORT
+    assert!(d.has(EventType::EV_SYN)); // EV_SYN
+    assert!(d.has(EventCode::EV_SYN(EV_SYN::SYN_REPORT))); // SYN_REPORT
 }
 
 #[test]
