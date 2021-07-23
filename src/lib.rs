@@ -47,10 +47,10 @@
 
 #[macro_use]
 mod macros;
-pub mod device;
+mod device;
 pub mod enums;
 pub mod logging;
-pub mod uinput;
+mod uinput;
 pub mod util;
 
 use bitflags::bitflags;
