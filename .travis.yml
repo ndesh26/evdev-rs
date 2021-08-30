@@ -51,10 +51,8 @@ script:
         sudo --preserve-env env "PATH=$PATH" cargo test --verbose
         sudo --preserve-env env "PATH=$PATH" cargo test --all-features --verbose
       fi
-  - cargo doc --no-deps --all-features -p evdev-sys -p evdev-rs
 
 after_success:
-  - travis-cargo --only stable doc-upload
   - travis-cargo coveralls
 
 notifications:

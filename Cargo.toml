@@ -7,7 +7,7 @@ keywords = ["evdev"]
 readme = "README.md"
 repository = "https://github.com/ndesh26/evdev-rs"
 homepage = "https://github.com/ndesh26/evdev-rs"
-documentation = "http://ndesh26.github.io/evdev-rs"
+documentation = ""
 edition = "2018"
 description = """
 Bindings to libevdev for interacting with evdev devices. It moves the
