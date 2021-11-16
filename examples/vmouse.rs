@@ -6,7 +6,10 @@ use structopt::StructOpt;
 use evdev_rs::{Device, UInputDevice, UninitDevice, InputEvent, DeviceWrapper, ReadFlag};
 use evdev_rs::enums::{BusType, EventType, EventCode, EV_KEY, EV_REL, EV_SYN};
 
-
+/// Virtual mouse example.
+/// 
+/// Maps a keyboard input event file to a virtual mouse using UInput.
+/// See `ls -al /dev/input/by-id` to list available input event files
 #[derive(Clone, PartialEq, Debug, StructOpt)]
 pub struct Options {
     /// Input device from which to capture events
