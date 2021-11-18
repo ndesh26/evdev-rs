@@ -25,9 +25,5 @@ libc = "0.2.67"
 bitflags = "1.2.1"
 log = "0.4.8"
 
-[dev-dependencies]
-structopt = "0.3.25"
-anyhow = "1.0.45"
-
 [package.metadata.docs.rs]
 features = ["serde"]

@@ -1,36 +1,26 @@
 
 use std::fs::File;
 
-use structopt::StructOpt;
-
 use evdev_rs::{Device, UInputDevice, UninitDevice, InputEvent, DeviceWrapper, ReadFlag};
 use evdev_rs::enums::{BusType, EventType, EventCode, EV_KEY, EV_REL, EV_SYN};
 
-/// Virtual mouse example.
-/// 
-/// Maps a keyboard input event file to a virtual mouse using UInput.
-/// See `ls -al /dev/input/by-id` to list available input event files
-#[derive(Clone, PartialEq, Debug, StructOpt)]
-pub struct Options {
-    /// Input device from which to capture events
-    #[structopt()]
-    pub device: String,
+const MOUSE_STEP_X: i32 = 10;
+const MOUSE_STEP_Y: i32 = 10;
 
-    /// Mouse scroll X step value
-    #[structopt(long, default_value = "20")]
-    pub mouse_step_x: i32,
-
-    /// Mouse scroll Y step value
-    #[structopt(long, default_value = "20")]
-    pub mouse_step_y: i32,
-}
-
-fn main() -> anyhow::Result<()> {
+fn main() -> Result<(), std::io::Error> {
     // Parse command line arguments
-    let opts = Options::from_args();
+    let mut args = std::env::args();
+
+    if args.len() != 2 {
+        let n = args.nth(0).unwrap();
+        println!("Usage: `{} DEVICE`, eg. `{} /dev/input/event13`", n, n);
+        std::process::exit(1);
+    }
+
+    let device = &args.nth(1).unwrap();
 
     // Connect to real keyboard
-    let f = File::open(opts.device)?;
+    let f = File::open(device)?;
     let d = Device::new_from_file(f)?;
 
     if let Some(n) = d.name() {
@@ -73,10 +63,10 @@ fn main() -> anyhow::Result<()> {
 
         // Map direction keys to mouse events
         let e = match event.event_code {
-            EventCode::EV_KEY(EV_KEY::KEY_RIGHT) => Some((EV_REL::REL_X, opts.mouse_step_x)),
-            EventCode::EV_KEY(EV_KEY::KEY_LEFT) =>  Some((EV_REL::REL_X, -opts.mouse_step_x)),
-            EventCode::EV_KEY(EV_KEY::KEY_UP) =>    Some((EV_REL::REL_Y, -opts.mouse_step_y)),
-            EventCode::EV_KEY(EV_KEY::KEY_DOWN) =>  Some((EV_REL::REL_Y, opts.mouse_step_y)),
+            EventCode::EV_KEY(EV_KEY::KEY_RIGHT) => Some((EV_REL::REL_X, MOUSE_STEP_X)),
+            EventCode::EV_KEY(EV_KEY::KEY_LEFT) =>  Some((EV_REL::REL_X, -MOUSE_STEP_X)),
+            EventCode::EV_KEY(EV_KEY::KEY_UP) =>    Some((EV_REL::REL_Y, -MOUSE_STEP_Y)),
+            EventCode::EV_KEY(EV_KEY::KEY_DOWN) =>  Some((EV_REL::REL_Y, MOUSE_STEP_Y)),
             _ => None,
         };
 
