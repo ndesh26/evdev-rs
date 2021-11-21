@@ -527,6 +527,7 @@ pub struct Device {
 }
 
 unsafe impl Send for Device {}
+unsafe impl Sync for Device {}
 
 impl DeviceWrapper for Device {
     fn raw(&self) -> *mut raw::libevdev {
