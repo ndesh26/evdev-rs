@@ -789,6 +789,12 @@ impl Device {
     }
 }
 
+impl AsRawFd for Device {
+    fn as_raw_fd(&self) -> std::os::unix::prelude::RawFd {
+        self.file.as_raw_fd()
+    }
+}
+
 impl Drop for Device {
     fn drop(&mut self) {
         unsafe {
