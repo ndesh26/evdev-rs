@@ -1,8 +1,7 @@
-
 use std::fs::File;
 
-use evdev_rs::{Device, UInputDevice, UninitDevice, InputEvent, DeviceWrapper, ReadFlag};
-use evdev_rs::enums::{BusType, EventType, EventCode, EV_KEY, EV_REL, EV_SYN};
+use evdev_rs::enums::{BusType, EventCode, EventType, EV_KEY, EV_REL, EV_SYN};
+use evdev_rs::{Device, DeviceWrapper, InputEvent, ReadFlag, UInputDevice, UninitDevice};
 
 const MOUSE_STEP_X: i32 = 10;
 const MOUSE_STEP_Y: i32 = 10;
@@ -24,8 +23,12 @@ fn main() -> Result<(), std::io::Error> {
     let d = Device::new_from_file(f)?;
 
     if let Some(n) = d.name() {
-        println!("Connected to device: '{}' ({:04x}:{:04x})", 
-            n, d.vendor_id(), d.product_id());
+        println!(
+            "Connected to device: '{}' ({:04x}:{:04x})",
+            n,
+            d.vendor_id(),
+            d.product_id()
+        );
     }
 
     // Create virtual device
@@ -39,7 +42,7 @@ fn main() -> Result<(), std::io::Error> {
     u.set_vendor_id(0xabcd);
     u.set_product_id(0xefef);
 
-    // Note mouse keys have to be enabled for this to be detected 
+    // Note mouse keys have to be enabled for this to be detected
     // as a usable device, see: https://stackoverflow.com/a/64559658/6074942
     u.enable_event_type(&EventType::EV_KEY)?;
     u.enable_event_code(&EventCode::EV_KEY(EV_KEY::BTN_LEFT), None)?;
@@ -64,21 +67,21 @@ fn main() -> Result<(), std::io::Error> {
         // Map direction keys to mouse events
         let e = match event.event_code {
             EventCode::EV_KEY(EV_KEY::KEY_RIGHT) => Some((EV_REL::REL_X, MOUSE_STEP_X)),
-            EventCode::EV_KEY(EV_KEY::KEY_LEFT) =>  Some((EV_REL::REL_X, -MOUSE_STEP_X)),
-            EventCode::EV_KEY(EV_KEY::KEY_UP) =>    Some((EV_REL::REL_Y, -MOUSE_STEP_Y)),
-            EventCode::EV_KEY(EV_KEY::KEY_DOWN) =>  Some((EV_REL::REL_Y, MOUSE_STEP_Y)),
+            EventCode::EV_KEY(EV_KEY::KEY_LEFT) => Some((EV_REL::REL_X, -MOUSE_STEP_X)),
+            EventCode::EV_KEY(EV_KEY::KEY_UP) => Some((EV_REL::REL_Y, -MOUSE_STEP_Y)),
+            EventCode::EV_KEY(EV_KEY::KEY_DOWN) => Some((EV_REL::REL_Y, MOUSE_STEP_Y)),
             _ => None,
         };
 
         // Write mapped event
         if let Some((e, n)) = e {
-            v.write_event(&InputEvent{
+            v.write_event(&InputEvent {
                 time: event.time,
                 event_code: EventCode::EV_REL(e),
                 value: n,
             })?;
 
-            v.write_event(&InputEvent{
+            v.write_event(&InputEvent {
                 time: event.time,
                 event_code: EventCode::EV_SYN(EV_SYN::SYN_REPORT),
                 value: 0,
