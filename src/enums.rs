@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EventType {
     EV_SYN = 0,
     EV_KEY = 1,
@@ -87,7 +87,7 @@ pub enum EventCode {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EV_REL {
     REL_X = 0,
     REL_Y = 1,
@@ -150,7 +150,7 @@ impl std::str::FromStr for EV_REL {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EV_ABS {
     ABS_X = 0,
     ABS_Y = 1,
@@ -300,7 +300,7 @@ impl std::str::FromStr for EV_ABS {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EV_KEY {
     KEY_RESERVED = 0,
     KEY_ESC = 1,
@@ -1995,7 +1995,7 @@ impl std::str::FromStr for EV_KEY {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EV_LED {
     LED_NUML = 0,
     LED_CAPSL = 1,
@@ -2052,7 +2052,7 @@ impl std::str::FromStr for EV_LED {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EV_SND {
     SND_CLICK = 0,
     SND_BELL = 1,
@@ -2085,7 +2085,7 @@ impl std::str::FromStr for EV_SND {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EV_MSC {
     MSC_SERIAL = 0,
     MSC_PULSELED = 1,
@@ -2127,7 +2127,7 @@ impl std::str::FromStr for EV_MSC {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EV_SW {
     SW_LID = 0,
     SW_TABLET_MODE = 1,
@@ -2203,7 +2203,7 @@ impl std::str::FromStr for EV_SW {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EV_SYN {
     SYN_REPORT = 0,
     SYN_CONFIG = 1,
@@ -2239,7 +2239,7 @@ impl std::str::FromStr for EV_SYN {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EV_REP {
     REP_DELAY = 0,
     REP_PERIOD = 1,
@@ -2270,7 +2270,7 @@ impl std::str::FromStr for EV_REP {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum InputProp {
     INPUT_PROP_POINTER = 0,
     INPUT_PROP_DIRECT = 1,
@@ -2315,7 +2315,7 @@ impl std::str::FromStr for InputProp {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum EV_FF {
     FF_STATUS_STOPPED = 0,
     FF_STATUS_PLAYING = 1,
@@ -2397,7 +2397,7 @@ impl std::str::FromStr for EV_FF {
 
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum BusType {
     BUS_PCI = 1,
     BUS_ISAPNP = 2,
