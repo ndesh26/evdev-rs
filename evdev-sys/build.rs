@@ -51,7 +51,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if !Path::new("libevdev/.git").exists() {
         let mut download = Command::new("git");
         download.args(&["submodule", "update", "--init", "--depth", "1"]);
-        run(&mut download)?;
+        run_ignore_error(&mut download)?;
     }
 
     let dst = PathBuf::from(env::var_os("OUT_DIR").unwrap());
@@ -119,6 +119,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn run(cmd: &mut Command) -> std::io::Result<()> {
     println!("running: {:?}", cmd);
     assert!(cmd.status()?.success());
+    Ok(())
+}
+
+fn run_ignore_error(cmd: &mut Command) -> std::io::Result<()> {
+    println!("running: {:?}", cmd);
+    let _ = cmd.status();
     Ok(())
 }
 
