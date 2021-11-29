@@ -4,22 +4,47 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+#[cfg(feature = "libevdev-1-10")]
+// ver_str is string of the form "major.minor.patch"
+fn parse_version(ver_str: &str) -> Option<(u32, u32, u32)> {
+    let mut major_minor_patch = ver_str
+        .split(".")
+        .map(|str| str.parse::<u32>().unwrap());
+    let major = major_minor_patch.next()?;
+    let minor = major_minor_patch.next()?;
+    let patch = major_minor_patch.next()?;
+    Some((major, minor, patch))
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     if env::var_os("TARGET") == env::var_os("HOST") {
         match pkg_config::find_library("libevdev") {
             Ok(lib) => {
+                // panic if feature 1.10 is enabled and the installed library
+                // is older than 1.10
+                #[cfg(feature = "libevdev-1-10")]
+                {
+                    let (major, minor, patch) = parse_version(&lib.version)
+                        .expect("Could not parse version information");
+                    assert_eq!(major, 1, "evdev-rs works only with libevdev 1");
+                    assert!(minor >= 10,
+                        "Feature libevdev-1-10 was enabled, when compiling \
+                        for a system with libevdev version {}.{}.{}",
+                        major,
+                        minor,
+                        patch,
+                    );
+                }
                 for path in &lib.include_paths {
                     println!("cargo:include={}", path.display());
                 }
                 return Ok(());
             }
-            Err(e) => {
-                eprintln!(
-                    "Couldn't find libevdev from pkgconfig ({:?}), \
-                     compiling it from source...",
-                    e
-                );
-            }
+            Err(e) => eprintln!(
+                "Couldn't find libevdev from pkgconfig ({:?}), \
+                    compiling it from source...",
+                e
+            ),
         };
     }
 

@@ -102,6 +102,8 @@ extern "C" {
     pub fn libevdev_get_driver_version(ctx: *const libevdev) -> c_int;
     pub fn libevdev_has_property(ctx: *const libevdev, prop: c_uint) -> c_int;
     pub fn libevdev_enable_property(ctx: *mut libevdev, prop: c_uint) -> c_int;
+    #[cfg(feature = "libevdev-1-10")]
+    pub fn libevdev_disable_property (ctx: *mut libevdev, prop: c_uint) -> c_int;
     pub fn libevdev_has_event_type(ctx: *const libevdev, type_: c_uint) -> c_int;
     pub fn libevdev_has_event_code(
         ctx: *const libevdev,

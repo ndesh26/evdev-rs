@@ -68,6 +68,8 @@ pub use device::Device;
 #[doc(inline)]
 pub use device::DeviceWrapper;
 #[doc(inline)]
+pub use device::Enable;
+#[doc(inline)]
 pub use device::UninitDevice;
 #[doc(inline)]
 pub use uinput::UInputDevice;

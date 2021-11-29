@@ -1,6 +1,5 @@
 use crate::{AbsInfo, GrabMode, InputEvent, LedState, ReadFlag, ReadStatus, TimeVal};
 use libc::{c_int, c_uint, c_void};
-use std::any::Any;
 use std::ffi::CString;
 use std::fs::File;
 use std::mem::ManuallyDrop;
@@ -12,8 +11,70 @@ use crate::util::*;
 
 use evdev_sys as raw;
 
+/// Types that can be enabled on a DeviceWrapper (i.e. buttons, keys, relative motion)
+///
+/// Generally this method will not be called directly, but will insted be called through [Device::enable()](crate::Device::enable)
+///
+/// ```rust
+/// # use evdev_rs::{UninitDevice, DeviceWrapper, Enable, enums::{EventCode, EV_REL::REL_X}};
+/// let dev = UninitDevice::new().expect("Device creation failed");
+/// dev.enable(EventCode::EV_REL(REL_X)).expect("Enable failed");
+/// ```
+///
+/// If you need to enable a EV_ABS or EV_REP event code, use
+/// [enable_event_code](crate::Device::enable_event_code), as this
+/// implementation doesn't pass EV_ABS data.
+pub trait Enable {
+    fn enable<D: DeviceWrapper>(&self, device: &D) -> io::Result<()>;
+    fn disable<D: DeviceWrapper>(&self, device: &D) -> io::Result<()>;
+    fn has<D: DeviceWrapper>(&self, device: &D) -> bool;
+}
+
+#[cfg(feature = "libevdev-1-10")]
+impl Enable for InputProp {
+    fn enable<D: DeviceWrapper>(&self, device: &D) -> io::Result<()> {
+        device.enable_property(self)
+    }
+    fn disable<D: DeviceWrapper>(&self, device: &D) -> io::Result<()> {
+        device.disable_property(self)
+    }
+    fn has<D: DeviceWrapper>(&self, device: &D) -> bool {
+        device.has_property(self)
+    }
+}
+
+impl Enable for EventType {
+    fn enable<D: DeviceWrapper>(&self, device: &D) -> io::Result<()> {
+        device.enable_event_type(self)
+    }
+    fn disable<D: DeviceWrapper>(&self, device: &D) -> io::Result<()> {
+        device.disable_event_type(self)
+    }
+    fn has<D: DeviceWrapper>(&self, device: &D) -> bool {
+        device.has_event_type(self)
+    }
+}
+
+impl Enable for EventCode {
+    fn enable<D: DeviceWrapper>(&self, device: &D) -> io::Result<()> {
+        device.enable_event_code(self, None)
+    }
+    fn disable<D: DeviceWrapper>(&self, device: &D) -> io::Result<()> {
+        device.disable_event_code(self)
+    }
+    fn has<D: DeviceWrapper>(&self, device: &D) -> bool {
+        device.has_event_code(self)
+    }
+}
+
+/// Extra data for use with enable_event_code
+pub enum EnableCodeData {
+    AbsInfo(AbsInfo),
+    RepInfo(i32),
+}
+
 /// Abstraction over structs which contain an inner `*mut libevdev`
-pub trait DeviceWrapper {
+pub trait DeviceWrapper: Sized {
     fn raw(&self) -> *mut raw::libevdev;
 
     /// Forcibly enable an EventType/InputProp on this device, even if the underlying
@@ -22,16 +83,8 @@ pub trait DeviceWrapper {
     ///
     /// This is a local modification only affecting only this representation of
     /// this device.
-    fn enable(&self, blob: &dyn Any) -> io::Result<()> {
-        if let Some(ev_type) = blob.downcast_ref::<EventType>() {
-            self.enable_event_type(ev_type)
-        } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
-            self.enable_event_code(ev_code, None)
-        } else if let Some(prop) = blob.downcast_ref::<InputProp>() {
-            self.enable_property(prop)
-        } else {
-            Err(io::Error::from_raw_os_error(-1))
-        }
+    fn enable<E: Enable>(&self, e: E) -> io::Result<()> {
+        e.enable(self)
     }
 
     /// Enables this property, a call to `set_file` will overwrite any previously set values
@@ -83,25 +136,35 @@ pub trait DeviceWrapper {
     fn enable_event_code(
         &self,
         ev_code: &EventCode,
-        blob: Option<&dyn Any>,
+        data: Option<EnableCodeData>,
     ) -> io::Result<()> {
+        let data =
+            match ev_code {
+                EventCode::EV_ABS(_) => match data {
+                    Some(EnableCodeData::AbsInfo(info)) => {
+                        &info.as_raw() as *const _ as *const c_void
+                    }
+                    _ => return Err(io::Error::new(
+                        io::ErrorKind::InvalidInput,
+                        "EventCode::EV_ABS must be paired with EnableCodeData::AbsInfo",
+                    )),
+                },
+                EventCode::EV_REP(_) => match data {
+                    Some(EnableCodeData::RepInfo(info)) => {
+                        &libc::c_int::from(info) as *const _ as *const c_void
+                    }
+                    _ => return Err(io::Error::new(
+                        io::ErrorKind::InvalidInput,
+                        "EventCode::EV_REP must be paired with EnableCodeData::RepInfo",
+                    )),
+                },
+                _ => ptr::null(),
+            };
+
         let (ev_type, ev_code) = event_code_to_int(ev_code);
 
-        let data = blob
-            .map(|data| {
-                data.downcast_ref::<AbsInfo>()
-                    .map(|absinfo| &absinfo.as_raw() as *const _ as *const c_void)
-                    .unwrap_or_else(|| data as *const _ as *const c_void)
-            })
-            .unwrap_or_else(|| ptr::null() as *const _ as *const c_void);
-
         let result = unsafe {
-            raw::libevdev_enable_event_code(
-                self.raw(),
-                ev_type as c_uint,
-                ev_code as c_uint,
-                data,
-            )
+            raw::libevdev_enable_event_code(self.raw(), ev_type, ev_code, data)
         };
 
         match result {
@@ -122,14 +185,8 @@ pub trait DeviceWrapper {
     ///
     /// This is a local modification only affecting only this representation of
     /// this device.
-    fn disable(&self, blob: &dyn Any) -> io::Result<()> {
-        if let Some(ev_type) = blob.downcast_ref::<EventType>() {
-            self.disable_event_type(ev_type)
-        } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
-            self.disable_event_code(ev_code)
-        } else {
-            Err(io::Error::from_raw_os_error(-1))
-        }
+    fn disable<E: Enable>(&self, d: E) -> io::Result<()> {
+        d.disable(self)
     }
 
     /// Forcibly disable an event type on this device, even if the underlying
@@ -186,17 +243,19 @@ pub trait DeviceWrapper {
         }
     }
 
-    /// Returns `true` if device support the InputProp/EventType/EventCode and false otherwise
-    fn has(&self, blob: &dyn Any) -> bool {
-        if let Some(ev_type) = blob.downcast_ref::<EventType>() {
-            self.has_event_type(ev_type)
-        } else if let Some(ev_code) = blob.downcast_ref::<EventCode>() {
-            self.has_event_code(ev_code)
-        } else if let Some(prop) = blob.downcast_ref::<InputProp>() {
-            self.has_property(prop)
-        } else {
-            false
+    #[cfg(feature = "libevdev-1-10")]
+    fn disable_property(&self, prop: &InputProp) -> io::Result<()> {
+        let result =
+            unsafe { raw::libevdev_disable_property(self.raw(), (*prop) as c_uint) };
+        match result {
+            0 => Ok(()),
+            error => Err(io::Error::from_raw_os_error(-error)),
         }
+    }
+
+    /// Returns `true` if device support the InputProp/EventType/EventCode and false otherwise
+    fn has<E: Enable>(&self, e: E) -> bool {
+        e.has(self)
     }
 
     /// Returns `true` if device support the property and false otherwise
