@@ -109,3 +109,11 @@ impl Drop for UInputDevice {
         }
     }
 }
+
+impl std::fmt::Debug for UInputDevice {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("UInputDevice")
+            .field("devnode", &self.devnode())
+            .finish()
+    }
+}

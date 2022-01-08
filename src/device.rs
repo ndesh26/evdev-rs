@@ -577,6 +577,16 @@ impl Drop for UninitDevice {
     }
 }
 
+impl std::fmt::Debug for UninitDevice {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("UninitDevice")
+            .field("name", &self.name())
+            .field("phys", &self.phys())
+            .field("uniq", &self.uniq())
+            .finish()
+    }
+}
+
 /// Opaque struct representing an evdev device
 ///
 /// Unlike libevdev, this `Device` mantains an associated file as an invariant
@@ -853,5 +863,15 @@ impl Drop for Device {
         unsafe {
             raw::libevdev_free(self.raw);
         }
+    }
+}
+
+impl std::fmt::Debug for Device {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("Device")
+            .field("name", &self.name())
+            .field("phys", &self.phys())
+            .field("uniq", &self.uniq())
+            .finish()
     }
 }
