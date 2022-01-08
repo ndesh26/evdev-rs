@@ -116,6 +116,7 @@ pub enum LedState {
     Off = raw::LIBEVDEV_LED_OFF as isize,
 }
 
+#[derive(Debug)]
 pub struct DeviceId {
     pub bustype: BusType,
     pub vendor: u16,
@@ -123,6 +124,7 @@ pub struct DeviceId {
     pub version: u16,
 }
 
+#[derive(Debug)]
 /// used by EVIOCGABS/EVIOCSABS ioctls
 pub struct AbsInfo {
     /// latest reported value for the axis
