@@ -31,6 +31,10 @@ prefixes = [
     "BUS_"
 ]
 
+prefix_additional = {
+    "key": ["btn"]
+}
+
 blacklist = [
     "EV_VERSION",
     "BTN_MISC",
@@ -158,9 +162,11 @@ def print_enums_fromstr(bits, prefix):
     print('    type Err = ();')
     print('    fn from_str(s: &str) -> Result<Self, Self::Err> {')
     print('        match s {')
-    for _val, names in list(getattr(bits, prefix).items()):
-        name = names[0]
-        print('            "%s" => Ok(%s::%s),' % (name, enum_name, name))
+
+    for p in (prefix, *prefix_additional.get(prefix, ())):
+        for _val, names in list(getattr(bits, p).items()):
+            name = names[0]
+            print('            "%s" => Ok(%s::%s),' % (name, enum_name, name))
     print('            _ => Err(()),')
     print('        }')
     print('    }')
