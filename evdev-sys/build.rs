@@ -18,7 +18,10 @@ fn parse_version(ver_str: &str) -> Option<(u32, u32, u32)> {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     if env::var_os("TARGET") == env::var_os("HOST") {
-        match pkg_config::find_library("libevdev") {
+        let mut config = pkg_config::Config::new();
+        config.print_system_libs(false);
+
+        match config.probe("libevdev") {
             Ok(lib) => {
                 // panic if feature 1.10 is enabled and the installed library
                 // is older than 1.10
