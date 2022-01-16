@@ -129,12 +129,12 @@ impl EventType {
 
     /// The max value defined for the given event type, e.g. ABS_MAX for a type
     /// of EV_ABS, or Errno for an invalid type.
-    pub fn get_max(ev_type: &EventType) -> Option<i32> {
+    pub fn get_max(ev_type: &EventType) -> Option<u32> {
         let result = unsafe { raw::libevdev_event_type_get_max(*ev_type as c_uint) };
 
         match result {
-            -1 => None,
-            k => Some(k),
+            k if k < 0 => None,
+            k => Some(k as u32),
         }
     }
 }
