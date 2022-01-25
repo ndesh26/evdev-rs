@@ -69,7 +69,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("cargo:rustc-link-search={}/lib", dst.display());
     println!("cargo:root={}", dst.display());
     println!("cargo:include={}/include", dst.display());
-    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=libevdev");
 
     println!("cargo:rustc-link-lib=static=evdev");
     let cfg = cc::Build::new();
