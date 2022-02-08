@@ -126,7 +126,7 @@ pub struct DeviceId {
     pub version: u16,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 /// used by EVIOCGABS/EVIOCSABS ioctls
 pub struct AbsInfo {
     /// latest reported value for the axis
