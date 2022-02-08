@@ -68,6 +68,7 @@ impl Enable for EventCode {
 }
 
 /// Extra data for use with enable_event_code
+#[derive(Clone, Copy, Debug)]
 pub enum EnableCodeData {
     AbsInfo(AbsInfo),
     RepInfo(i32),
