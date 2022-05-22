@@ -24,6 +24,45 @@ pub struct InputPropIterator {
     current: InputProp,
 }
 
+impl EventTypeIterator {
+    pub fn new() -> Self {
+        EventTypeIterator {
+            current: EventType::EV_SYN,
+        }
+    }
+}
+
+impl EventCodeIterator {
+    pub fn new(event_type: &EventType) -> Self {
+        let event_code = match *event_type {
+            EventType::EV_SYN => EventCode::EV_SYN(EV_SYN::SYN_REPORT),
+            EventType::EV_KEY => EventCode::EV_KEY(EV_KEY::KEY_RESERVED),
+            EventType::EV_REL => EventCode::EV_REL(EV_REL::REL_X),
+            EventType::EV_ABS => EventCode::EV_ABS(EV_ABS::ABS_X),
+            EventType::EV_MSC => EventCode::EV_MSC(EV_MSC::MSC_SERIAL),
+            EventType::EV_SW => EventCode::EV_SW(EV_SW::SW_LID),
+            EventType::EV_LED => EventCode::EV_LED(EV_LED::LED_NUML),
+            EventType::EV_SND => EventCode::EV_SND(EV_SND::SND_CLICK),
+            EventType::EV_REP => EventCode::EV_REP(EV_REP::REP_DELAY),
+            EventType::EV_FF => EventCode::EV_FF(EV_FF::FF_STATUS_STOPPED),
+            EventType::EV_FF_STATUS => EventCode::EV_FF_STATUS(EV_FF::FF_STATUS_STOPPED),
+            _ => EventCode::EV_MAX,
+        };
+
+        EventCodeIterator {
+            current: event_code,
+        }
+    }
+}
+
+impl InputPropIterator {
+    pub fn new() -> Self {
+        InputPropIterator {
+            current: InputProp::INPUT_PROP_POINTER,
+        }
+    }
+}
+
 pub fn event_code_to_int(event_code: &EventCode) -> (c_uint, c_uint) {
     match *event_code {
         EventCode::EV_SYN(code) => (EventType::EV_SYN as c_uint, code as c_uint),
@@ -213,11 +252,7 @@ impl Iterator for EventCodeIterator {
     fn next(&mut self) -> Option<EventCode> {
         match self.current {
             EventCode::EV_SYN(code) => match code {
-                EV_SYN::SYN_MAX => {
-                    let ev_code = self.current;
-                    self.current = EventCode::EV_KEY(EV_KEY::KEY_RESERVED);
-                    Some(ev_code)
-                }
+                EV_SYN::SYN_MAX => None,
                 _ => {
                     let mut raw_code = (code as u32) + 1;
                     loop {
@@ -233,11 +268,7 @@ impl Iterator for EventCodeIterator {
                 }
             },
             EventCode::EV_KEY(code) => match code {
-                EV_KEY::KEY_MAX => {
-                    let ev_code = self.current;
-                    self.current = EventCode::EV_REL(EV_REL::REL_X);
-                    Some(ev_code)
-                }
+                EV_KEY::KEY_MAX => None,
                 _ => {
                     let mut raw_code = (code as u32) + 1;
                     loop {
@@ -253,11 +284,7 @@ impl Iterator for EventCodeIterator {
                 }
             },
             EventCode::EV_REL(code) => match code {
-                EV_REL::REL_MAX => {
-                    let ev_code = self.current;
-                    self.current = EventCode::EV_ABS(EV_ABS::ABS_X);
-                    Some(ev_code)
-                }
+                EV_REL::REL_MAX => None,
                 _ => {
                     let mut raw_code = (code as u32) + 1;
                     loop {
@@ -273,11 +300,7 @@ impl Iterator for EventCodeIterator {
                 }
             },
             EventCode::EV_ABS(code) => match code {
-                EV_ABS::ABS_MAX => {
-                    let ev_code = self.current;
-                    self.current = EventCode::EV_MSC(EV_MSC::MSC_SERIAL);
-                    Some(ev_code)
-                }
+                EV_ABS::ABS_MAX => None,
                 _ => {
                     let mut raw_code = (code as u32) + 1;
                     loop {
@@ -293,11 +316,7 @@ impl Iterator for EventCodeIterator {
                 }
             },
             EventCode::EV_MSC(code) => match code {
-                EV_MSC::MSC_MAX => {
-                    let ev_code = self.current;
-                    self.current = EventCode::EV_SW(EV_SW::SW_LID);
-                    Some(ev_code)
-                }
+                EV_MSC::MSC_MAX => None,
                 _ => {
                     let mut raw_code = (code as u32) + 1;
                     loop {
@@ -313,11 +332,7 @@ impl Iterator for EventCodeIterator {
                 }
             },
             EventCode::EV_SW(code) => match code {
-                EV_SW::SW_MAX => {
-                    let ev_code = self.current;
-                    self.current = EventCode::EV_LED(EV_LED::LED_NUML);
-                    Some(ev_code)
-                }
+                EV_SW::SW_MAX => None,
                 _ => {
                     let mut raw_code = (code as u32) + 1;
                     loop {
@@ -333,11 +348,7 @@ impl Iterator for EventCodeIterator {
                 }
             },
             EventCode::EV_LED(code) => match code {
-                EV_LED::LED_MAX => {
-                    let ev_code = self.current;
-                    self.current = EventCode::EV_SND(EV_SND::SND_CLICK);
-                    Some(ev_code)
-                }
+                EV_LED::LED_MAX => None,
                 _ => {
                     let mut raw_code = (code as u32) + 1;
                     loop {
@@ -353,11 +364,7 @@ impl Iterator for EventCodeIterator {
                 }
             },
             EventCode::EV_SND(code) => match code {
-                EV_SND::SND_MAX => {
-                    let ev_code = self.current;
-                    self.current = EventCode::EV_REP(EV_REP::REP_DELAY);
-                    Some(ev_code)
-                }
+                EV_SND::SND_MAX => None,
                 _ => {
                     let mut raw_code = (code as u32) + 1;
                     loop {
@@ -373,11 +380,7 @@ impl Iterator for EventCodeIterator {
                 }
             },
             EventCode::EV_REP(code) => match code {
-                EV_REP::REP_MAX => {
-                    let ev_code = self.current;
-                    self.current = EventCode::EV_FF(EV_FF::FF_STATUS_STOPPED);
-                    Some(ev_code)
-                }
+                EV_REP::REP_MAX => None,
                 _ => {
                     let mut raw_code = (code as u32) + 1;
                     loop {
