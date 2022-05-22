@@ -61,6 +61,10 @@ use std::time::{Duration, SystemTime, SystemTimeError, UNIX_EPOCH};
 use enums::*;
 use util::*;
 
+pub use util::EventCodeIterator;
+pub use util::EventTypeIterator;
+pub use util::InputPropIterator;
+
 use evdev_sys as raw;
 
 #[doc(inline)]

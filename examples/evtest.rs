@@ -30,11 +30,8 @@ fn print_abs_bits(dev: &Device, axis: &EV_ABS) {
     }
 }
 
-fn print_code_bits(dev: &Device, ev_code: &EventCode, max: &EventCode) {
-    for code in ev_code.iter() {
-        if code == *max {
-            break;
-        }
+fn print_code_bits(dev: &Device, ev_type: &EventType) {
+    for code in EventCodeIterator::new(ev_type) {
         if !dev.has(code) {
             continue;
         }
@@ -50,32 +47,16 @@ fn print_code_bits(dev: &Device, ev_code: &EventCode, max: &EventCode) {
 fn print_bits(dev: &Device) {
     println!("Supported events:");
 
-    for ev_type in EventType::EV_SYN.iter() {
+    for ev_type in EventTypeIterator::new() {
         if dev.has(ev_type) {
             println!("  Event type: {} ", ev_type);
         }
 
         match ev_type {
-            EventType::EV_KEY => print_code_bits(
-                dev,
-                &EventCode::EV_KEY(EV_KEY::KEY_RESERVED),
-                &EventCode::EV_KEY(EV_KEY::KEY_MAX),
-            ),
-            EventType::EV_REL => print_code_bits(
-                dev,
-                &EventCode::EV_REL(EV_REL::REL_X),
-                &EventCode::EV_REL(EV_REL::REL_MAX),
-            ),
-            EventType::EV_ABS => print_code_bits(
-                dev,
-                &EventCode::EV_ABS(EV_ABS::ABS_X),
-                &EventCode::EV_ABS(EV_ABS::ABS_MAX),
-            ),
-            EventType::EV_LED => print_code_bits(
-                dev,
-                &EventCode::EV_LED(EV_LED::LED_NUML),
-                &EventCode::EV_LED(EV_LED::LED_MAX),
-            ),
+            EventType::EV_KEY
+            | EventType::EV_REL
+            | EventType::EV_ABS
+            | EventType::EV_LED => print_code_bits(dev, &ev_type),
             _ => (),
         }
     }
@@ -84,7 +65,7 @@ fn print_bits(dev: &Device) {
 fn print_props(dev: &Device) {
     println!("Properties:");
 
-    for input_prop in InputProp::INPUT_PROP_POINTER.iter() {
+    for input_prop in InputPropIterator::new() {
         if dev.has_property(&input_prop) {
             println!("  Property type: {}", input_prop);
         }
