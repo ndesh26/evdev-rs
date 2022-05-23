@@ -1,7 +1,8 @@
 use evdev_rs::enums::*;
 use evdev_rs::*;
-use std::fs::File;
+use std::fs::OpenOptions;
 use std::io;
+use std::os::unix::fs::OpenOptionsExt;
 
 fn usage() {
     println!("Usage: evtest /path/to/device");
@@ -126,10 +127,15 @@ fn main() {
     }
 
     let path = &args.nth(1).unwrap();
-    let f = File::open(path).unwrap();
+    let file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .custom_flags(libc::O_NONBLOCK)
+        .open(path)
+        .unwrap();
 
     let u_d = UninitDevice::new().unwrap();
-    let d = u_d.set_file(f).unwrap();
+    let d = u_d.set_file(file).unwrap();
 
     println!(
         "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",

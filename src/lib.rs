@@ -11,8 +11,7 @@
 //! use evdev_rs::Device;
 //! use std::fs::File;
 //!
-//! let file = File::open("/dev/input/event0").unwrap();
-//! let mut d = Device::new_from_file(file).unwrap();
+//! let mut d = Device::new_from_path("/dev/input/event0").unwrap();
 //! ```
 //!
 //! ## Getting the next event
