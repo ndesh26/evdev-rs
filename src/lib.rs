@@ -21,8 +21,7 @@
 //! use std::fs::File;
 //! use evdev_rs::ReadFlag;
 //!
-//! let file = File::open("/dev/input/event0").unwrap();
-//! let mut d = Device::new_from_file(file).unwrap();
+//! let mut d = Device::new_from_path("/dev/input/event0").unwrap();
 //!
 //! loop {
 //!     let ev = d.next_event(ReadFlag::NORMAL | ReadFlag::BLOCKING).map(|val| val.1);
