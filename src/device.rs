@@ -3,6 +3,7 @@ use libc::{c_int, c_uint, c_void};
 use std::ffi::CString;
 use std::fs::File;
 use std::fs::OpenOptions;
+use std::io::Read;
 use std::mem::ManuallyDrop;
 use std::os::unix::fs::OpenOptionsExt;
 use std::os::unix::io::{AsRawFd, FromRawFd};
@@ -648,12 +649,20 @@ impl Device {
 
     /// Opens a device with the given path as the location of devnode
     pub fn new_from_path<P: AsRef<Path>>(path: P) -> io::Result<Device> {
-        let file = OpenOptions::new()
+        let mut file = OpenOptions::new()
             .read(true)
             .write(true)
             .custom_flags(libc::O_NONBLOCK)
             .open(path)?;
-        Self::new_from_file(file)
+        let mut buffer = Vec::new();
+        let _error_code = io::Error::from(io::ErrorKind::WouldBlock);
+        match file.read_to_end(&mut buffer) {
+            Err(_error_code) => Self::new_from_file(file),
+            _ => Err(io::Error::new(
+                io::ErrorKind::WouldBlock,
+                "Unable to open file with O_NONBLOCK",
+            )),
+        }
     }
 
     /// Returns the file associated with the device

@@ -160,7 +160,7 @@ fn main() {
 
     let mut a: io::Result<(ReadStatus, InputEvent)>;
     loop {
-        a = d.next_event(ReadFlag::NORMAL | ReadFlag::BLOCKING);
+        a = d.next_event(ReadFlag::NORMAL);
         if a.is_ok() {
             let mut result = a.ok().unwrap();
             match result.0 {
