@@ -24,7 +24,7 @@
 //! let mut d = Device::new_from_path("/dev/input/event0").unwrap();
 //!
 //! loop {
-//!     let ev = d.next_event(ReadFlag::NORMAL | ReadFlag::BLOCKING).map(|val| val.1);
+//!     let ev = d.next_event(ReadFlag::NORMAL).map(|val| val.1);
 //!     match ev {
 //!         Ok(ev) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
 //!                           ev.time.tv_sec,

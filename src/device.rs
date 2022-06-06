@@ -623,6 +623,8 @@ impl Device {
     /// ```
     /// The caller is responsible for opening the file and setting
     /// the `O_NONBLOCK` flag and handling permissions.
+    /// If the file is opened without O_NONBLOCK flag then next_event
+    /// should be called with ReadFlag::BLOCKING.
     pub fn new_from_file(file: File) -> io::Result<Device> {
         let mut libevdev = std::ptr::null_mut();
         let result =
