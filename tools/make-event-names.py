@@ -134,7 +134,7 @@ def print_enums_convert_fn(bits, prefix):
     if not hasattr(bits, prefix):
         return
 
-    print("pub fn %s(code: u32) -> Option<%s> {" %
+    print("pub const fn %s(code: u32) -> Option<%s> {" %
           ("int_to_" + convert(fn_name), fn_name))
     print("    match code {")
     for val, names in list(getattr(bits, prefix).items()):
