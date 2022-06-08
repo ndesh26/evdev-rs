@@ -656,9 +656,16 @@ impl Device {
             .write(true)
             .custom_flags(libc::O_NONBLOCK)
             .open(path)?;
-        let mut buffer = Vec::new();
+        let mut buffer = [0u8; 20 * std::mem::size_of::<raw::input_event>()];
+        let mut result;
+        loop {
+            result = file.read(&mut buffer);
+            if !result.is_ok() {
+                break;
+            };
+        }
         let _error_code = io::Error::from(io::ErrorKind::WouldBlock);
-        match file.read_to_end(&mut buffer) {
+        match result {
             Err(_error_code) => Self::new_from_file(file),
             _ => Err(io::Error::new(
                 io::ErrorKind::WouldBlock,

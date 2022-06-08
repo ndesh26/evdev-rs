@@ -15,6 +15,11 @@ fn context_create_with_file() {
 }
 
 #[test]
+fn context_create_with_path() {
+    let _d = Device::new_from_path("/dev/input/event0").unwrap();
+}
+
+#[test]
 fn context_set_file() {
     let d = UninitDevice::new().unwrap();
     let f = File::open("/dev/input/event0").unwrap();
@@ -36,10 +41,7 @@ fn context_change_file() {
 
 #[test]
 fn context_grab() {
-    let d = UninitDevice::new().unwrap();
-    let f = File::open("/dev/input/event0").unwrap();
-
-    let mut d = d.set_file(f).unwrap();
+    let mut d = Device::new_from_path("/dev/input/event0").unwrap();
     d.grab(GrabMode::Grab).unwrap();
     d.grab(GrabMode::Ungrab).unwrap();
 }
@@ -102,10 +104,7 @@ fn device_get_version() {
 
 #[test]
 fn device_get_absinfo() {
-    let d = UninitDevice::new().unwrap();
-    let f = File::open("/dev/input/event0").unwrap();
-
-    let d = d.set_file(f).unwrap();
+    let d = Device::new_from_path("/dev/input/event0").unwrap();
     for code in EventCode::EV_SYN(EV_SYN::SYN_REPORT).iter() {
         let absinfo: Option<AbsInfo> = d.abs_info(&code);
 
@@ -118,10 +117,7 @@ fn device_get_absinfo() {
 
 #[test]
 fn device_has_property() {
-    let d = UninitDevice::new().unwrap();
-    let f = File::open("/dev/input/event0").unwrap();
-
-    let d = d.set_file(f).unwrap();
+    let d = Device::new_from_path("/dev/input/event0").unwrap();
     for prop in InputProp::INPUT_PROP_POINTER.iter() {
         if d.has_property(&prop) {
             panic!("Prop {} is set, shouldn't be", prop);
