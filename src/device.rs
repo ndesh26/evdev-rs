@@ -621,10 +621,13 @@ impl Device {
     /// # let file = File::open("/dev/input/event0").unwrap();
     /// let device = uninit_device.set_file(file);
     /// ```
+    ///
     /// The caller is responsible for opening the file and setting
     /// the `O_NONBLOCK` flag and handling permissions.
     /// If the file is opened without O_NONBLOCK flag then next_event
-    /// should be called with ReadFlag::BLOCKING.
+    /// should be called with ReadFlag::BLOCKING. Due to the caching
+    /// nature of next_event we might block while trying to buffer
+    ///  new events even though some events are already present.
     pub fn new_from_file(file: File) -> io::Result<Device> {
         let mut libevdev = std::ptr::null_mut();
         let result =
@@ -650,6 +653,9 @@ impl Device {
     }
 
     /// Opens a device with the given path as the location of devnode
+    ///
+    /// The devnode file is opened with `O_NONBLOCK` and all the pending
+    /// events are first read from the file before creating the device.
     pub fn new_from_path<P: AsRef<Path>>(path: P) -> io::Result<Device> {
         let mut file = OpenOptions::new()
             .read(true)
@@ -657,15 +663,14 @@ impl Device {
             .custom_flags(libc::O_NONBLOCK)
             .open(path)?;
         let mut buffer = [0u8; 20 * std::mem::size_of::<raw::input_event>()];
-        let mut result;
-        loop {
-            result = file.read(&mut buffer);
+        let last_result = loop {
+            let result = file.read(&mut buffer);
             if !result.is_ok() {
-                break;
-            };
-        }
+                break result;
+            }
+        };
         let _error_code = io::Error::from(io::ErrorKind::WouldBlock);
-        match result {
+        match last_result {
             Err(_error_code) => Self::new_from_file(file),
             _ => Err(io::Error::new(
                 io::ErrorKind::WouldBlock,
