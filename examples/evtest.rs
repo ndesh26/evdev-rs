@@ -1,7 +1,10 @@
 use evdev_rs::enums::*;
 use evdev_rs::*;
-use std::fs::File;
+use std::fs::OpenOptions;
 use std::io;
+use std::io::ErrorKind;
+use std::io::Read;
+use std::os::unix::fs::OpenOptionsExt;
 
 fn usage() {
     println!("Usage: evtest /path/to/device");
@@ -107,10 +110,20 @@ fn main() {
     }
 
     let path = &args.nth(1).unwrap();
-    let f = File::open(path).unwrap();
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .custom_flags(libc::O_NONBLOCK)
+        .open(path)
+        .unwrap();
+    let mut buffer = Vec::new();
+    let result = file.read_to_end(&mut buffer);
+    if result.is_ok() || result.unwrap_err().kind() != ErrorKind::WouldBlock {
+        println!("Failed to drain pending events from device file");
+    }
 
     let u_d = UninitDevice::new().unwrap();
-    let d = u_d.set_file(f).unwrap();
+    let d = u_d.set_file(file).unwrap();
 
     println!(
         "Input device ID: bus 0x{:x} vendor 0x{:x} product 0x{:x}",
@@ -128,7 +141,7 @@ fn main() {
 
     let mut a: io::Result<(ReadStatus, InputEvent)>;
     loop {
-        a = d.next_event(ReadFlag::NORMAL | ReadFlag::BLOCKING);
+        a = d.next_event(ReadFlag::NORMAL);
         if a.is_ok() {
             let mut result = a.ok().unwrap();
             match result.0 {

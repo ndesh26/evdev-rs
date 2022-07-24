@@ -11,8 +11,7 @@
 //! use evdev_rs::Device;
 //! use std::fs::File;
 //!
-//! let file = File::open("/dev/input/event0").unwrap();
-//! let mut d = Device::new_from_file(file).unwrap();
+//! let mut d = Device::new_from_path("/dev/input/event0").unwrap();
 //! ```
 //!
 //! ## Getting the next event
@@ -22,11 +21,10 @@
 //! use std::fs::File;
 //! use evdev_rs::ReadFlag;
 //!
-//! let file = File::open("/dev/input/event0").unwrap();
-//! let mut d = Device::new_from_file(file).unwrap();
+//! let mut d = Device::new_from_path("/dev/input/event0").unwrap();
 //!
 //! loop {
-//!     let ev = d.next_event(ReadFlag::NORMAL | ReadFlag::BLOCKING).map(|val| val.1);
+//!     let ev = d.next_event(ReadFlag::NORMAL).map(|val| val.1);
 //!     match ev {
 //!         Ok(ev) => println!("Event: time {}.{}, ++++++++++++++++++++ {} +++++++++++++++",
 //!                           ev.time.tv_sec,
