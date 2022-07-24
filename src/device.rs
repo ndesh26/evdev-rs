@@ -627,7 +627,7 @@ impl Device {
     /// If the file is opened without O_NONBLOCK flag then next_event
     /// should be called with ReadFlag::BLOCKING. Due to the caching
     /// nature of next_event we might block while trying to buffer
-    ///  new events even though some events are already present.
+    /// new events even though some events are already present.
     pub fn new_from_file(file: File) -> io::Result<Device> {
         let mut libevdev = std::ptr::null_mut();
         let result =
