@@ -25,11 +25,11 @@ The evdev protocol is simple, but quirky, with a couple of behaviors that
 are non-obvious. libevdev transparently handles some of those quirks.
 
 The [evdev](https://github.com/emberian/evdev) crate is an implementation
-of evdev in Rust which provides most of the same features.
+of libevdev in Rust which provides most of the same features.
 
 `evdev-rs` crate closely follows libevdev and hence enjoys all the complex handling
 that libevdev does. Some of the things that libevdev handles transparently, which may or
-may not be in evdev crate:
+may not be in `evdev` crate:
 
 * handling of fake multitouch devices
 * synching of slots and per-slot state
