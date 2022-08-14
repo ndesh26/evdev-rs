@@ -4,6 +4,8 @@
 [![Latest Version](https://img.shields.io/crates/v/evdev-rs.svg)](https://crates.io/crates/evdev-rs)
 [![Documentation](https://docs.rs/evdev-rs/badge.svg)](https://docs.rs/evdev-rs)
 
+[Documentation](https://ndesh26.github.io/evdev-rs/evdev_rs/)
+
 A Rust wrapper for libevdev
 
 ```toml
