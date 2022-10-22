@@ -27,4 +27,4 @@ bitflags = "1.2.1"
 log = "0.4.8"
 
 [package.metadata.docs.rs]
-features = ["serde", "libevdev-1-10"]
+features = ["serde"]
