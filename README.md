@@ -4,8 +4,6 @@
 [![Latest Version](https://img.shields.io/crates/v/evdev-rs.svg)](https://crates.io/crates/evdev-rs)
 [![Documentation](https://docs.rs/evdev-rs/badge.svg)](https://docs.rs/evdev-rs)
 
-[Documentation](https://ndesh26.github.io/evdev-rs/evdev_rs/)
-
 A Rust wrapper for libevdev
 
 ```toml
@@ -19,11 +17,11 @@ to enable serialization support, enable the feature "serde"
 # Cargo.toml
 [dependencies]
 evdev-rs = { version = "0.6.1", features = ["serde"] }
+```
 
 With a newer libevdev version (>= 1.10) enable the feature `libevdev-1-10` to
 allow disabling a property. It also extends the `Enable` trait to `InputProp`,
 enabling the use of `enable()`, `disable()` and `has()` for `InputProp` as well.
-```
 
 Why a libevdev wrapper?
 -----------------------
