@@ -877,8 +877,9 @@ impl Device {
             value: 0,
         };
 
-        let result =
-            unsafe { raw::libevdev_next_event(self.raw, flags.bits as c_uint, &mut ev) };
+        let result = unsafe {
+            raw::libevdev_next_event(self.raw, flags.bits() as c_uint, &mut ev)
+        };
 
         let event = InputEvent {
             time: TimeVal {

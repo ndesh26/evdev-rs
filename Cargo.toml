@@ -23,7 +23,7 @@ libevdev-1-10 = ["evdev-sys/libevdev-1-10"]
 serde = { version = "1.0", default-features = false, features=["derive"], optional = true }
 evdev-sys = { path = "evdev-sys", version = "0.2.5" }
 libc = "0.2.67"
-bitflags = "1.2.1"
+bitflags = "2.4.1"
 log = "0.4.8"
 
 [package.metadata.docs.rs]
