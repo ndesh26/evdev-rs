@@ -44,15 +44,13 @@ fn main() -> Result<(), std::io::Error> {
 
     // Note mouse keys have to be enabled for this to be detected
     // as a usable device, see: https://stackoverflow.com/a/64559658/6074942
-    u.enable_event_type(&EventType::EV_KEY)?;
-    u.enable_event_code(&EventCode::EV_KEY(EV_KEY::BTN_LEFT), None)?;
-    u.enable_event_code(&EventCode::EV_KEY(EV_KEY::BTN_RIGHT), None)?;
+    u.enable(EventCode::EV_KEY(EV_KEY::BTN_LEFT))?;
+    u.enable(EventCode::EV_KEY(EV_KEY::BTN_RIGHT))?;
 
-    u.enable_event_type(&EventType::EV_REL)?;
-    u.enable_event_code(&EventCode::EV_REL(EV_REL::REL_X), None)?;
-    u.enable_event_code(&EventCode::EV_REL(EV_REL::REL_Y), None)?;
+    u.enable(EventCode::EV_REL(EV_REL::REL_X))?;
+    u.enable(EventCode::EV_REL(EV_REL::REL_Y))?;
 
-    u.enable_event_code(&EventCode::EV_SYN(EV_SYN::SYN_REPORT), None)?;
+    u.enable(EventCode::EV_SYN(EV_SYN::SYN_REPORT))?;
 
     // Attempt to create UInputDevice from UninitDevice
     let v = UInputDevice::create_from_device(&u)?;
