@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["LogPriority"],"fn":["get_log_priority","set_log_priority"]};
