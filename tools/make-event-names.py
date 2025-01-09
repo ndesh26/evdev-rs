@@ -193,6 +193,7 @@ def print_enums_fmt(bits, prefix):
     print("        }")
     print("    }")
     print("}")
+    print("")
 
 
 def print_event_code(bits, prefix):

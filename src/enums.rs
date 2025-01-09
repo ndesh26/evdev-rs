@@ -85,6 +85,7 @@ impl std::fmt::Display for EventType {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -189,6 +190,7 @@ impl std::fmt::Display for EV_REL {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -393,6 +395,7 @@ impl std::fmt::Display for EV_ABS {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -2877,6 +2880,7 @@ impl std::fmt::Display for EV_KEY {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -2953,6 +2957,7 @@ impl std::fmt::Display for EV_LED {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -2997,6 +3002,7 @@ impl std::fmt::Display for EV_SND {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -3053,6 +3059,7 @@ impl std::fmt::Display for EV_MSC {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -3153,6 +3160,7 @@ impl std::fmt::Display for EV_SW {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -3201,6 +3209,7 @@ impl std::fmt::Display for EV_SYN {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -3241,6 +3250,7 @@ impl std::fmt::Display for EV_REP {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -3301,6 +3311,7 @@ impl std::fmt::Display for InputProp {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -3409,6 +3420,7 @@ impl std::fmt::Display for EV_FF {
         }
     }
 }
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -3528,3 +3540,4 @@ impl std::fmt::Display for BusType {
             _ => Err(()),
         }
     }
+}
