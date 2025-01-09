@@ -189,7 +189,6 @@ def print_enums_fmt(bits, prefix):
             name = names[0]
             print('            %s::%s => write!(f, "%s"),' % (enum_name, name, name))
 
-    print("            _ => Err(()),")
     print("        }")
     print("    }")
     print("}")

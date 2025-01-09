@@ -81,7 +81,6 @@ impl std::fmt::Display for EventType {
             EventType::EV_PWR => write!(f, "EV_PWR"),
             EventType::EV_FF_STATUS => write!(f, "EV_FF_STATUS"),
             EventType::EV_MAX => write!(f, "EV_MAX"),
-            _ => Err(()),
         }
     }
 }
@@ -186,7 +185,6 @@ impl std::fmt::Display for EV_REL {
             EV_REL::REL_WHEEL_HI_RES => write!(f, "REL_WHEEL_HI_RES"),
             EV_REL::REL_HWHEEL_HI_RES => write!(f, "REL_HWHEEL_HI_RES"),
             EV_REL::REL_MAX => write!(f, "REL_MAX"),
-            _ => Err(()),
         }
     }
 }
@@ -391,7 +389,6 @@ impl std::fmt::Display for EV_ABS {
             EV_ABS::ABS_MT_TOOL_X => write!(f, "ABS_MT_TOOL_X"),
             EV_ABS::ABS_MT_TOOL_Y => write!(f, "ABS_MT_TOOL_Y"),
             EV_ABS::ABS_MAX => write!(f, "ABS_MAX"),
-            _ => Err(()),
         }
     }
 }
@@ -2876,7 +2873,6 @@ impl std::fmt::Display for EV_KEY {
             EV_KEY::BTN_TRIGGER_HAPPY38 => write!(f, "BTN_TRIGGER_HAPPY38"),
             EV_KEY::BTN_TRIGGER_HAPPY39 => write!(f, "BTN_TRIGGER_HAPPY39"),
             EV_KEY::BTN_TRIGGER_HAPPY40 => write!(f, "BTN_TRIGGER_HAPPY40"),
-            _ => Err(()),
         }
     }
 }
@@ -2953,7 +2949,6 @@ impl std::fmt::Display for EV_LED {
             EV_LED::LED_MAIL => write!(f, "LED_MAIL"),
             EV_LED::LED_CHARGING => write!(f, "LED_CHARGING"),
             EV_LED::LED_MAX => write!(f, "LED_MAX"),
-            _ => Err(()),
         }
     }
 }
@@ -2998,7 +2993,6 @@ impl std::fmt::Display for EV_SND {
             EV_SND::SND_BELL => write!(f, "SND_BELL"),
             EV_SND::SND_TONE => write!(f, "SND_TONE"),
             EV_SND::SND_MAX => write!(f, "SND_MAX"),
-            _ => Err(()),
         }
     }
 }
@@ -3055,7 +3049,6 @@ impl std::fmt::Display for EV_MSC {
             EV_MSC::MSC_SCAN => write!(f, "MSC_SCAN"),
             EV_MSC::MSC_TIMESTAMP => write!(f, "MSC_TIMESTAMP"),
             EV_MSC::MSC_MAX => write!(f, "MSC_MAX"),
-            _ => Err(()),
         }
     }
 }
@@ -3156,7 +3149,6 @@ impl std::fmt::Display for EV_SW {
             EV_SW::SW_MUTE_DEVICE => write!(f, "SW_MUTE_DEVICE"),
             EV_SW::SW_PEN_INSERTED => write!(f, "SW_PEN_INSERTED"),
             EV_SW::SW_MACHINE_COVER => write!(f, "SW_MACHINE_COVER"),
-            _ => Err(()),
         }
     }
 }
@@ -3205,7 +3197,6 @@ impl std::fmt::Display for EV_SYN {
             EV_SYN::SYN_MT_REPORT => write!(f, "SYN_MT_REPORT"),
             EV_SYN::SYN_DROPPED => write!(f, "SYN_DROPPED"),
             EV_SYN::SYN_MAX => write!(f, "SYN_MAX"),
-            _ => Err(()),
         }
     }
 }
@@ -3246,7 +3237,6 @@ impl std::fmt::Display for EV_REP {
         match *self {
             EV_REP::REP_DELAY => write!(f, "REP_DELAY"),
             EV_REP::REP_PERIOD => write!(f, "REP_PERIOD"),
-            _ => Err(()),
         }
     }
 }
@@ -3307,7 +3297,6 @@ impl std::fmt::Display for InputProp {
             InputProp::INPUT_PROP_POINTING_STICK => write!(f, "INPUT_PROP_POINTING_STICK"),
             InputProp::INPUT_PROP_ACCELEROMETER => write!(f, "INPUT_PROP_ACCELEROMETER"),
             InputProp::INPUT_PROP_MAX => write!(f, "INPUT_PROP_MAX"),
-            _ => Err(()),
         }
     }
 }
@@ -3416,7 +3405,6 @@ impl std::fmt::Display for EV_FF {
             EV_FF::FF_GAIN => write!(f, "FF_GAIN"),
             EV_FF::FF_AUTOCENTER => write!(f, "FF_AUTOCENTER"),
             EV_FF::FF_MAX => write!(f, "FF_MAX"),
-            _ => Err(()),
         }
     }
 }
@@ -3537,7 +3525,6 @@ impl std::fmt::Display for BusType {
             BusType::BUS_CEC => write!(f, "BUS_CEC"),
             BusType::BUS_INTEL_ISHTP => write!(f, "BUS_INTEL_ISHTP"),
             BusType::BUS_AMD_SFH => write!(f, "BUS_AMD_SFH"),
-            _ => Err(()),
         }
     }
 }
