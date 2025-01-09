@@ -65,6 +65,11 @@ event_names = [
     "REP_",
 ]
 
+fmt_blacklist = [
+    "EventType",
+    "InputProp",
+]
+
 
 def convert(name):
     s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
@@ -180,16 +185,12 @@ def print_enums_fmt(bits, prefix):
 
     enum_name = get_enum_name(prefix)
 
+    if enum_name in fmt_blacklist:
+        return
+
     print("impl std::fmt::Display for %s {" % enum_name)
     print("    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {")
-    print("        match *self {")
-
-    for p in (prefix, *prefix_additional.get(prefix, ())):
-        for _val, names in list(getattr(bits, p).items()):
-            name = names[0]
-            print('            %s::%s => write!(f, "%s"),' % (enum_name, name, name))
-
-    print("        }")
+    print('        write!(f, "{:?}", self)')
     print("    }")
     print("}")
     print("")
