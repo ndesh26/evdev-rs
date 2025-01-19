@@ -148,6 +148,12 @@ impl std::str::FromStr for EV_REL {
     }
 }
 
+impl std::fmt::Display for EV_REL {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -298,6 +304,12 @@ impl std::str::FromStr for EV_ABS {
             "ABS_MAX" => Ok(EV_ABS::ABS_MAX),
             _ => Err(()),
         }
+    }
+}
+
+impl std::fmt::Display for EV_ABS {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 
@@ -2164,6 +2176,12 @@ impl std::str::FromStr for EV_KEY {
     }
 }
 
+impl std::fmt::Display for EV_KEY {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -2221,6 +2239,12 @@ impl std::str::FromStr for EV_LED {
     }
 }
 
+impl std::fmt::Display for EV_LED {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -2251,6 +2275,12 @@ impl std::str::FromStr for EV_SND {
             "SND_MAX" => Ok(EV_SND::SND_MAX),
             _ => Err(()),
         }
+    }
+}
+
+impl std::fmt::Display for EV_SND {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 
@@ -2293,6 +2323,12 @@ impl std::str::FromStr for EV_MSC {
             "MSC_MAX" => Ok(EV_MSC::MSC_MAX),
             _ => Err(()),
         }
+    }
+}
+
+impl std::fmt::Display for EV_MSC {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 
@@ -2372,6 +2408,12 @@ impl std::str::FromStr for EV_SW {
     }
 }
 
+impl std::fmt::Display for EV_SW {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -2408,6 +2450,12 @@ impl std::str::FromStr for EV_SYN {
     }
 }
 
+impl std::fmt::Display for EV_SYN {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -2436,6 +2484,12 @@ impl std::str::FromStr for EV_REP {
             "REP_PERIOD" => Ok(EV_REP::REP_PERIOD),
             _ => Err(()),
         }
+    }
+}
+
+impl std::fmt::Display for EV_REP {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
 
@@ -2566,6 +2620,12 @@ impl std::str::FromStr for EV_FF {
     }
 }
 
+impl std::fmt::Display for EV_FF {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[cfg_attr(feature = "serde", derive(Serialize), derive(Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -2653,5 +2713,11 @@ impl std::str::FromStr for BusType {
             "BUS_AMD_SFH" => Ok(BusType::BUS_AMD_SFH),
             _ => Err(()),
         }
+    }
+}
+
+impl std::fmt::Display for BusType {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }

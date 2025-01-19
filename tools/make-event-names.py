@@ -28,12 +28,10 @@ prefixes = [
     "SYN_",
     "REP_",
     "INPUT_PROP_",
-    "BUS_"
+    "BUS_",
 ]
 
-prefix_additional = {
-    "key": ["btn"]
-}
+prefix_additional = {"key": ["btn"]}
 
 blacklist = [
     "EV_VERSION",
@@ -67,10 +65,15 @@ event_names = [
     "REP_",
 ]
 
+fmt_blacklist = [
+    "EventType",
+    "InputProp",
+]
+
 
 def convert(name):
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
 def get_enum_name(prefix):
@@ -85,7 +88,6 @@ def get_enum_name(prefix):
 
 
 def print_enums(bits, prefix):
-
     if not hasattr(bits, prefix):
         return
 
@@ -115,8 +117,10 @@ def print_enums(bits, prefix):
         print("impl %s {" % enum_name)
         for orig, names in associated_names:
             for name in names:
-                print("    pub const %s: %s = %s::%s;" %
-                      (name, enum_name, enum_name, orig))
+                print(
+                    "    pub const %s: %s = %s::%s;"
+                    % (name, enum_name, enum_name, orig)
+                )
         print("}")
         print("")
 
@@ -134,8 +138,10 @@ def print_enums_convert_fn(bits, prefix):
     if not hasattr(bits, prefix):
         return
 
-    print("pub const fn %s(code: u32) -> Option<%s> {" %
-          ("int_to_" + convert(fn_name), fn_name))
+    print(
+        "pub const fn %s(code: u32) -> Option<%s> {"
+        % ("int_to_" + convert(fn_name), fn_name)
+    )
     print("    match code {")
     for val, names in list(getattr(bits, prefix).items()):
         # Note(ndesh): We use EV_MAX as proxy to write the UNKnown event
@@ -152,26 +158,42 @@ def print_enums_convert_fn(bits, prefix):
 
 
 def print_enums_fromstr(bits, prefix):
-
     if not hasattr(bits, prefix):
         return
 
     enum_name = get_enum_name(prefix)
 
-    print('impl std::str::FromStr for %s {' % enum_name)
-    print('    type Err = ();')
-    print('    fn from_str(s: &str) -> Result<Self, Self::Err> {')
-    print('        match s {')
+    print("impl std::str::FromStr for %s {" % enum_name)
+    print("    type Err = ();")
+    print("    fn from_str(s: &str) -> Result<Self, Self::Err> {")
+    print("        match s {")
 
     for p in (prefix, *prefix_additional.get(prefix, ())):
         for _val, names in list(getattr(bits, p).items()):
             name = names[0]
             print('            "%s" => Ok(%s::%s),' % (name, enum_name, name))
-    print('            _ => Err(()),')
-    print('        }')
-    print('    }')
-    print('}')
-    print('')
+    print("            _ => Err(()),")
+    print("        }")
+    print("    }")
+    print("}")
+    print("")
+
+
+def print_enums_fmt(bits, prefix):
+    if not hasattr(bits, prefix):
+        return
+
+    enum_name = get_enum_name(prefix)
+
+    if enum_name in fmt_blacklist:
+        return
+
+    print("impl std::fmt::Display for %s {" % enum_name)
+    print("    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {")
+    print('        write!(f, "{:?}", self)')
+    print("    }")
+    print("}")
+    print("")
 
 
 def print_event_code(bits, prefix):
@@ -183,7 +205,7 @@ def print_event_code(bits, prefix):
     print("#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]")
     print("pub enum EventCode {")
     for val, [name] in list(getattr(bits, prefix).items()):
-        if name[3:]+"_" in event_names:
+        if name[3:] + "_" in event_names:
             print("    %s(%s)," % (name, name))
         elif name == "EV_FF_STATUS":
             print("    EV_FF_STATUS(EV_FF),")
@@ -207,6 +229,7 @@ def print_mapping_table(bits):
         print_enums(bits, prefix[:-1].lower())
         print_enums_convert_fn(bits, prefix[:-1].lower())
         print_enums_fromstr(bits, prefix[:-1].lower())
+        print_enums_fmt(bits, prefix[:-1].lower())
         if prefix == "EV_":
             print_event_code(bits, prefix[:-1].lower())
 
