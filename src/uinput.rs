@@ -12,6 +12,7 @@ pub struct UInputDevice {
     raw: *mut raw::libevdev_uinput,
 }
 
+unsafe impl Sync for UInputDevice {}
 unsafe impl Send for UInputDevice {}
 
 impl UInputDevice {
