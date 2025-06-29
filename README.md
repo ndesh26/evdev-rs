@@ -9,14 +9,14 @@ A Rust wrapper for libevdev
 ```toml
 # Cargo.toml
 [dependencies]
-evdev-rs = "0.6.1"
+evdev-rs = "0.6.2"
 ```
 
 to enable serialization support, enable the feature "serde"
 ```toml
 # Cargo.toml
 [dependencies]
-evdev-rs = { version = "0.6.1", features = ["serde"] }
+evdev-rs = { version = "0.6.2", features = ["serde"] }
 ```
 
 With a newer libevdev version (>= 1.10) enable the feature `libevdev-1-10` to

@@ -1,6 +1,6 @@
 [package]
 name = "evdev-rs"
-version = "0.6.1"
+version = "0.6.2"
 authors = ["Nayan Deshmukh <nayan26deshmukh@gmail.com>"]
 license = "MIT/Apache-2.0"
 keywords = ["evdev"]
@@ -21,10 +21,10 @@ libevdev-1-10 = ["evdev-sys/libevdev-1-10"]
 
 [dependencies]
 serde = { version = "1.0", default-features = false, features=["derive"], optional = true }
-evdev-sys = { path = "evdev-sys", version = "0.2.5" }
-libc = "0.2.67"
-bitflags = "2.4.1"
-log = "0.4.8"
+evdev-sys = { path = "evdev-sys", version = "0.2.6" }
+libc = "0.2.174"
+bitflags = "2.9.1"
+log = "0.4.27"
 
 [package.metadata.docs.rs]
 features = ["serde"]
