@@ -601,6 +601,7 @@ pub struct Device {
 }
 
 unsafe impl Send for Device {}
+unsafe impl Sync for Device {}
 
 impl DeviceWrapper for Device {
     fn raw(&self) -> *mut raw::libevdev {
@@ -895,6 +896,12 @@ impl Device {
             raw::LIBEVDEV_READ_STATUS_SYNC => Ok((ReadStatus::Sync, event)),
             error => Err(io::Error::from_raw_os_error(-error)),
         }
+    }
+}
+
+impl AsRawFd for Device {
+    fn as_raw_fd(&self) -> std::os::unix::prelude::RawFd {
+        self.file.as_raw_fd()
     }
 }
 
