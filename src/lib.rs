@@ -89,6 +89,7 @@ pub enum GrabMode {
 }
 
 bitflags! {
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy)]
     pub struct ReadFlag: u32 {
         /// Process data in sync mode
         const SYNC = 1;
