@@ -19,7 +19,7 @@ to enable serialization support, enable the feature "serde"
 evdev-rs = { version = "0.6.3", features = ["serde"] }
 ```
 
-With a newer libevdev version (>= 1.10) enable the feature `libevdev-1-10` to
+With a newer libevdev version (>= 1.10) enable the feature `v1_10` to
 allow disabling a property. It also extends the `Enable` trait to `InputProp`,
 enabling the use of `enable()`, `disable()` and `has()` for `InputProp` as well.
 

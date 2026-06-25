@@ -15,11 +15,17 @@ High level Rust bindings are available in the `evdev` crate
 """
 
 [features]
-libevdev-1-10 = []
+v1_10 = []
 
 [dependencies]
 libc = "0.2.67"
 
 [build-dependencies]
-pkg-config = "0.3.17"
-cc = "1.0.50"
+system-deps = "7"
+
+[package.metadata.system-deps.libevdev]
+name = "libevdev"
+version = "1"
+
+[package.metadata.system-deps.libevdev.v1_10]
+version = "1.10"
