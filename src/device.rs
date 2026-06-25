@@ -34,7 +34,7 @@ pub trait Enable {
     fn has<D: DeviceWrapper>(&self, device: &D) -> bool;
 }
 
-#[cfg(feature = "libevdev-1-10")]
+#[cfg(feature = "v1_10")]
 impl Enable for InputProp {
     fn enable<D: DeviceWrapper>(&self, device: &D) -> io::Result<()> {
         device.enable_property(self)
@@ -248,7 +248,7 @@ pub trait DeviceWrapper: Sized {
         }
     }
 
-    #[cfg(feature = "libevdev-1-10")]
+    #[cfg(feature = "v1_10")]
     fn disable_property(&self, prop: &InputProp) -> io::Result<()> {
         let result =
             unsafe { raw::libevdev_disable_property(self.raw(), (*prop) as c_uint) };
